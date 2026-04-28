@@ -14,7 +14,9 @@
   ],
   "activationEvents": [
     "onCommand:devngn.scan",
-    "onView:devngn.aiBits"
+    "onCommand:devngn.openTokenUsage",
+    "onView:devngn.aiBits",
+    "onView:devngn.tokenUsage"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -22,6 +24,10 @@
       {
         "command": "devngn.scan",
         "title": "devngn: Scan AI-bits"
+      },
+      {
+        "command": "devngn.openTokenUsage",
+        "title": "devngn: Open Token Usage"
       }
     ],
     "viewsContainers": {
@@ -38,6 +44,10 @@
         {
           "id": "devngn.aiBits",
           "name": "AI-bits"
+        },
+        {
+          "id": "devngn.tokenUsage",
+          "name": "Token Usage"
         }
       ]
     }

@@ -35,6 +35,10 @@ devngn needs to consume the AI it helps manage. The shared runtime tracks provid
 
 Provider invocation is adapter-gated: devngn should only call SDKs that are installed, authenticated, and capability-compatible. Requests are token-budgeted before dispatch, and provider-reported usage should replace estimates whenever an SDK exposes token accounting.
 
+## VS Code token dashboard
+
+The VS Code extension includes a modern token usage dashboard. Run **devngn: Scan AI-bits** to populate a visual budget ring, input/output/reserve token metrics, provider SDK/auth readiness, and workspace signals. The dashboard is available from the devngn activity bar under **Token Usage** or through **devngn: Open Token Usage**.
+
 ## Hosted sync and analytics
 
 The hosted surface is part of the product from the start. Sync payloads are redacted before they leave the machine, and analytics events use an allowlist schema that avoids raw instruction contents, secrets, prompts, completions, full environment dumps, and unnecessary hardware identifiers.
