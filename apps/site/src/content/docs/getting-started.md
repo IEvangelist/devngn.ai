@@ -18,6 +18,9 @@ devngn scan
 devngn doctor
 devngn vendors
 devngn research vendors
+devngn ai providers
+devngn ai budget --input "Summarize this workspace"
+devngn ai bootstrap
 devngn skills list
 devngn sync
 ```
@@ -25,6 +28,12 @@ devngn sync
 ## Vendor research
 
 Every production adapter starts with a vendor `/research` SKILL run. The research output captures current folder structures, file patterns, metadata, extension IDs, commands, update channels, and branding references before devngn treats the adapter as reliable.
+
+## AI runtime
+
+devngn needs to consume the AI it helps manage. The shared runtime tracks provider SDKs, authentication signals, capabilities, token usage, and model context budgets for OpenAI, GitHub Copilot, Anthropic Claude, Google Gemini, and local OpenAI-compatible endpoints.
+
+Provider invocation is adapter-gated: devngn should only call SDKs that are installed, authenticated, and capability-compatible. Requests are token-budgeted before dispatch, and provider-reported usage should replace estimates whenever an SDK exposes token accounting.
 
 ## Hosted sync and analytics
 

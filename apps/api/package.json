@@ -17,6 +17,7 @@
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@devngn/ai": "workspace:*",
     "@devngn/analytics": "workspace:*",
     "@devngn/sync": "workspace:*"
   }

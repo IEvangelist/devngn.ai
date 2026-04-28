@@ -1,6 +1,13 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import {
+  AIProviderIdSchema,
+  createBootstrapRequest,
+  createTokenBudget,
+  listProviderReadiness,
+  type AIProviderReadiness,
+} from "@devngn/ai";
+import {
   scanWorkspace,
   summarizeScan,
   type Recommendation,
@@ -124,6 +131,88 @@ skillsCommand
             .join("\n"),
     );
   });
+
+const aiCommand = program
+  .command("ai")
+  .description("Bootstrap and consume managed AI providers.");
+
+aiCommand
+  .command("providers")
+  .description("List AI SDK/provider readiness and capabilities.")
+  .option("--json", "Print machine-readable JSON.")
+  .action((options: JsonOption) => {
+    const readiness = listProviderReadiness();
+    writeOutput(options, readiness, () => renderProviderReadiness(readiness));
+  });
+
+aiCommand
+  .command("budget")
+  .description(
+    "Estimate token usage for text before sending it to an AI provider.",
+  )
+  .requiredOption("--input <text>", "Input text to estimate.")
+  .option("--context <tokens>", "Model context window.", parseInteger)
+  .option("--output <tokens>", "Maximum output tokens.", parseInteger)
+  .option("--reserve <tokens>", "Reserved safety tokens.", parseInteger)
+  .option("--json", "Print machine-readable JSON.")
+  .action(
+    (
+      options: JsonOption & {
+        input: string;
+        context?: number;
+        output?: number;
+        reserve?: number;
+      },
+    ) => {
+      const budget = createTokenBudget({
+        input: options.input,
+        modelContextWindow: options.context,
+        maxOutputTokens: options.output,
+        reserveTokens: options.reserve,
+      });
+
+      writeOutput(options, budget, () =>
+        [
+          `Estimated input tokens: ${budget.estimatedInputTokens}`,
+          `Available input tokens: ${budget.availableInputTokens}`,
+          `Within budget: ${budget.withinBudget ? "yes" : "no"}`,
+        ].join("\n"),
+      );
+    },
+  );
+
+aiCommand
+  .command("bootstrap")
+  .description("Create a token-aware bootstrap request from the current scan.")
+  .option("--provider <id>", "AI provider id.", "openai")
+  .option("--model <name>", "Provider model name.")
+  .option("--context <tokens>", "Model context window.", parseInteger)
+  .option("--json", "Print machine-readable JSON.")
+  .action(
+    async (
+      options: JsonOption & {
+        provider: string;
+        model?: string;
+        context?: number;
+      },
+    ) => {
+      const result = await runScan();
+      const request = createBootstrapRequest(result, {
+        providerId: AIProviderIdSchema.parse(options.provider),
+        model: options.model,
+        modelContextWindow: options.context,
+      });
+
+      writeOutput(options, request, () =>
+        [
+          `Prepared ${request.providerId} bootstrap request for ${request.model}.`,
+          `Estimated input tokens: ${request.tokenBudget.estimatedInputTokens}`,
+          `Within budget: ${request.tokenBudget.withinBudget ? "yes" : "no"}`,
+          "Provider invocation is adapter-gated so devngn only calls SDKs that are installed, authenticated, and capability-compatible.",
+        ].join("\n"),
+      );
+    },
+  );
 
 program
   .command("sync")
@@ -257,4 +346,34 @@ function renderRecommendations(
       ].join("\n"),
     )
     .join("\n");
+}
+
+function renderProviderReadiness(
+  readiness: readonly AIProviderReadiness[],
+): string {
+  return [
+    "AI provider readiness",
+    ...readiness.map((provider) => {
+      const sdk =
+        provider.sdkPackages.length === 0
+          ? "SDK: research required"
+          : `SDK: ${provider.installedSdkPackages.length}/${provider.sdkPackages.length} installed`;
+
+      return [
+        `- ${provider.name} (${provider.providerId})`,
+        `  ${sdk}; auth: ${provider.configuredAuth ? "configured" : "not configured"}`,
+        `  Capabilities: ${provider.capabilities.join(", ")}`,
+      ].join("\n");
+    }),
+  ].join("\n");
+}
+
+function parseInteger(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isNaN(parsed) || parsed < 0) {
+    throw new Error(`Expected a non-negative integer, received "${value}".`);
+  }
+
+  return parsed;
 }

@@ -1,3 +1,4 @@
+import { AIRequestSchema } from "@devngn/ai";
 import { AnalyticsEventSchema } from "@devngn/analytics";
 import { SyncEnvelopeSchema } from "@devngn/sync";
 
@@ -15,4 +16,8 @@ export function validateAnalyticsEvent(input: unknown) {
 
 export function validateSyncEnvelope(input: unknown) {
   return SyncEnvelopeSchema.parse(input);
+}
+
+export function validateAIRequest(input: unknown) {
+  return AIRequestSchema.parse(input);
 }

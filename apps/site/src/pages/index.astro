@@ -1,8 +1,10 @@
 ---
+import { listProviderManifests } from "@devngn/ai";
 import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
 
 const vendors = getBundledRegistry();
 const freshness = getResearchFreshnessSummary();
+const providers = listProviderManifests();
 ---
 
 <!doctype html>
@@ -195,12 +197,32 @@ const freshness = getResearchFreshnessSummary();
           <h2>Research</h2>
           <p>Use vendor /research SKILLs to keep file patterns and metadata current.</p>
         </article>
+        <article class="card">
+          <h2>Runtime</h2>
+          <p>
+            Bootstrap against OpenAI, Copilot, Claude, Gemini, and local providers with token-aware
+            requests.
+          </p>
+        </article>
       </section>
 
       <section class="panel" style="margin-top: 4rem;">
         <h2>Initial research matrix</h2>
         <ul>
           {vendors.map((vendor) => <li>{vendor.name}: {vendor.research.status}</li>)}
+        </ul>
+      </section>
+
+      <section class="panel" style="margin-top: 1rem;">
+        <h2>Initial AI runtime providers</h2>
+        <ul>
+          {
+            providers.map((provider) => (
+              <li>
+                {provider.name}: {provider.capabilities.join(", ")}
+              </li>
+            ))
+          }
         </ul>
       </section>
     </main>

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { listProviderReadiness, type AIProviderReadiness } from "@devngn/ai";
 import {
   scanWorkspace,
   type AIBit,
@@ -86,6 +87,12 @@ class AIBitsProvider implements vscode.TreeDataProvider<TreeNode> {
         vscode.TreeItemCollapsibleState.Collapsed,
         this.result.findings.map(toFindingNode),
       ),
+      new TreeNode(
+        "AI Providers",
+        "Installed SDK, auth, and provider capability readiness.",
+        vscode.TreeItemCollapsibleState.Collapsed,
+        listProviderReadiness().map(toProviderNode),
+      ),
     ];
   }
 }
@@ -115,6 +122,19 @@ function toFindingNode(finding: Finding): TreeNode {
   return new TreeNode(
     `[${finding.severity}] ${finding.title}`,
     finding.message,
+    vscode.TreeItemCollapsibleState.None,
+  );
+}
+
+function toProviderNode(provider: AIProviderReadiness): TreeNode {
+  const sdk =
+    provider.sdkPackages.length === 0
+      ? "SDK research required"
+      : `${provider.installedSdkPackages.length}/${provider.sdkPackages.length} SDK packages installed`;
+
+  return new TreeNode(
+    provider.name,
+    `${sdk}; auth ${provider.configuredAuth ? "configured" : "not configured"}; ${provider.capabilities.join(", ")}`,
     vscode.TreeItemCollapsibleState.None,
   );
 }
