@@ -1,8 +1,8 @@
 {
-  "name": "@devngn/api",
+  "name": "@devngn/grounding",
   "version": "0.0.0",
   "private": true,
-  "description": "Hosted devngn API contracts for sync and analytics.",
+  "description": "Self-updating devngn grounding manifest, user profile, and communication preferences.",
   "type": "module",
   "exports": {
     ".": {
@@ -14,12 +14,11 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
-    "lint": "tsc --noEmit -p tsconfig.json"
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@devngn/ai": "workspace:*",
-    "@devngn/analytics": "workspace:*",
-    "@devngn/grounding": "workspace:*",
-    "@devngn/sync": "workspace:*"
+    "@devngn/core": "workspace:*",
+    "zod": "^4.1.13"
   }
 }

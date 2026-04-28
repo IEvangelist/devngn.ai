@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { Command } from "commander";
 import {
   AIProviderIdSchema,
@@ -13,6 +15,12 @@ import {
   type Recommendation,
   type ScanResult,
 } from "@devngn/core";
+import {
+  createDevngnManifest,
+  renderManifestSummary,
+  type CommunicationPreferences,
+  type DevngnManifest,
+} from "@devngn/grounding";
 import { createAnalyticsEvent } from "@devngn/analytics";
 import { listResearchTargets } from "@devngn/research";
 import { summarizeSkills } from "@devngn/skills";
@@ -132,6 +140,59 @@ skillsCommand
     );
   });
 
+const profileCommand = program
+  .command("profile")
+  .description("Create and manage the self-updating devngn grounding profile.");
+
+profileCommand
+  .command("show")
+  .description("Show the current devngn manifest/profile for grounding AI.")
+  .option("--json", "Print machine-readable JSON.")
+  .action(async (options: JsonOption) => {
+    const manifest = await createCurrentManifest();
+    writeOutput(options, manifest, () => renderManifestSummary(manifest));
+  });
+
+profileCommand
+  .command("write")
+  .description("Write the current devngn manifest/profile to disk.")
+  .option(
+    "-o, --output <path>",
+    "Output path for the profile manifest.",
+    ".devngn/profile.json",
+  )
+  .option("--json", "Print machine-readable JSON.")
+  .action(async (options: JsonOption & { output: string }) => {
+    const manifest = await createCurrentManifest();
+    const outputPath = path.resolve(process.cwd(), options.output);
+
+    await mkdir(path.dirname(outputPath), { recursive: true });
+    await writeFile(
+      outputPath,
+      `${JSON.stringify(manifest, null, 2)}\n`,
+      "utf8",
+    );
+
+    writeOutput(
+      options,
+      { outputPath, manifest },
+      () => `Wrote devngn grounding profile to ${outputPath}.`,
+    );
+  });
+
+profileCommand
+  .command("comms")
+  .description(
+    "Show notification options for long-running AI loops and ralphs.",
+  )
+  .option("--json", "Print machine-readable JSON.")
+  .action(async (options: JsonOption) => {
+    const manifest = await createCurrentManifest();
+    writeOutput(options, manifest.communication, () =>
+      renderCommunicationPreferences(manifest.communication),
+    );
+  });
+
 const aiCommand = program
   .command("ai")
   .description("Bootstrap and consume managed AI providers.");
@@ -197,10 +258,12 @@ aiCommand
       },
     ) => {
       const result = await runScan();
+      const manifest = createDevngnManifest({ scan: result });
       const request = createBootstrapRequest(result, {
         providerId: AIProviderIdSchema.parse(options.provider),
         model: options.model,
         modelContextWindow: options.context,
+        groundingContext: renderManifestSummary(manifest),
       });
 
       writeOutput(options, request, () =>
@@ -287,6 +350,12 @@ async function runScan(): Promise<ScanResult> {
   });
 }
 
+async function createCurrentManifest(): Promise<DevngnManifest> {
+  return createDevngnManifest({
+    scan: await runScan(),
+  });
+}
+
 function writeOutput<T>(
   options: JsonOption,
   payload: T,
@@ -365,6 +434,31 @@ function renderProviderReadiness(
         `  Capabilities: ${provider.capabilities.join(", ")}`,
       ].join("\n");
     }),
+  ].join("\n");
+}
+
+function renderCommunicationPreferences(
+  preferences: CommunicationPreferences,
+): string {
+  const channels = preferences.longRunningLoops.channels.map(
+    (channel) =>
+      `- ${channel.kind}: ${channel.enabled ? "enabled" : "disabled"}`,
+  );
+  const backends = preferences.backends.map(
+    (backend) =>
+      `- ${backend.name}${backend.appHostPath === null ? "" : ` (${backend.appHostPath})`}`,
+  );
+
+  return [
+    preferences.longRunningLoops.label,
+    `Notify after: ${preferences.longRunningLoops.notifyAfterSeconds}s`,
+    `Repeat: ${preferences.longRunningLoops.repeatEverySeconds ?? "off"}s`,
+    "",
+    "Channels",
+    ...channels,
+    "",
+    "Backends",
+    ...backends,
   ].join("\n");
 }
 

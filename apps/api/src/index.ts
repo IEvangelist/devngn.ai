@@ -1,5 +1,6 @@
 import { AIRequestSchema } from "@devngn/ai";
 import { AnalyticsEventSchema } from "@devngn/analytics";
+import { DevngnManifestSchema } from "@devngn/grounding";
 import { SyncEnvelopeSchema } from "@devngn/sync";
 
 export function health() {
@@ -20,4 +21,8 @@ export function validateSyncEnvelope(input: unknown) {
 
 export function validateAIRequest(input: unknown) {
   return AIRequestSchema.parse(input);
+}
+
+export function validateDevngnManifest(input: unknown) {
+  return DevngnManifestSchema.parse(input);
 }

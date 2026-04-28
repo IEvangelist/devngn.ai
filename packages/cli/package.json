@@ -24,6 +24,7 @@
     "@devngn/ai": "workspace:*",
     "@devngn/analytics": "workspace:*",
     "@devngn/core": "workspace:*",
+    "@devngn/grounding": "workspace:*",
     "@devngn/research": "workspace:*",
     "@devngn/skills": "workspace:*",
     "@devngn/sync": "workspace:*",

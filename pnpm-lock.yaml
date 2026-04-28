@@ -34,9 +34,28 @@ importers:
       "@devngn/analytics":
         specifier: workspace:*
         version: link:../../packages/analytics
+      "@devngn/grounding":
+        specifier: workspace:*
+        version: link:../../packages/grounding
       "@devngn/sync":
         specifier: workspace:*
         version: link:../../packages/sync
+
+  apps/comms-apphost:
+    dependencies:
+      vscode-jsonrpc:
+        specifier: ^8.2.0
+        version: 8.2.0
+    devDependencies:
+      "@types/node":
+        specifier: ^24.10.0
+        version: 24.12.2
+      tsx:
+        specifier: ^4.20.6
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   apps/site:
     dependencies:
@@ -46,6 +65,9 @@ importers:
       "@devngn/ai":
         specifier: workspace:*
         version: link:../../packages/ai
+      "@devngn/grounding":
+        specifier: workspace:*
+        version: link:../../packages/grounding
       "@devngn/research":
         specifier: workspace:*
         version: link:../../packages/research
@@ -111,6 +133,9 @@ importers:
       "@devngn/core":
         specifier: workspace:*
         version: link:../core
+      "@devngn/grounding":
+        specifier: workspace:*
+        version: link:../grounding
       "@devngn/research":
         specifier: workspace:*
         version: link:../research
@@ -138,6 +163,15 @@ importers:
       "@devngn/skills":
         specifier: workspace:*
         version: link:../skills
+
+  packages/grounding:
+    dependencies:
+      "@devngn/core":
+        specifier: workspace:*
+        version: link:../core
+      zod:
+        specifier: ^4.1.13
+        version: 4.3.6
 
   packages/research:
     dependencies:

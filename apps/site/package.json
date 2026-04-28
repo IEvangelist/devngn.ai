@@ -13,6 +13,7 @@
   "dependencies": {
     "@astrojs/starlight": "^0.36.0",
     "@devngn/ai": "workspace:*",
+    "@devngn/grounding": "workspace:*",
     "@devngn/research": "workspace:*",
     "@devngn/vendors": "workspace:*",
     "astro": "^5.16.4"

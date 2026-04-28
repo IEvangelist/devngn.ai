@@ -316,6 +316,7 @@ export function createBootstrapRequest(
     providerId?: AIProviderId;
     model?: string;
     modelContextWindow?: number;
+    groundingContext?: string;
   } = {},
 ): AIRequest {
   const providerId = options.providerId ?? "openai";
@@ -342,6 +343,9 @@ export function createBootstrapRequest(
         `Installed known tools: ${scan.summary.installedTools}`,
         `AI-bits found: ${scan.summary.aiBits}`,
         `Findings: ${scan.summary.findings}`,
+        options.groundingContext === undefined
+          ? ""
+          : `Grounding manifest summary:\n${options.groundingContext}`,
         "",
         "Summarize the AI-bits inventory, call out drift/conflict risks, and recommend the next safe actions.",
       ].join("\n"),

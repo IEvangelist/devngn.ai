@@ -11,6 +11,7 @@
     "lint": "pnpm -r --if-present lint",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
+    "dev:comms": "pnpm --filter @devngn/comms-apphost start",
     "dev:site": "pnpm --filter @devngn/site dev",
     "dev:cli": "pnpm --filter @devngn/cli dev",
     "scan": "pnpm --filter @devngn/cli dev -- scan"
