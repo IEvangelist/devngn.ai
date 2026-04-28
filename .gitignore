@@ -2,7 +2,6 @@ node_modules
 dist
 .astro
 .modules
-.devngn
 .vscode-test
 .env
 .env.*

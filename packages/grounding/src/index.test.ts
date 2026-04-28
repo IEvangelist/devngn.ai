@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createDevngnManifest } from "./index.js";
+import { createDevngnManifest, getDefaultDevngnStoragePaths } from "./index.js";
 import type { ScanResult } from "@devngn/core";
 
 describe("createDevngnManifest", () => {
@@ -65,5 +65,50 @@ describe("createDevngnManifest", () => {
     expect(manifest.communication.longRunningLoops.loopKinds).toContain(
       "ralph",
     );
+  });
+});
+
+describe("getDefaultDevngnStoragePaths", () => {
+  it("uses Windows local app data for private profile state", () => {
+    const paths = getDefaultDevngnStoragePaths({
+      platform: "win32",
+      homeDirectory: "C:\\Users\\dev",
+      workspace: "C:\\repo",
+      env: {
+        LOCALAPPDATA: "C:\\Users\\dev\\AppData\\Local",
+        APPDATA: "C:\\Users\\dev\\AppData\\Roaming",
+      },
+    });
+
+    expect(paths.profilePath).toBe(
+      "C:\\Users\\dev\\AppData\\Local\\devngn\\State\\profile.json",
+    );
+    expect(paths.workspaceConfigCandidates).toContain(
+      "C:\\repo\\package.json#devngn",
+    );
+  });
+
+  it("uses XDG locations on Linux", () => {
+    const paths = getDefaultDevngnStoragePaths({
+      platform: "linux",
+      homeDirectory: "/home/dev",
+      workspace: "/repo",
+      env: {
+        XDG_CONFIG_HOME: "/home/dev/.config",
+        XDG_STATE_HOME: "/home/dev/.local/state",
+        XDG_CACHE_HOME: "/home/dev/.cache",
+      },
+    });
+
+    expect(paths.configDirectory).toBe("/home/dev/.config/devngn");
+    expect(paths.profilePath).toBe(
+      "/home/dev/.local/state/devngn/profile.json",
+    );
+    expect(paths.workspaceConfigCandidates).toEqual([
+      "/repo/package.json#devngn",
+      "/repo/devngn.config.json",
+      "/repo/devngn.config.ts",
+      "/repo/devngn.config.mjs",
+    ]);
   });
 });

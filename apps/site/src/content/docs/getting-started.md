@@ -42,7 +42,9 @@ Provider invocation is adapter-gated: devngn should only call SDKs that are inst
 
 devngn grounds AI with a self-updating manifest/profile. The profile captures OS metadata, CPU, GPU, memory, PATH tools, known installed tools, AI-bits, findings, user choices, preferred name, username, email, and communication preferences. AI bootstrap requests can include this grounding summary so providers understand what the machine and workspace can actually use.
 
-Run `devngn profile write` to create `.devngn/profile.json` for the current workspace.
+Run `devngn profile write` to create the private profile in the OS-native devngn state location. devngn does not create a workspace `.devngn` folder by default; use `--output` only when you intentionally want to export the manifest somewhere else.
+
+Workspace policy should prefer existing/common project surfaces before introducing new folders: `package.json` can carry a `devngn` field, and explicit project config can use root-level `devngn.config.json`, `devngn.config.ts`, or `devngn.config.mjs`.
 
 ## Communication options
 

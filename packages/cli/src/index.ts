@@ -17,6 +17,7 @@ import {
 } from "@devngn/core";
 import {
   createDevngnManifest,
+  getDefaultDevngnStoragePaths,
   renderManifestSummary,
   type CommunicationPreferences,
   type DevngnManifest,
@@ -158,13 +159,20 @@ profileCommand
   .description("Write the current devngn manifest/profile to disk.")
   .option(
     "-o, --output <path>",
-    "Output path for the profile manifest.",
-    ".devngn/profile.json",
+    "Output path for the profile manifest. Defaults to the OS-native devngn state directory.",
   )
   .option("--json", "Print machine-readable JSON.")
-  .action(async (options: JsonOption & { output: string }) => {
+  .action(async (options: JsonOption & { output?: string }) => {
     const manifest = await createCurrentManifest();
-    const outputPath = path.resolve(process.cwd(), options.output);
+    const storagePaths = getDefaultDevngnStoragePaths({
+      workspace: process.cwd(),
+      homeDirectory: manifest.grounding.host.homeDirectory,
+      platform: manifest.grounding.host.platform as NodeJS.Platform,
+    });
+    const outputPath =
+      options.output === undefined
+        ? storagePaths.profilePath
+        : path.resolve(process.cwd(), options.output);
 
     await mkdir(path.dirname(outputPath), { recursive: true });
     await writeFile(
@@ -173,10 +181,13 @@ profileCommand
       "utf8",
     );
 
-    writeOutput(
-      options,
-      { outputPath, manifest },
-      () => `Wrote devngn grounding profile to ${outputPath}.`,
+    writeOutput(options, { outputPath, manifest }, () =>
+      [
+        `Wrote devngn grounding profile to ${outputPath}.`,
+        options.output === undefined
+          ? "Used OS-native state storage; pass --output to export elsewhere intentionally."
+          : "Used explicit export path.",
+      ].join("\n"),
     );
   });
 

@@ -173,10 +173,71 @@ export interface CreateDevngnManifestOptions {
   gpuDevices?: readonly GpuDevice[];
 }
 
+export const DevngnStoragePathsSchema = z.object({
+  configDirectory: z.string(),
+  stateDirectory: z.string(),
+  cacheDirectory: z.string(),
+  profilePath: z.string(),
+  workspaceConfigCandidates: z.array(z.string()),
+});
+export type DevngnStoragePaths = z.infer<typeof DevngnStoragePathsSchema>;
+
+export interface DevngnStoragePathOptions {
+  env?: NodeJS.ProcessEnv;
+  platform?: NodeJS.Platform;
+  homeDirectory?: string;
+  workspace?: string;
+}
+
 interface DiscoveryResult<T> {
   values: T[];
   warnings: string[];
   truncated?: boolean;
+}
+
+export function getDefaultDevngnStoragePaths(
+  options: DevngnStoragePathOptions = {},
+): DevngnStoragePaths {
+  const env = options.env ?? process.env;
+  const platform = options.platform ?? process.platform;
+  const pathApi = platform === "win32" ? path.win32 : path.posix;
+  const homeDirectory = options.homeDirectory ?? os.homedir();
+  const configDirectory = resolveConfigDirectory({
+    env,
+    platform,
+    homeDirectory,
+    pathApi,
+  });
+  const stateDirectory = resolveStateDirectory({
+    env,
+    platform,
+    homeDirectory,
+    pathApi,
+  });
+  const cacheDirectory = resolveCacheDirectory({
+    env,
+    platform,
+    homeDirectory,
+    pathApi,
+  });
+  const workspace =
+    options.workspace === undefined ? null : pathApi.resolve(options.workspace);
+
+  return DevngnStoragePathsSchema.parse({
+    configDirectory,
+    stateDirectory,
+    cacheDirectory,
+    profilePath: pathApi.join(stateDirectory, "profile.json"),
+    workspaceConfigCandidates:
+      workspace === null
+        ? []
+        : [
+            `${pathApi.join(workspace, "package.json")}#devngn`,
+            pathApi.join(workspace, "devngn.config.json"),
+            pathApi.join(workspace, "devngn.config.ts"),
+            pathApi.join(workspace, "devngn.config.mjs"),
+          ],
+  });
 }
 
 export function createDevngnManifest(
@@ -406,6 +467,114 @@ function resolveIdentity(
               ? "os"
               : "unknown"),
   });
+}
+
+function resolveConfigDirectory(options: {
+  env: NodeJS.ProcessEnv;
+  platform: NodeJS.Platform;
+  homeDirectory: string;
+  pathApi: typeof path.win32 | typeof path.posix;
+}): string {
+  const override = options.env.DEVNGN_CONFIG_HOME;
+
+  if (override !== undefined && override.trim() !== "") {
+    return options.pathApi.resolve(override);
+  }
+
+  switch (options.platform) {
+    case "win32":
+      return options.pathApi.join(
+        options.env.APPDATA ??
+          options.pathApi.join(options.homeDirectory, "AppData", "Roaming"),
+        "devngn",
+      );
+    case "darwin":
+      return options.pathApi.join(
+        options.homeDirectory,
+        "Library",
+        "Application Support",
+        "devngn",
+      );
+    default:
+      return options.pathApi.join(
+        options.env.XDG_CONFIG_HOME ??
+          options.pathApi.join(options.homeDirectory, ".config"),
+        "devngn",
+      );
+  }
+}
+
+function resolveStateDirectory(options: {
+  env: NodeJS.ProcessEnv;
+  platform: NodeJS.Platform;
+  homeDirectory: string;
+  pathApi: typeof path.win32 | typeof path.posix;
+}): string {
+  const override = options.env.DEVNGN_STATE_HOME;
+
+  if (override !== undefined && override.trim() !== "") {
+    return options.pathApi.resolve(override);
+  }
+
+  switch (options.platform) {
+    case "win32":
+      return options.pathApi.join(
+        options.env.LOCALAPPDATA ??
+          options.pathApi.join(options.homeDirectory, "AppData", "Local"),
+        "devngn",
+        "State",
+      );
+    case "darwin":
+      return options.pathApi.join(
+        options.homeDirectory,
+        "Library",
+        "Application Support",
+        "devngn",
+        "State",
+      );
+    default:
+      return options.pathApi.join(
+        options.env.XDG_STATE_HOME ??
+          options.pathApi.join(options.homeDirectory, ".local", "state"),
+        "devngn",
+      );
+  }
+}
+
+function resolveCacheDirectory(options: {
+  env: NodeJS.ProcessEnv;
+  platform: NodeJS.Platform;
+  homeDirectory: string;
+  pathApi: typeof path.win32 | typeof path.posix;
+}): string {
+  const override = options.env.DEVNGN_CACHE_HOME;
+
+  if (override !== undefined && override.trim() !== "") {
+    return options.pathApi.resolve(override);
+  }
+
+  switch (options.platform) {
+    case "win32":
+      return options.pathApi.join(
+        options.env.LOCALAPPDATA ??
+          options.pathApi.join(options.homeDirectory, "AppData", "Local"),
+        "devngn",
+        "Cache",
+      );
+    case "darwin":
+      return options.pathApi.join(
+        options.homeDirectory,
+        "Library",
+        "Caches",
+        "devngn",
+      );
+    default:
+      return options.pathApi.join(
+        options.env.XDG_CACHE_HOME ??
+          options.pathApi.join(options.homeDirectory, ".cache"),
+        "devngn",
+      );
+  }
 }
 
 function createUserChoiceBindings(
