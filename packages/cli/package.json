@@ -1,0 +1,32 @@
+{
+  "name": "@devngn/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "devngn CLI - manage your AI-bits.",
+  "type": "module",
+  "bin": {
+    "devngn": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
+    "dev": "tsx src/index.ts",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@devngn/analytics": "workspace:*",
+    "@devngn/core": "workspace:*",
+    "@devngn/research": "workspace:*",
+    "@devngn/skills": "workspace:*",
+    "@devngn/sync": "workspace:*",
+    "@devngn/vendors": "workspace:*",
+    "commander": "^14.0.2"
+  }
+}

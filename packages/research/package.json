@@ -1,0 +1,22 @@
+{
+  "name": "@devngn/research",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vendor /research SKILL workflows for keeping devngn AI-bit adapters current.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@devngn/vendors": "workspace:*"
+  }
+}

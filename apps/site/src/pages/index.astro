@@ -1,0 +1,208 @@
+---
+import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
+
+const vendors = getBundledRegistry();
+const freshness = getResearchFreshnessSummary();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>devngn.ai - Manage your AI-bits</title>
+    <meta
+      name="description"
+      content="devngn.ai is the dev engine for managing AI-bits across your tools, workspaces, vendors, skills, and instructions."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080b12;
+        --panel: #111827;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #70f0c8;
+        --accent-2: #8aa8ff;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(112, 240, 200, 0.18), transparent 32rem),
+          radial-gradient(circle at top right, rgba(138, 168, 255, 0.16), transparent 28rem),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        margin: 0 auto;
+        max-width: 1120px;
+        padding: 4rem 1.5rem;
+      }
+
+      .hero {
+        display: grid;
+        gap: 2rem;
+        grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.8fr);
+        align-items: center;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: clamp(3rem, 8vw, 6.5rem);
+        line-height: 0.9;
+        margin: 0.5rem 0 1rem;
+      }
+
+      p {
+        color: var(--muted);
+        font-size: 1.15rem;
+        line-height: 1.7;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .button {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        padding: 0.85rem 1.2rem;
+        text-decoration: none;
+      }
+
+      .button.primary {
+        background: var(--accent);
+        color: #05120e;
+        font-weight: 800;
+      }
+
+      .panel {
+        background: rgba(17, 24, 39, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1.5rem;
+        box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.24);
+        padding: 1.5rem;
+      }
+
+      .metric {
+        display: grid;
+        gap: 0.2rem;
+        margin-bottom: 1rem;
+      }
+
+      .metric strong {
+        font-size: 2rem;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+        margin-top: 4rem;
+      }
+
+      .card {
+        background: rgba(17, 24, 39, 0.62);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        padding: 1.25rem;
+      }
+
+      .card h2 {
+        margin: 0;
+      }
+
+      ul {
+        color: var(--muted);
+        line-height: 1.8;
+        padding-left: 1.25rem;
+      }
+
+      @media (max-width: 760px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">dev engine</div>
+          <h1>Manage your AI-bits.</h1>
+          <p>
+            devngn.ai maps the instructions, skills, rules, model preferences, vendor folders,
+            evals, and tooling habits that pile up across developer machines and workspaces.
+          </p>
+          <p>
+            Scan locally, sync intentionally, detect AI drift, catch tool conflicts, and keep every
+            AI vendor pattern fresh through structured research workflows.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="/docs/getting-started/">Read the docs</a>
+            <a class="button" href="/registry/v1/vendors.json">View registry JSON</a>
+          </div>
+        </div>
+        <aside class="panel">
+          <div class="metric">
+            <span>Known vendors/tools</span>
+            <strong>{freshness.total}</strong>
+          </div>
+          <div class="metric">
+            <span>Research status</span>
+            <strong>{freshness.byStatus.planned ?? 0} planned</strong>
+          </div>
+          <p>
+            Vendor adapters start as researched, dated, reviewable AI-bit maps before devngn treats
+            them as production-ready.
+          </p>
+        </aside>
+      </section>
+
+      <section class="grid" aria-label="Product capabilities">
+        <article class="card">
+          <h2>Inventory</h2>
+          <p>See workspace and user AI-bits by vendor, scope, file location, and ownership.</p>
+        </article>
+        <article class="card">
+          <h2>Drift</h2>
+          <p>Spot stale tools, unused skills, outdated settings, and habits that stopped helping.</p>
+        </article>
+        <article class="card">
+          <h2>Conflicts</h2>
+          <p>Find duplicate skills, competing instructions, PATH issues, and shadowed tools.</p>
+        </article>
+        <article class="card">
+          <h2>Research</h2>
+          <p>Use vendor /research SKILLs to keep file patterns and metadata current.</p>
+        </article>
+      </section>
+
+      <section class="panel" style="margin-top: 4rem;">
+        <h2>Initial research matrix</h2>
+        <ul>
+          {vendors.map((vendor) => <li>{vendor.name}: {vendor.research.status}</li>)}
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

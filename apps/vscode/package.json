@@ -1,0 +1,56 @@
+{
+  "name": "devngn-ai-vscode",
+  "displayName": "devngn.ai",
+  "description": "Manage your AI-bits from VS Code.",
+  "version": "0.0.0",
+  "publisher": "devngn",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:devngn.scan",
+    "onView:devngn.aiBits"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "devngn.scan",
+        "title": "devngn: Scan AI-bits"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "devngn",
+          "title": "devngn",
+          "icon": "media/devngn.svg"
+        }
+      ]
+    },
+    "views": {
+      "devngn": [
+        {
+          "id": "devngn.aiBits",
+          "name": "AI-bits"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsup src/extension.ts --format cjs --external vscode --sourcemap --clean --out-dir dist",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@devngn/core": "workspace:*",
+    "@devngn/vendors": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.105.0"
+  }
+}

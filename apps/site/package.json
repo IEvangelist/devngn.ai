@@ -1,0 +1,22 @@
+{
+  "name": "@devngn/site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "devngn.ai marketing, docs, account, and registry site.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.36.0",
+    "@devngn/research": "workspace:*",
+    "@devngn/vendors": "workspace:*",
+    "astro": "^5.16.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4"
+  }
+}
