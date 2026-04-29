@@ -21,8 +21,22 @@ describe("vendor intelligence", () => {
       "anthropic-claude-code",
     );
     expect(getVendorIntelligenceByIdOrAlias("openai")?.id).toBe("openai-codex");
-    expect(getVendorIntelligenceByIdOrAlias("opecode")?.id).toBe(
-      "openai-codex",
-    );
+    expect(getVendorIntelligenceByIdOrAlias("opencode")?.id).toBe("opencode");
+    expect(getVendorIntelligenceByIdOrAlias("open-code")?.id).toBe("opencode");
+    expect(getVendorIntelligenceByIdOrAlias("opecode")).toBeNull();
+  });
+
+  it("resolves every canonical vendor id and declared alias", () => {
+    const vendors = getVendorIntelligenceDatabase(
+      new Date("2026-04-29T00:00:00.000Z"),
+    ).vendors;
+
+    for (const vendor of vendors) {
+      expect(getVendorIntelligenceByIdOrAlias(vendor.id)?.id).toBe(vendor.id);
+
+      for (const alias of vendor.aliases) {
+        expect(getVendorIntelligenceByIdOrAlias(alias)?.id).toBe(vendor.id);
+      }
+    }
   });
 });

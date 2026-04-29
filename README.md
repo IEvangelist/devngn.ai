@@ -125,8 +125,10 @@ The public registry at `/registry/v1/vendors.json` stays lightweight. The richer
 GET /api/vendors
 GET /api/vendors/anthropic
 GET /api/vendors/openai
-GET /api/vendors/opecode
+GET /api/vendors/opencode
 ```
+
+Every vendor returned by `GET /api/vendors` is also addressable through `GET /api/vendors/:id` by canonical ID and declared aliases. Current canonical IDs include `github-copilot`, `anthropic-claude-code`, `openai-codex`, `opencode`, `google-gemini`, `cursor`, `windsurf-codeium`, `continue`, `cline-roo`, `aider`, `amazon-q`, `jetbrains-ai`, `zed-ai`, `tabnine`, `git`, and `github-cli`.
 
 Configure API keys with `DEVNGN_VENDOR_API_KEYS`, using comma-separated `key:plan:accountId` entries. Supported subscription levels are `trial`, `pro`, `team`, and `enterprise`; each level has its own per-minute rate limit. Requests must send `x-api-key` or `Authorization: Bearer <key>`.
 

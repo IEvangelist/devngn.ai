@@ -57,11 +57,14 @@ Run `devngn telemetry flows` to inspect the measured flow catalog, or `devngn te
 
 devngn exposes a protected, subscriber-oriented REST API for richer vendor intelligence. The public `/registry/v1/vendors.json` endpoint remains lightweight, while `/api/vendors` and `/api/vendors/:id` are intended for API-key access to vendor standards, file locations, folder structures, company info, repositories, sites, common tools, CLIs, editor extensions, and research status.
 
+Every vendor returned by `GET /api/vendors` is addressable through `GET /api/vendors/:id` by canonical ID and declared aliases. Current canonical IDs include `github-copilot`, `anthropic-claude-code`, `openai-codex`, `opencode`, `google-gemini`, `cursor`, `windsurf-codeium`, `continue`, `cline-roo`, `aider`, `amazon-q`, `jetbrains-ai`, `zed-ai`, `tabnine`, `git`, and `github-cli`.
+
 Configure keys with `DEVNGN_VENDOR_API_KEYS` using comma-separated `key:plan:accountId` entries. Supported plans are `trial`, `pro`, `team`, and `enterprise`, each with separate rate limits. Requests must send `x-api-key` or `Authorization: Bearer <key>`.
 
 ```sh
 $env:DEVNGN_VENDOR_API_KEYS = "local-dev-key:pro:local"
 curl -H "x-api-key: local-dev-key" http://localhost:4321/api/vendors/openai
+curl -H "x-api-key: local-dev-key" http://localhost:4321/api/vendors/opencode
 curl -H "x-api-key: local-dev-key" http://localhost:4321/api/vendors/anthropic
 ```
 

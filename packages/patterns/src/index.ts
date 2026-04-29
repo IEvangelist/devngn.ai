@@ -164,7 +164,7 @@ const patterns = [
       ],
     },
     tags: ["instructions", "workspace", "agents"],
-    vendors: ["openai-codex"],
+    vendors: ["openai-codex", "opencode"],
     signals: [
       {
         kind: "workspace-file",
@@ -188,6 +188,7 @@ const patterns = [
       "Prefer reading and preserving AGENTS.md before creating vendor-specific instruction files.",
     sources: [
       { title: "OpenAI Codex", url: "https://github.com/openai/codex" },
+      { title: "OpenCode docs", url: "https://opencode.ai/docs/" },
     ],
   },
   {

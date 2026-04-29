@@ -252,6 +252,30 @@ export const bundledVendorRegistry: VendorProfile[] = [
     ],
   },
   {
+    id: "opencode",
+    name: "OpenCode",
+    products: ["OpenCode"],
+    category: "ai-cli",
+    commands: ["opencode"],
+    extensionIds: [],
+    docsUrl: "https://opencode.ai/docs/",
+    logoRef: "vendor:opencode",
+    research: plannedResearch(
+      "Run /research to confirm OpenCode AGENTS.md usage, config files, provider settings, and editor integration patterns.",
+    ),
+    aiBitPatterns: [
+      {
+        kind: "instruction",
+        scope: "workspace",
+        path: ["AGENTS.md"],
+        name: "OpenCode project instructions",
+        description:
+          "OpenCode project guidance created by /init for project structure and coding patterns.",
+        scanChildren: false,
+      },
+    ],
+  },
+  {
     id: "google-gemini",
     name: "Google Gemini tooling",
     products: ["Gemini CLI", "Gemini Code Assist"],
@@ -619,7 +643,7 @@ const vendorIntelligenceMetadata: Partial<
     },
   },
   "openai-codex": {
-    aliases: ["openai", "codex", "opencode", "opecode", "agents-md"],
+    aliases: ["openai", "codex", "agents-md"],
     company: company("OpenAI", "OpenAI, L.L.C.", "https://openai.com", null),
     openSource: { isOpenSource: true, license: "Apache-2.0" },
     repositories: [
@@ -650,6 +674,46 @@ const vendorIntelligenceMetadata: Partial<
       primarySurface: "coding agent CLI",
       instructionFile: "AGENTS.md",
       managedByDevngnAs: "agent-instructions,provider-runtime",
+    },
+  },
+  opencode: {
+    aliases: ["opencode", "open-code", "opencode-ai"],
+    company: company("OpenCode", null, "https://opencode.ai", null),
+    openSource: { isOpenSource: true, license: "MIT" },
+    repositories: [
+      repo(
+        "github",
+        "anomalyco",
+        "opencode",
+        "https://github.com/anomalyco/opencode",
+        "source",
+        "MIT",
+      ),
+    ],
+    sites: [
+      site("OpenCode", "https://opencode.ai", "homepage"),
+      site("OpenCode docs", "https://opencode.ai/docs/", "docs"),
+      site(
+        "OpenCode repository",
+        "https://github.com/anomalyco/opencode",
+        "repository",
+      ),
+    ],
+    standards: [
+      standard(
+        "OpenCode AGENTS.md initialization",
+        "OpenCode is an open source AI coding agent that initializes projects with AGENTS.md for project structure and coding patterns.",
+        "research-required",
+        ["AGENTS.md"],
+        "https://opencode.ai/docs/",
+      ),
+    ],
+    vendorSpecificDetails: {
+      primarySurface: "open-source AI coding agent CLI",
+      command: "opencode",
+      npmPackage: "opencode-ai",
+      homebrewTap: "anomalyco/tap/opencode",
+      managedByDevngnAs: "agent-instructions,provider-runtime,cli-config",
     },
   },
   "google-gemini": {
