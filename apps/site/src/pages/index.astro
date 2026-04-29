@@ -1,10 +1,12 @@
 ---
 import { listProviderManifests } from "@devngn/ai";
+import { summarizePatternTrends } from "@devngn/patterns";
 import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
 
 const vendors = getBundledRegistry();
 const freshness = getResearchFreshnessSummary();
 const providers = listProviderManifests();
+const patternTrends = summarizePatternTrends();
 ---
 
 <!doctype html>
@@ -212,6 +214,13 @@ const providers = listProviderManifests();
           </p>
         </article>
         <article class="card">
+          <h2>Patterns</h2>
+          <p>
+            Recognize widely adopted AI-bits and monitor ecosystem trends to light up the right
+            experiences.
+          </p>
+        </article>
+        <article class="card">
           <h2>Comms</h2>
           <p>
             Configure tray, email, SMS, MQTT/Zanzito, and playSMS-style updates for long-running AI
@@ -238,6 +247,15 @@ const providers = listProviderManifests();
             ))
           }
         </ul>
+      </section>
+
+      <section class="panel" style="margin-top: 1rem;">
+        <h2>AI pattern trends</h2>
+        <p>
+          Tracking {patternTrends.total} known ecosystem patterns, with {
+            patternTrends.rising.length
+          } rising and {patternTrends.watch.length} on watch.
+        </p>
       </section>
     </main>
   </body>

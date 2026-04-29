@@ -12,6 +12,7 @@ import {
   type Finding,
   type ScanResult,
 } from "@devngn/core";
+import { recognizePatterns, type PatternMatch } from "@devngn/patterns";
 import { getBundledRegistry } from "@devngn/vendors";
 
 interface TokenDashboardState {
@@ -130,6 +131,12 @@ class AIBitsProvider implements vscode.TreeDataProvider<TreeNode> {
         vscode.TreeItemCollapsibleState.Collapsed,
         listProviderReadiness().map(toProviderNode),
       ),
+      new TreeNode(
+        "AI Patterns",
+        "Known ecosystem patterns recognized in this workspace.",
+        vscode.TreeItemCollapsibleState.Collapsed,
+        recognizePatterns(this.result).map(toPatternNode),
+      ),
     ];
   }
 }
@@ -221,6 +228,14 @@ function toProviderNode(provider: AIProviderReadiness): TreeNode {
   return new TreeNode(
     provider.name,
     `${sdk}; auth ${provider.configuredAuth ? "configured" : "not configured"}; ${provider.capabilities.join(", ")}`,
+    vscode.TreeItemCollapsibleState.None,
+  );
+}
+
+function toPatternNode(match: PatternMatch): TreeNode {
+  return new TreeNode(
+    `${match.name} (${Math.round(match.score * 100)}%)`,
+    `Trend: ${match.trend}; lights up: ${match.experienceTriggers.join(", ")}`,
     vscode.TreeItemCollapsibleState.None,
   );
 }

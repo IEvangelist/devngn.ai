@@ -37,6 +37,9 @@ importers:
       "@devngn/grounding":
         specifier: workspace:*
         version: link:../../packages/grounding
+      "@devngn/patterns":
+        specifier: workspace:*
+        version: link:../../packages/patterns
       "@devngn/sync":
         specifier: workspace:*
         version: link:../../packages/sync
@@ -68,6 +71,9 @@ importers:
       "@devngn/grounding":
         specifier: workspace:*
         version: link:../../packages/grounding
+      "@devngn/patterns":
+        specifier: workspace:*
+        version: link:../../packages/patterns
       "@devngn/research":
         specifier: workspace:*
         version: link:../../packages/research
@@ -90,6 +96,9 @@ importers:
       "@devngn/core":
         specifier: workspace:*
         version: link:../../packages/core
+      "@devngn/patterns":
+        specifier: workspace:*
+        version: link:../../packages/patterns
       "@devngn/vendors":
         specifier: workspace:*
         version: link:../../packages/vendors
@@ -136,6 +145,9 @@ importers:
       "@devngn/grounding":
         specifier: workspace:*
         version: link:../grounding
+      "@devngn/patterns":
+        specifier: workspace:*
+        version: link:../patterns
       "@devngn/research":
         specifier: workspace:*
         version: link:../research
@@ -165,6 +177,15 @@ importers:
         version: link:../skills
 
   packages/grounding:
+    dependencies:
+      "@devngn/core":
+        specifier: workspace:*
+        version: link:../core
+      zod:
+        specifier: ^4.1.13
+        version: 4.3.6
+
+  packages/patterns:
     dependencies:
       "@devngn/core":
         specifier: workspace:*

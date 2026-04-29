@@ -59,6 +59,7 @@
   "dependencies": {
     "@devngn/ai": "workspace:*",
     "@devngn/core": "workspace:*",
+    "@devngn/patterns": "workspace:*",
     "@devngn/vendors": "workspace:*"
   },
   "devDependencies": {

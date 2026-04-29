@@ -7,6 +7,7 @@
       "@devngn/analytics": ["packages/analytics/src/index.ts"],
       "@devngn/core": ["packages/core/src/index.ts"],
       "@devngn/grounding": ["packages/grounding/src/index.ts"],
+      "@devngn/patterns": ["packages/patterns/src/index.ts"],
       "@devngn/research": ["packages/research/src/index.ts"],
       "@devngn/sync": ["packages/sync/src/index.ts"],
       "@devngn/vendors": ["packages/vendors/src/index.ts"]

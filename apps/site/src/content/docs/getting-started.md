@@ -19,6 +19,9 @@ devngn doctor
 devngn profile show
 devngn profile write
 devngn profile comms
+devngn patterns list
+devngn patterns trends
+devngn patterns recognize
 devngn vendors
 devngn research vendors
 devngn ai providers
@@ -31,6 +34,10 @@ devngn sync
 ## Vendor research
 
 Every production adapter starts with a vendor `/research` SKILL run. The research output captures current folder structures, file patterns, metadata, extension IDs, commands, update channels, and branding references before devngn treats the adapter as reliable.
+
+## Pattern intelligence
+
+devngn maintains a versioned database of widely adopted AI patterns and trend metadata. These patterns describe common instruction files, rules, MCP configs, eval files, model preference surfaces, and workspace policy conventions. Run `devngn patterns recognize` to detect known patterns in the current workspace and see which experiences should light up, such as the MCP explorer, eval runner, grounding profile, token dashboard, conflict detection, or cleanup suggestions.
 
 ## AI runtime
 

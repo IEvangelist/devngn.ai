@@ -22,6 +22,13 @@ import {
   type CommunicationPreferences,
   type DevngnManifest,
 } from "@devngn/grounding";
+import {
+  getPatternDatabase,
+  listExperienceTriggers,
+  recognizePatterns,
+  summarizePatternTrends,
+  type PatternMatch,
+} from "@devngn/patterns";
 import { createAnalyticsEvent } from "@devngn/analytics";
 import { listResearchTargets } from "@devngn/research";
 import { summarizeSkills } from "@devngn/skills";
@@ -202,6 +209,61 @@ profileCommand
     writeOutput(options, manifest.communication, () =>
       renderCommunicationPreferences(manifest.communication),
     );
+  });
+
+const patternsCommand = program
+  .command("patterns")
+  .description("Explore known AI patterns, trends, and experience triggers.");
+
+patternsCommand
+  .command("list")
+  .description("List widely adopted AI patterns known to devngn.")
+  .option("--json", "Print machine-readable JSON.")
+  .action((options: JsonOption) => {
+    const database = getPatternDatabase();
+    writeOutput(options, database, () =>
+      [
+        `devngn knows ${database.patterns.length} AI ecosystem patterns.`,
+        ...database.patterns.map(
+          (pattern) =>
+            `- ${pattern.name} (${pattern.adoption}, ${pattern.trend.direction})`,
+        ),
+      ].join("\n"),
+    );
+  });
+
+patternsCommand
+  .command("trends")
+  .description("Summarize AI pattern adoption and trend direction.")
+  .option("--json", "Print machine-readable JSON.")
+  .action((options: JsonOption) => {
+    const summary = summarizePatternTrends();
+    writeOutput(options, summary, () =>
+      [
+        `Tracked patterns: ${summary.total}`,
+        `Rising: ${summary.rising.join(", ") || "none"}`,
+        `Watch: ${summary.watch.join(", ") || "none"}`,
+        `By adoption: ${renderCounts(summary.byAdoption)}`,
+        `By trend: ${renderCounts(summary.byTrend)}`,
+      ].join("\n"),
+    );
+  });
+
+patternsCommand
+  .command("recognize")
+  .description(
+    "Recognize AI patterns in the current workspace and show experiences to light up.",
+  )
+  .option("--json", "Print machine-readable JSON.")
+  .action(async (options: JsonOption) => {
+    const scan = await runScan();
+    const matches = recognizePatterns(scan);
+    const payload = {
+      matches,
+      experienceTriggers: listExperienceTriggers(matches),
+    };
+
+    writeOutput(options, payload, () => renderPatternMatches(matches));
   });
 
 const aiCommand = program
@@ -446,6 +508,31 @@ function renderProviderReadiness(
       ].join("\n");
     }),
   ].join("\n");
+}
+
+function renderPatternMatches(matches: readonly PatternMatch[]): string {
+  if (matches.length === 0) {
+    return "No known AI patterns recognized in this workspace yet.";
+  }
+
+  return [
+    `Recognized ${matches.length} AI patterns.`,
+    `Light up: ${listExperienceTriggers(matches).join(", ")}`,
+    "",
+    ...matches.map((match) =>
+      [
+        `- ${match.name} (${Math.round(match.score * 100)}%, ${match.trend})`,
+        `  Experiences: ${match.experienceTriggers.join(", ")}`,
+        `  Guidance: ${match.guidance}`,
+      ].join("\n"),
+    ),
+  ].join("\n");
+}
+
+function renderCounts(counts: Record<string, number>): string {
+  return Object.entries(counts)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(", ");
 }
 
 function renderCommunicationPreferences(
