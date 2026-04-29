@@ -7,6 +7,12 @@ import {
   type TokenBudget,
 } from "@devngn/ai";
 import {
+  initializeDevngnTelemetry,
+  measureDevngnFlow,
+  recordDevngnFlow,
+  type DevngnTelemetryRuntime,
+} from "@devngn/analytics";
+import {
   scanWorkspace,
   type AIBit,
   type Finding,
@@ -15,6 +21,8 @@ import {
 import { recognizePatterns, type PatternMatch } from "@devngn/patterns";
 import { getBundledRegistry } from "@devngn/vendors";
 
+let telemetry: DevngnTelemetryRuntime | null = null;
+
 interface TokenDashboardState {
   scan: ScanResult | null;
   request: AIRequest | null;
@@ -22,6 +30,23 @@ interface TokenDashboardState {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
+  const packageVersion =
+    typeof context.extension.packageJSON.version === "string"
+      ? context.extension.packageJSON.version
+      : "0.0.0";
+  telemetry = initializeDevngnTelemetry({
+    source: "vscode",
+    serviceName: "devngn-vscode",
+    serviceVersion: packageVersion,
+  });
+  recordDevngnFlow({
+    name: "extension.activate",
+    source: "vscode",
+    properties: {
+      activationKind: "extension-host",
+    },
+  });
+
   const aiBitsProvider = new AIBitsProvider();
   const tokenUsageProvider = new TokenUsageViewProvider();
   const statusBar = vscode.window.createStatusBarItem(
@@ -55,13 +80,24 @@ export function activate(context: vscode.ExtensionContext): void {
       );
     }),
     vscode.commands.registerCommand("devngn.openTokenUsage", () => {
-      openTokenUsagePanel(tokenUsageProvider.getState());
+      const state = tokenUsageProvider.getState();
+      recordDevngnFlow({
+        name: "token.dashboard.open",
+        source: "vscode",
+        properties: {
+          providers: state.providers.length,
+          aiBits: state.scan?.summary.aiBits ?? 0,
+          findings: state.scan?.summary.findings ?? 0,
+          withinBudget: state.request?.tokenBudget.withinBudget ?? null,
+        },
+      });
+      openTokenUsagePanel(state);
     }),
   );
 }
 
-export function deactivate(): void {
-  // VS Code handles disposable cleanup through the extension context.
+export function deactivate(): Thenable<void> | void {
+  return telemetry?.shutdown();
 }
 
 async function scanCurrentWorkspace(): Promise<ScanResult | null> {
@@ -74,10 +110,23 @@ async function scanCurrentWorkspace(): Promise<ScanResult | null> {
     return null;
   }
 
-  return scanWorkspace({
-    workspace,
-    registry: getBundledRegistry(),
-  });
+  return measureDevngnFlow(
+    {
+      name: "workspace.scan",
+      source: "vscode",
+      resultProperties: (result) => ({
+        vendors: result.summary.vendors,
+        aiBits: result.summary.aiBits,
+        findings: result.summary.findings,
+        recommendations: result.recommendations.length,
+      }),
+    },
+    () =>
+      scanWorkspace({
+        workspace,
+        registry: getBundledRegistry(),
+      }),
+  );
 }
 
 class AIBitsProvider implements vscode.TreeDataProvider<TreeNode> {

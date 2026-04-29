@@ -1,5 +1,6 @@
 ---
 import { listProviderManifests } from "@devngn/ai";
+import { listImportantDevngnFlows } from "@devngn/analytics";
 import { summarizePatternTrends } from "@devngn/patterns";
 import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
 
@@ -7,6 +8,7 @@ const vendors = getBundledRegistry();
 const freshness = getResearchFreshnessSummary();
 const providers = listProviderManifests();
 const patternTrends = summarizePatternTrends();
+const telemetryFlows = listImportantDevngnFlows();
 ---
 
 <!doctype html>
@@ -227,6 +229,13 @@ const patternTrends = summarizePatternTrends();
             loops.
           </p>
         </article>
+        <article class="card">
+          <h2>Telemetry</h2>
+          <p>
+            Export OpenTelemetry logs, traces, and metrics to Aspire for the flows that make the dev
+            engine useful.
+          </p>
+        </article>
       </section>
 
       <section class="panel" style="margin-top: 4rem;">
@@ -255,6 +264,14 @@ const patternTrends = summarizePatternTrends();
           Tracking {patternTrends.total} known ecosystem patterns, with {
             patternTrends.rising.length
           } rising and {patternTrends.watch.length} on watch.
+        </p>
+      </section>
+
+      <section class="panel" style="margin-top: 1rem;">
+        <h2>OpenTelemetry coverage</h2>
+        <p>
+          Measuring {telemetryFlows.length} important dev engine flows with logs, traces, and
+          metrics for Aspire dashboard visibility.
         </p>
       </section>
     </main>

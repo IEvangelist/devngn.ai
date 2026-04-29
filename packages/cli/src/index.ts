@@ -29,7 +29,15 @@ import {
   summarizePatternTrends,
   type PatternMatch,
 } from "@devngn/patterns";
-import { createAnalyticsEvent } from "@devngn/analytics";
+import {
+  createDevngnTelemetryConfig,
+  initializeDevngnTelemetry,
+  listImportantDevngnFlows,
+  measureDevngnFlow,
+  recordDevngnFlow,
+  type AnalyticsProperties,
+  type DevngnFlowName,
+} from "@devngn/analytics";
 import { listResearchTargets } from "@devngn/research";
 import { summarizeSkills } from "@devngn/skills";
 import { createSyncEnvelope } from "@devngn/sync";
@@ -43,6 +51,11 @@ interface JsonOption {
 }
 
 const program = new Command();
+const telemetry = initializeDevngnTelemetry({
+  source: "cli",
+  serviceName: "devngn-cli",
+  serviceVersion: "0.0.0",
+});
 
 program
   .name("devngn")
@@ -55,8 +68,8 @@ program
   .option("--json", "Print machine-readable JSON.")
   .action(async (options: JsonOption) => {
     const result = await runScan();
-    createAnalyticsEvent("scan.completed", "cli", {
-      vendors: result.summary.vendors,
+    recordCliFlow("cli.command", {
+      command: "scan",
       aiBits: result.summary.aiBits,
       findings: result.summary.findings,
     });
@@ -69,6 +82,11 @@ program
   .option("--json", "Print machine-readable JSON.")
   .action(async (options: JsonOption) => {
     const result = await runScan();
+    recordCliFlow("cli.command", {
+      command: "status",
+      aiBits: result.summary.aiBits,
+      findings: result.summary.findings,
+    });
     writeOutput(options, result.summary, () => summarizeScan(result));
   });
 
@@ -78,6 +96,9 @@ program
   .option("--json", "Print machine-readable JSON.")
   .action(async (options: JsonOption) => {
     const result = await runScan();
+    recordCliFlow("doctor.recommendations", {
+      recommendations: result.recommendations.length,
+    });
     writeOutput(options, result.recommendations, () =>
       renderRecommendations(result.recommendations),
     );
@@ -99,6 +120,11 @@ program
         research: vendor.research,
       })),
     };
+    recordCliFlow("vendors.registry", {
+      vendors: payload.summary.total,
+      planned: payload.summary.byStatus.planned ?? 0,
+      verified: payload.summary.byStatus.verified ?? 0,
+    });
 
     writeOutput(options, payload, () =>
       [
@@ -121,6 +147,9 @@ researchCommand
   .option("--json", "Print machine-readable JSON.")
   .action((options: JsonOption) => {
     const targets = listResearchTargets();
+    recordCliFlow("vendors.research", {
+      targets: targets.length,
+    });
     writeOutput(options, targets, () =>
       targets
         .map((target) => `## ${target.vendorName}\n\n${target.prompt}`)
@@ -139,6 +168,9 @@ skillsCommand
   .action(async (options: JsonOption) => {
     const result = await runScan();
     const skills = summarizeSkills(result.aiBits);
+    recordCliFlow("skills.list", {
+      skills: skills.length,
+    });
     writeOutput(options, skills, () =>
       skills.length === 0
         ? "No skill AI-bits found in this workspace yet."
@@ -158,6 +190,13 @@ profileCommand
   .option("--json", "Print machine-readable JSON.")
   .action(async (options: JsonOption) => {
     const manifest = await createCurrentManifest();
+    recordCliFlow("grounding.profile.generate", {
+      tools: manifest.grounding.path.installedTools.length,
+      aiBits: manifest.grounding.aiBits.total,
+      findings: manifest.grounding.findings.total,
+      communicationChannels:
+        manifest.communication.longRunningLoops.channels.length,
+    });
     writeOutput(options, manifest, () => renderManifestSummary(manifest));
   });
 
@@ -187,6 +226,9 @@ profileCommand
       `${JSON.stringify(manifest, null, 2)}\n`,
       "utf8",
     );
+    recordCliFlow("grounding.profile.write", {
+      explicitOutput: options.output !== undefined,
+    });
 
     writeOutput(options, { outputPath, manifest }, () =>
       [
@@ -206,6 +248,10 @@ profileCommand
   .option("--json", "Print machine-readable JSON.")
   .action(async (options: JsonOption) => {
     const manifest = await createCurrentManifest();
+    recordCliFlow("comms.preferences.view", {
+      channels: manifest.communication.longRunningLoops.channels.length,
+      backends: manifest.communication.backends.length,
+    });
     writeOutput(options, manifest.communication, () =>
       renderCommunicationPreferences(manifest.communication),
     );
@@ -221,6 +267,9 @@ patternsCommand
   .option("--json", "Print machine-readable JSON.")
   .action((options: JsonOption) => {
     const database = getPatternDatabase();
+    recordCliFlow("patterns.list", {
+      patterns: database.patterns.length,
+    });
     writeOutput(options, database, () =>
       [
         `devngn knows ${database.patterns.length} AI ecosystem patterns.`,
@@ -238,6 +287,11 @@ patternsCommand
   .option("--json", "Print machine-readable JSON.")
   .action((options: JsonOption) => {
     const summary = summarizePatternTrends();
+    recordCliFlow("patterns.trends", {
+      patterns: summary.total,
+      rising: summary.rising.length,
+      watch: summary.watch.length,
+    });
     writeOutput(options, summary, () =>
       [
         `Tracked patterns: ${summary.total}`,
@@ -257,7 +311,17 @@ patternsCommand
   .option("--json", "Print machine-readable JSON.")
   .action(async (options: JsonOption) => {
     const scan = await runScan();
-    const matches = recognizePatterns(scan);
+    const matches = await measureDevngnFlow(
+      {
+        name: "patterns.recognize",
+        source: "cli",
+        resultProperties: (recognizedMatches) => ({
+          matches: recognizedMatches.length,
+          experienceTriggers: listExperienceTriggers(recognizedMatches).length,
+        }),
+      },
+      () => recognizePatterns(scan),
+    );
     const payload = {
       matches,
       experienceTriggers: listExperienceTriggers(matches),
@@ -276,6 +340,13 @@ aiCommand
   .option("--json", "Print machine-readable JSON.")
   .action((options: JsonOption) => {
     const readiness = listProviderReadiness();
+    recordCliFlow("ai.providers.readiness", {
+      providers: readiness.length,
+      readyProviders: readiness.filter(
+        (provider) =>
+          provider.configuredAuth && provider.missingSdkPackages.length === 0,
+      ).length,
+    });
     writeOutput(options, readiness, () => renderProviderReadiness(readiness));
   });
 
@@ -303,6 +374,11 @@ aiCommand
         modelContextWindow: options.context,
         maxOutputTokens: options.output,
         reserveTokens: options.reserve,
+      });
+      recordCliFlow("ai.token_budget", {
+        estimatedInputTokens: budget.estimatedInputTokens,
+        availableInputTokens: budget.availableInputTokens,
+        withinBudget: budget.withinBudget,
       });
 
       writeOutput(options, budget, () =>
@@ -338,6 +414,12 @@ aiCommand
         modelContextWindow: options.context,
         groundingContext: renderManifestSummary(manifest),
       });
+      recordCliFlow("ai.bootstrap", {
+        provider: request.providerId,
+        model: request.model,
+        estimatedInputTokens: request.tokenBudget.estimatedInputTokens,
+        withinBudget: request.tokenBudget.withinBudget,
+      });
 
       writeOutput(options, request, () =>
         [
@@ -349,6 +431,58 @@ aiCommand
       );
     },
   );
+
+const telemetryCommand = program
+  .command("telemetry")
+  .description(
+    "Inspect OpenTelemetry configuration and measured devngn flows.",
+  );
+
+telemetryCommand
+  .command("config")
+  .description(
+    "Show the local OpenTelemetry and Aspire dashboard export config.",
+  )
+  .option("--json", "Print machine-readable JSON.")
+  .action((options: JsonOption) => {
+    const config = createDevngnTelemetryConfig({
+      source: "cli",
+      serviceName: "devngn-cli",
+      serviceVersion: "0.0.0",
+    });
+    recordCliFlow("telemetry.pipeline", {
+      enabled: config.enabled,
+      logs: config.otlp.logsEndpoint !== null,
+      traces: config.otlp.tracesEndpoint !== null,
+      metrics: config.otlp.metricsEndpoint !== null,
+    });
+    writeOutput(options, config, () =>
+      [
+        `OpenTelemetry: ${config.enabled ? "enabled" : "disabled"}`,
+        `Service: ${config.serviceName}`,
+        `OTLP endpoint: ${config.otlp.endpoint ?? "not configured"}`,
+        `Signals: ${config.signals.join(", ")}`,
+        "Set OTEL_EXPORTER_OTLP_ENDPOINT to the Aspire dashboard OTLP endpoint to export logs, traces, and metrics.",
+      ].join("\n"),
+    );
+  });
+
+telemetryCommand
+  .command("flows")
+  .description("List the important dev engine flows measured by devngn.")
+  .option("--json", "Print machine-readable JSON.")
+  .action((options: JsonOption) => {
+    const flows = listImportantDevngnFlows();
+    recordCliFlow("telemetry.pipeline", {
+      flows: flows.length,
+    });
+    writeOutput(options, flows, () =>
+      [
+        `devngn measures ${flows.length} important flows with OTel logs, traces, and metrics.`,
+        ...flows.map((flow) => `- ${flow.name}: ${flow.displayName}`),
+      ].join("\n"),
+    );
+  });
 
 program
   .command("sync")
@@ -375,6 +509,11 @@ program
         status: bit.status,
         vendorId: bit.vendorId,
       })),
+    });
+    recordCliFlow("sync.prepare", {
+      payloadKind: envelope.scope,
+      aiBits: result.aiBits.length,
+      findings: result.findings.length,
     });
 
     writeOutput(options, envelope, () =>
@@ -403,6 +542,10 @@ program
       clientVersion: "0.0.0",
       registry: getResearchFreshnessSummary(),
     };
+    recordCliFlow("update.check", {
+      clientVersion: payload.clientVersion,
+      registryVendors: payload.registry.total,
+    });
     writeOutput(
       options,
       payload,
@@ -411,16 +554,43 @@ program
     );
   });
 
-program.parseAsync(process.argv).catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
-});
+program
+  .parseAsync(process.argv)
+  .then(async () => {
+    await telemetry.shutdown();
+  })
+  .catch(async (error: unknown) => {
+    recordCliFlow(
+      "cli.command",
+      {
+        command: process.argv.slice(2).join(" ") || "unknown",
+        errorName: error instanceof Error ? error.name : "Error",
+      },
+      "error",
+    );
+    await telemetry.shutdown();
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
 
 async function runScan(): Promise<ScanResult> {
-  return scanWorkspace({
-    workspace: process.cwd(),
-    registry: getBundledRegistry(),
-  });
+  return measureDevngnFlow(
+    {
+      name: "workspace.scan",
+      source: "cli",
+      resultProperties: (result) => ({
+        vendors: result.summary.vendors,
+        aiBits: result.summary.aiBits,
+        findings: result.summary.findings,
+        recommendations: result.recommendations.length,
+      }),
+    },
+    () =>
+      scanWorkspace({
+        workspace: process.cwd(),
+        registry: getBundledRegistry(),
+      }),
+  );
 }
 
 async function createCurrentManifest(): Promise<DevngnManifest> {
@@ -440,6 +610,19 @@ function writeOutput<T>(
   }
 
   console.log(render());
+}
+
+function recordCliFlow(
+  name: DevngnFlowName,
+  properties: AnalyticsProperties = {},
+  status: "success" | "error" = "success",
+): void {
+  recordDevngnFlow({
+    name,
+    source: "cli",
+    status,
+    properties,
+  });
 }
 
 function renderScan(result: ScanResult): string {

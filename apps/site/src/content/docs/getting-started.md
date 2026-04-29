@@ -27,6 +27,8 @@ devngn research vendors
 devngn ai providers
 devngn ai budget --input "Summarize this workspace"
 devngn ai bootstrap
+devngn telemetry flows
+devngn telemetry config
 devngn skills list
 devngn sync
 ```
@@ -44,6 +46,12 @@ devngn maintains a versioned database of widely adopted AI patterns and trend me
 devngn needs to consume the AI it helps manage. The shared runtime tracks provider SDKs, authentication signals, capabilities, token usage, and model context budgets for OpenAI, GitHub Copilot, Anthropic Claude, Google Gemini, and local OpenAI-compatible endpoints.
 
 Provider invocation is adapter-gated: devngn should only call SDKs that are installed, authenticated, and capability-compatible. Requests are token-budgeted before dispatch, and provider-reported usage should replace estimates whenever an SDK exposes token accounting.
+
+## OpenTelemetry analytics
+
+devngn analytics are OpenTelemetry-first. The shared telemetry layer emits normalized logs, traces, and metrics for the most important dev engine flows: scans, doctor recommendations, grounding profile generation, pattern recognition, token budgeting, provider bootstrap, hosted sync preparation, VS Code token dashboard usage, communication notifications, and update checks.
+
+Run `devngn telemetry flows` to inspect the measured flow catalog, or `devngn telemetry config` to see the local OTLP setup. Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the Aspire dashboard OTLP endpoint to export logs, traces, and metrics through OTLP HTTP/protobuf. The experimental `apps/comms-apphost` passes standard `OTEL_*` variables to its resources so notification gateway telemetry can appear in the Aspire dashboard.
 
 ## Grounding profile
 
