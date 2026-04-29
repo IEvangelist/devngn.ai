@@ -14,6 +14,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
+    "test": "vitest run src/index.test.ts",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -21,6 +22,8 @@
     "@devngn/analytics": "workspace:*",
     "@devngn/grounding": "workspace:*",
     "@devngn/patterns": "workspace:*",
-    "@devngn/sync": "workspace:*"
+    "@devngn/sync": "workspace:*",
+    "@devngn/vendors": "workspace:*",
+    "zod": "^4.3.6"
   }
 }

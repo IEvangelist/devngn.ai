@@ -1,8 +1,13 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import node from "@astrojs/node";
 
 export default defineConfig({
   site: "https://devngn.ai",
+  output: "server",
+  adapter: node({
+    mode: "standalone",
+  }),
   integrations: [
     starlight({
       title: "devngn.ai",

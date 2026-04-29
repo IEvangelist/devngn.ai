@@ -117,6 +117,26 @@ pnpm --filter @devngn/cli dev -- telemetry config
 
 The experimental `apps/comms-apphost` also passes standard `OTEL_*` environment variables into its Dockerfile-backed resources so notification gateway logs, traces, and metrics can be correlated in Aspire.
 
+## Vendor intelligence API
+
+The public registry at `/registry/v1/vendors.json` stays lightweight. The richer vendor intelligence API is designed as protected, subscriber-oriented REST endpoints:
+
+```sh
+GET /api/vendors
+GET /api/vendors/anthropic
+GET /api/vendors/openai
+GET /api/vendors/opecode
+```
+
+Configure API keys with `DEVNGN_VENDOR_API_KEYS`, using comma-separated `key:plan:accountId` entries. Supported subscription levels are `trial`, `pro`, `team`, and `enterprise`; each level has its own per-minute rate limit. Requests must send `x-api-key` or `Authorization: Bearer <key>`.
+
+```sh
+$env:DEVNGN_VENDOR_API_KEYS = "local-dev-key:pro:local"
+curl -H "x-api-key: local-dev-key" http://localhost:4321/api/vendors/openai
+```
+
+The API enforces GET-only access, rejects request bodies, caps URI length, rate limits failed authentication attempts by client, rate limits authorized calls by API key/subscription, and returns standard `RateLimit-*` and `X-RateLimit-*` headers.
+
 ## Storage and privacy defaults
 
 devngn does not create a workspace `.devngn` folder by default. Private generated profile state is written to OS-native/XDG state locations, while shareable workspace policy should be explicit and reviewable through `package.json#devngn` or root-level `devngn.config.json`, `devngn.config.ts`, or `devngn.config.mjs`.

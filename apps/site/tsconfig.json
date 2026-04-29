@@ -5,6 +5,7 @@
     "paths": {
       "@devngn/ai": ["packages/ai/src/index.ts"],
       "@devngn/analytics": ["packages/analytics/src/index.ts"],
+      "@devngn/api": ["apps/api/src/index.ts"],
       "@devngn/core": ["packages/core/src/index.ts"],
       "@devngn/grounding": ["packages/grounding/src/index.ts"],
       "@devngn/patterns": ["packages/patterns/src/index.ts"],

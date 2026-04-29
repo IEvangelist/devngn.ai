@@ -53,6 +53,20 @@ devngn analytics are OpenTelemetry-first. The shared telemetry layer emits norma
 
 Run `devngn telemetry flows` to inspect the measured flow catalog, or `devngn telemetry config` to see the local OTLP setup. Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the Aspire dashboard OTLP endpoint to export logs, traces, and metrics through OTLP HTTP/protobuf. The experimental `apps/comms-apphost` passes standard `OTEL_*` variables to its resources so notification gateway telemetry can appear in the Aspire dashboard.
 
+## Vendor intelligence API
+
+devngn exposes a protected, subscriber-oriented REST API for richer vendor intelligence. The public `/registry/v1/vendors.json` endpoint remains lightweight, while `/api/vendors` and `/api/vendors/:id` are intended for API-key access to vendor standards, file locations, folder structures, company info, repositories, sites, common tools, CLIs, editor extensions, and research status.
+
+Configure keys with `DEVNGN_VENDOR_API_KEYS` using comma-separated `key:plan:accountId` entries. Supported plans are `trial`, `pro`, `team`, and `enterprise`, each with separate rate limits. Requests must send `x-api-key` or `Authorization: Bearer <key>`.
+
+```sh
+$env:DEVNGN_VENDOR_API_KEYS = "local-dev-key:pro:local"
+curl -H "x-api-key: local-dev-key" http://localhost:4321/api/vendors/openai
+curl -H "x-api-key: local-dev-key" http://localhost:4321/api/vendors/anthropic
+```
+
+The API is GET-only, rejects request bodies, caps URI length, rate limits failed authentication attempts by client, rate limits authorized calls by API key/subscription, and returns `RateLimit-*` plus `X-RateLimit-*` headers.
+
 ## Grounding profile
 
 devngn grounds AI with a self-updating manifest/profile. The profile captures OS metadata, CPU, GPU, memory, PATH tools, known installed tools, AI-bits, findings, user choices, preferred name, username, email, and communication preferences. AI bootstrap requests can include this grounding summary so providers understand what the machine and workspace can actually use.
