@@ -2,8 +2,6 @@ import { createRequire } from "node:module";
 import { z } from "zod";
 import type { ScanResult } from "@devngn/core";
 
-const require = createRequire(import.meta.url);
-
 export const AIProviderIdSchema = z.enum([
   "openai",
   "github-copilot",
@@ -372,7 +370,9 @@ export function createBootstrapRequest(
 
 function canResolvePackage(packageName: string): boolean {
   try {
-    require.resolve(packageName);
+    const runtimeRequire =
+      typeof require === "function" ? require : createRequire(import.meta.url);
+    runtimeRequire.resolve(packageName);
     return true;
   } catch {
     return false;

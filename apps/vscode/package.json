@@ -55,8 +55,9 @@
     }
   },
   "scripts": {
-    "build": "tsup src/extension.ts --format cjs --external vscode --sourcemap --clean --out-dir dist",
-    "lint": "tsc --noEmit -p tsconfig.json"
+    "build": "tsup --config tsup.config.ts",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "pnpm build && node scripts/smoke-extension.cjs"
   },
   "dependencies": {
     "@devngn/ai": "workspace:*",
