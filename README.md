@@ -82,6 +82,20 @@ pnpm --filter @devngn/comms-apphost restore
 pnpm dev:comms
 ```
 
+## VS Code debugging
+
+This repo includes VS Code run/debug profiles in `.vscode/launch.json` and matching build/test tasks in `.vscode/tasks.json`.
+
+Use **Run and Debug** for:
+
+- `Extension: devngn.ai` to launch an Extension Development Host against `apps\vscode`.
+- `CLI: scan workspace`, `CLI: doctor`, `CLI: vendors`, `CLI: patterns recognize`, `CLI: AI providers`, `CLI: AI token budget`, and `CLI: telemetry config` to debug the TypeScript CLI from the repo root.
+- `Site/API: Astro dev server` to debug the Astro site and protected `/api/vendors` routes with a local `DEVNGN_VENDOR_API_KEYS` value.
+- `Tests: current file` and `Tests: workspace` to debug Vitest tests.
+- `Workspace: extension + site/API` to launch the extension host and site/API together.
+
+Use **Terminal: Run Task** for workspace build, lint, test, format, and Aspire comms AppHost restore/start tasks.
+
 ## CLI shape
 
 ```sh

@@ -1,0 +1,176 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Extension: devngn.ai",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}\\apps\\vscode"],
+      "outFiles": ["${workspaceFolder}\\apps\\vscode\\dist\\**\\*.js"],
+      "preLaunchTask": "devngn: build VS Code extension",
+      "env": {
+        "DEVNGN_TELEMETRY_DISABLED": "true"
+      }
+    },
+    {
+      "name": "CLI: scan workspace",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
+      "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+      "args": ["scan"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TSX_TSCONFIG_PATH": "${workspaceFolder}\\packages\\cli\\tsconfig.json"
+      }
+    },
+    {
+      "name": "CLI: doctor",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
+      "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+      "args": ["doctor"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TSX_TSCONFIG_PATH": "${workspaceFolder}\\packages\\cli\\tsconfig.json"
+      }
+    },
+    {
+      "name": "CLI: vendors",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
+      "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+      "args": ["vendors"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TSX_TSCONFIG_PATH": "${workspaceFolder}\\packages\\cli\\tsconfig.json"
+      }
+    },
+    {
+      "name": "CLI: patterns recognize",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
+      "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+      "args": ["patterns", "recognize"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TSX_TSCONFIG_PATH": "${workspaceFolder}\\packages\\cli\\tsconfig.json"
+      }
+    },
+    {
+      "name": "CLI: AI providers",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
+      "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+      "args": ["ai", "providers"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TSX_TSCONFIG_PATH": "${workspaceFolder}\\packages\\cli\\tsconfig.json"
+      }
+    },
+    {
+      "name": "CLI: AI token budget",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
+      "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+      "args": ["ai", "budget", "--input", "Summarize this workspace"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TSX_TSCONFIG_PATH": "${workspaceFolder}\\packages\\cli\\tsconfig.json"
+      }
+    },
+    {
+      "name": "CLI: telemetry config",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
+      "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+      "args": ["telemetry", "config"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TSX_TSCONFIG_PATH": "${workspaceFolder}\\packages\\cli\\tsconfig.json"
+      }
+    },
+    {
+      "name": "Site/API: Astro dev server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@devngn/site",
+        "dev",
+        "--",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "4321"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "autoAttachChildProcesses": true,
+      "serverReadyAction": {
+        "pattern": "Local\\s+http://127\\.0\\.0\\.1:([0-9]+)/",
+        "uriFormat": "http://127.0.0.1:%s/",
+        "action": "openExternally"
+      },
+      "env": {
+        "DEVNGN_VENDOR_API_KEYS": "local-dev-key:pro:local"
+      }
+    },
+    {
+      "name": "Tests: current file",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}\\node_modules\\vitest\\vitest.mjs",
+      "args": ["run", "${file}"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Tests: workspace",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}\\node_modules\\vitest\\vitest.mjs",
+      "args": ["run"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Workspace: extension + site/API",
+      "configurations": ["Extension: devngn.ai", "Site/API: Astro dev server"],
+      "stopAll": true
+    }
+  ]
+}
