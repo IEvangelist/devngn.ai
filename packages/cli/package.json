@@ -5,7 +5,7 @@
   "description": "devngn CLI - manage your AI-bits.",
   "type": "module",
   "bin": {
-    "devngn": "./dist/index.js"
+    "devngn": "./bin/devngn.mjs"
   },
   "exports": {
     ".": {
@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
     "dev": "tsx src/index.ts",
-    "lint": "tsc --noEmit -p tsconfig.json"
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
   },
   "dependencies": {
     "@devngn/ai": "workspace:*",
@@ -30,6 +31,7 @@
     "@devngn/skills": "workspace:*",
     "@devngn/sync": "workspace:*",
     "@devngn/vendors": "workspace:*",
-    "commander": "^14.0.2"
+    "commander": "^14.0.2",
+    "tsx": "^4.20.6"
   }
 }

@@ -14,9 +14,10 @@
     "dev:comms": "pnpm --filter @devngn/comms-apphost start",
     "dev:site": "pnpm --filter @devngn/site dev",
     "dev:cli": "pnpm --filter @devngn/cli dev",
-    "scan": "pnpm --filter @devngn/cli dev -- scan"
+    "scan": "devngn scan"
   },
   "devDependencies": {
+    "@devngn/cli": "workspace:*",
     "@types/node": "^24.10.0",
     "prettier": "^3.6.2",
     "tsup": "^8.5.0",

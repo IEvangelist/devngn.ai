@@ -13,6 +13,8 @@ The first product milestone focuses on three surfaces:
 
 ## CLI shape
 
+For local repo development, run `pnpm install` first. The workspace links the `devngn` bin locally, and new VS Code integrated terminals add `node_modules\.bin` to `PATH`, so `devngn scan` works from the repo root. Outside VS Code, use `pnpm exec devngn scan` or `pnpm scan`.
+
 ```sh
 devngn scan
 devngn doctor

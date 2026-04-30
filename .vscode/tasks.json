@@ -31,6 +31,15 @@
       "problemMatcher": []
     },
     {
+      "label": "devngn: smoke CLI scan",
+      "type": "shell",
+      "command": "pnpm scan",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "devngn: build API and vendors",
       "type": "shell",
       "command": "pnpm --filter @devngn/api build && pnpm --filter @devngn/vendors build",

@@ -43,11 +43,13 @@
       "devngn": [
         {
           "id": "devngn.aiBits",
-          "name": "AI-bits"
+          "name": "AI-bits",
+          "icon": "media/devngn.svg"
         },
         {
           "id": "devngn.tokenUsage",
-          "name": "Token Usage"
+          "name": "Token Usage",
+          "icon": "media/devngn.svg"
         }
       ]
     }
