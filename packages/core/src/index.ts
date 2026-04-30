@@ -149,6 +149,7 @@ export interface ScanWorkspaceOptions {
   env?: NodeJS.ProcessEnv;
   platform?: NodeJS.Platform;
   homeDirectory?: string;
+  maxDirectoryChildren?: number;
 }
 
 interface PathState {
@@ -156,6 +157,8 @@ interface PathState {
   kind: "file" | "directory" | "other" | null;
   error: string | null;
 }
+
+const DEFAULT_MAX_DIRECTORY_CHILDREN = 250;
 
 export async function scanWorkspace(
   options: ScanWorkspaceOptions,
@@ -169,6 +172,7 @@ export async function scanWorkspace(
     registry,
     host,
     options.workspace,
+    normalizeMaxDirectoryChildren(options.maxDirectoryChildren),
   );
   const findings = [
     ...probeFindings,
@@ -311,6 +315,7 @@ function discoverAIBits(
   registry: readonly VendorProfile[],
   host: HostProfile,
   workspace: string,
+  maxDirectoryChildren: number,
 ): { aiBits: AIBit[]; probeFindings: Finding[] } {
   const aiBits: AIBit[] = [];
   const probeFindings: Finding[] = [];
@@ -342,7 +347,10 @@ function discoverAIBits(
       }
 
       if (pattern.scanChildren && state.kind === "directory") {
-        const children = readDirectoryChildren(targetPath);
+        const children = readDirectoryChildren(
+          targetPath,
+          maxDirectoryChildren,
+        );
 
         if (children.error !== null) {
           probeFindings.push(
@@ -357,6 +365,20 @@ function discoverAIBits(
             }),
           );
           continue;
+        }
+
+        if (children.truncated) {
+          probeFindings.push(
+            FindingSchema.parse({
+              id: `probe:${slug(vendor.id)}:${slug(pattern.path.join("-"))}:children-limit`,
+              severity: "warning",
+              title: `Limited ${vendor.name} AI-bit folder scan`,
+              message: `Scanned the first ${children.paths.length} of ${children.total} entries in ${targetPath} to keep devngn responsive.`,
+              affectedAIBitIds: [],
+              vendorId: vendor.id,
+              confidence: 0.9,
+            }),
+          );
         }
 
         for (const childPath of children.paths) {
@@ -446,23 +468,45 @@ function readPathState(targetPath: string): PathState {
   }
 }
 
-function readDirectoryChildren(targetPath: string): {
+function readDirectoryChildren(
+  targetPath: string,
+  maxDirectoryChildren: number,
+): {
   paths: string[];
   error: string | null;
+  truncated: boolean;
+  total: number;
 } {
   try {
+    const entries = readdirSync(targetPath).sort();
+    const selectedEntries = entries.slice(0, maxDirectoryChildren);
+
     return {
-      paths: readdirSync(targetPath).map((entry) =>
-        path.join(targetPath, entry),
-      ),
+      paths: selectedEntries.map((entry) => path.join(targetPath, entry)),
       error: null,
+      truncated: entries.length > selectedEntries.length,
+      total: entries.length,
     };
   } catch (error) {
     return {
       paths: [],
       error: `Unable to read ${targetPath}: ${error instanceof Error ? error.message : String(error)}`,
+      truncated: false,
+      total: 0,
     };
   }
+}
+
+function normalizeMaxDirectoryChildren(value: number | undefined): number {
+  if (value === undefined) {
+    return DEFAULT_MAX_DIRECTORY_CHILDREN;
+  }
+
+  if (!Number.isFinite(value)) {
+    return DEFAULT_MAX_DIRECTORY_CHILDREN;
+  }
+
+  return Math.max(0, Math.floor(value));
 }
 
 function createResearchFindings(registry: readonly VendorProfile[]): Finding[] {

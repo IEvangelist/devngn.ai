@@ -49,16 +49,19 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const aiBitsProvider = new AIBitsProvider();
   const tokenUsageProvider = new TokenUsageViewProvider();
+  const output = vscode.window.createOutputChannel("devngn");
   const statusBar = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
     100,
   );
+  let scanInProgress = false;
 
   statusBar.command = "devngn.openTokenUsage";
   updateStatusBar(statusBar, null);
   statusBar.show();
 
   context.subscriptions.push(
+    output,
     statusBar,
     vscode.window.registerTreeDataProvider("devngn.aiBits", aiBitsProvider),
     vscode.window.registerWebviewViewProvider(
@@ -66,18 +69,42 @@ export function activate(context: vscode.ExtensionContext): void {
       tokenUsageProvider,
     ),
     vscode.commands.registerCommand("devngn.scan", async () => {
-      const result = await scanCurrentWorkspace();
-
-      if (result === null) {
+      if (scanInProgress) {
+        vscode.window.showWarningMessage("devngn scan is already running.");
         return;
       }
 
-      aiBitsProvider.setResult(result);
-      tokenUsageProvider.setScanResult(result);
-      updateStatusBar(statusBar, result);
-      vscode.window.showInformationMessage(
-        `devngn found ${result.summary.aiBits} AI-bits and ${result.summary.findings} findings.`,
-      );
+      scanInProgress = true;
+
+      try {
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: "devngn scan",
+            cancellable: false,
+          },
+          async (progress) => {
+            progress.report({ message: "Inspecting workspace AI-bits..." });
+            const result = await scanCurrentWorkspace(output);
+
+            if (result === null) {
+              return;
+            }
+
+            progress.report({ message: "Updating devngn views..." });
+            aiBitsProvider.setResult(result);
+            tokenUsageProvider.setScanResult(result);
+            updateStatusBar(statusBar, result);
+            vscode.window.showInformationMessage(
+              `devngn found ${result.summary.aiBits} AI-bits and ${result.summary.findings} findings.`,
+            );
+          },
+        );
+      } catch (error) {
+        await handleScanError(error, output);
+      } finally {
+        scanInProgress = false;
+      }
     }),
     vscode.commands.registerCommand("devngn.openTokenUsage", () => {
       const state = tokenUsageProvider.getState();
@@ -100,7 +127,9 @@ export function deactivate(): Thenable<void> | void {
   return telemetry?.shutdown();
 }
 
-async function scanCurrentWorkspace(): Promise<ScanResult | null> {
+async function scanCurrentWorkspace(
+  output: vscode.OutputChannel,
+): Promise<ScanResult | null> {
   const workspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
   if (workspace === undefined) {
@@ -110,15 +139,20 @@ async function scanCurrentWorkspace(): Promise<ScanResult | null> {
     return null;
   }
 
-  return measureDevngnFlow(
+  const startedAt = Date.now();
+  output.appendLine(
+    `[${new Date().toISOString()}] Starting scan: ${workspace}`,
+  );
+
+  const result = await measureDevngnFlow(
     {
       name: "workspace.scan",
       source: "vscode",
-      resultProperties: (result) => ({
-        vendors: result.summary.vendors,
-        aiBits: result.summary.aiBits,
-        findings: result.summary.findings,
-        recommendations: result.recommendations.length,
+      resultProperties: (scan) => ({
+        vendors: scan.summary.vendors,
+        aiBits: scan.summary.aiBits,
+        findings: scan.summary.findings,
+        recommendations: scan.recommendations.length,
       }),
     },
     () =>
@@ -127,6 +161,35 @@ async function scanCurrentWorkspace(): Promise<ScanResult | null> {
         registry: getBundledRegistry(),
       }),
   );
+
+  output.appendLine(
+    `[${new Date().toISOString()}] Completed scan in ${Date.now() - startedAt}ms: ${result.summary.aiBits} AI-bits, ${result.summary.findings} findings.`,
+  );
+
+  return result;
+}
+
+async function handleScanError(
+  error: unknown,
+  output: vscode.OutputChannel,
+): Promise<void> {
+  const message = error instanceof Error ? error.message : String(error);
+  const stack = error instanceof Error ? error.stack : undefined;
+
+  output.appendLine(`[${new Date().toISOString()}] Scan failed: ${message}`);
+
+  if (stack !== undefined) {
+    output.appendLine(stack);
+  }
+
+  const selection = await vscode.window.showErrorMessage(
+    `devngn scan failed: ${message}`,
+    "Show output",
+  );
+
+  if (selection === "Show output") {
+    output.show(true);
+  }
 }
 
 class AIBitsProvider implements vscode.TreeDataProvider<TreeNode> {

@@ -12,9 +12,14 @@ if (bundle.includes('require("@devngn/')) {
 }
 
 const originalLoad = Module._load;
+const commands = new Map();
+const treeProviders = new Map();
+const errorMessages = [];
+const outputLines = [];
 const vscode = {
   commands: {
-    registerCommand() {
+    registerCommand(name, callback) {
+      commands.set(name, callback);
       return { dispose() {} };
     },
   },
@@ -25,6 +30,9 @@ const vscode = {
   },
   StatusBarAlignment: {
     Right: 2,
+  },
+  ProgressLocation: {
+    Notification: 15,
   },
   TreeItem: class {
     constructor(label, collapsibleState) {
@@ -41,6 +49,15 @@ const vscode = {
     One: 1,
   },
   window: {
+    createOutputChannel() {
+      return {
+        appendLine(line) {
+          outputLines.push(line);
+        },
+        show() {},
+        dispose() {},
+      };
+    },
     createStatusBarItem() {
       return {
         show() {},
@@ -52,20 +69,32 @@ const vscode = {
         webview: {},
       };
     },
-    registerTreeDataProvider() {
+    registerTreeDataProvider(id, provider) {
+      treeProviders.set(id, provider);
       return { dispose() {} };
     },
     registerWebviewViewProvider() {
       return { dispose() {} };
     },
     showInformationMessage() {},
-    showWarningMessage() {},
+    showWarningMessage(message) {
+      errorMessages.push(message);
+    },
+    showErrorMessage(message) {
+      errorMessages.push(message);
+      return Promise.resolve(undefined);
+    },
+    withProgress(_options, task) {
+      return task({
+        report() {},
+      });
+    },
   },
   workspace: {
     workspaceFolders: [
       {
         uri: {
-          fsPath: process.cwd(),
+          fsPath: process.env.DEVNGN_SMOKE_WORKSPACE ?? process.cwd(),
         },
       },
     ],
@@ -75,23 +104,59 @@ const vscode = {
 Module._load = (request, parent, isMain) =>
   request === "vscode" ? vscode : originalLoad(request, parent, isMain);
 
-try {
-  const extension = require(bundlePath);
-  const subscriptions = [];
-  extension.activate({
-    extension: {
-      packageJSON: {
-        version: "0.0.0",
+(async () => {
+  try {
+    const extension = require(bundlePath);
+    const subscriptions = [];
+    extension.activate({
+      extension: {
+        packageJSON: {
+          version: "0.0.0",
+        },
       },
-    },
-    subscriptions,
-  });
+      subscriptions,
+    });
 
-  if (subscriptions.length === 0) {
-    throw new Error(
-      "VS Code extension activation did not register subscriptions.",
-    );
+    if (subscriptions.length === 0) {
+      throw new Error(
+        "VS Code extension activation did not register subscriptions.",
+      );
+    }
+
+    const scanCommand = commands.get("devngn.scan");
+
+    if (scanCommand === undefined) {
+      throw new Error("VS Code extension did not register devngn.scan.");
+    }
+
+    await scanCommand();
+
+    if (errorMessages.length > 0) {
+      throw new Error(
+        `VS Code extension smoke scan failed: ${errorMessages[0]}`,
+      );
+    }
+
+    if (!outputLines.some((line) => line.includes("Completed scan"))) {
+      throw new Error("VS Code extension smoke scan did not complete.");
+    }
+
+    const aiBitsProvider = treeProviders.get("devngn.aiBits");
+
+    if (aiBitsProvider === undefined) {
+      throw new Error(
+        "VS Code extension did not register AI-bits tree provider.",
+      );
+    }
+
+    const rootNodes = await aiBitsProvider.getChildren();
+
+    if (!rootNodes.some((node) => String(node.label).startsWith("AI-bits"))) {
+      throw new Error(
+        "VS Code extension smoke scan did not update AI-bits tree.",
+      );
+    }
+  } finally {
+    Module._load = originalLoad;
   }
-} finally {
-  Module._load = originalLoad;
-}
+})();

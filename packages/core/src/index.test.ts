@@ -65,4 +65,57 @@ describe("scanWorkspace", () => {
       ),
     ).toBe(true);
   });
+
+  it("limits scanned directory children to keep large workspaces responsive", async () => {
+    const workspace = path.join(os.tmpdir(), `devngn-${randomUUID()}`);
+    workspaces.push(workspace);
+    const instructionsPath = path.join(workspace, ".github", "instructions");
+    mkdirSync(instructionsPath, { recursive: true });
+    writeFileSync(path.join(instructionsPath, "a.md"), "# A");
+    writeFileSync(path.join(instructionsPath, "b.md"), "# B");
+    writeFileSync(path.join(instructionsPath, "c.md"), "# C");
+
+    const registry: VendorProfile[] = [
+      {
+        id: "github-copilot",
+        name: "GitHub Copilot",
+        products: ["GitHub Copilot"],
+        category: "ai-vendor",
+        commands: [],
+        extensionIds: ["GitHub.copilot"],
+        aiBitPatterns: [
+          {
+            kind: "instruction",
+            scope: "workspace",
+            path: [".github", "instructions"],
+            name: "GitHub Copilot instructions",
+            scanChildren: true,
+          },
+        ],
+        research: {
+          status: "current",
+          lastResearchedAt: "2026-01-01T00:00:00.000Z",
+          sources: [],
+          summary: "Research is current.",
+        },
+      },
+    ];
+
+    const result = await scanWorkspace({
+      workspace,
+      registry,
+      env: {},
+      homeDirectory: workspace,
+      maxDirectoryChildren: 2,
+      now: new Date("2026-01-01T00:00:00.000Z"),
+    });
+
+    expect(result.summary.aiBits).toBe(2);
+    expect(result.findings).toEqual([
+      expect.objectContaining({
+        id: "probe:github-copilot:.github-instructions:children-limit",
+        severity: "warning",
+      }),
+    ]);
+  });
 });
