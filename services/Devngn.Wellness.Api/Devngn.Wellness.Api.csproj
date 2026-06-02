@@ -24,4 +24,8 @@
     <InternalsVisibleTo Include="Devngn.Wellness.Api.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Catalog\catalog.json" />
+  </ItemGroup>
+
 </Project>

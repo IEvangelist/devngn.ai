@@ -5,9 +5,13 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Devngn.Wellness.Api.Catalog;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Devngn.Wellness.Api.Tests;
@@ -92,6 +96,21 @@ public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.
                     ["Auth:Microsoft:RedirectUri"] = "https://localhost:5001/v1/schedule/callback/microsoft",
                     ["Auth:Microsoft:TenantId"] = "common",
                 });
+            });
+
+            // Phase 9 added an ActivityCatalogSeeder hosted service that touches Postgres
+            // on startup. These smoke tests intentionally have no real database, so remove
+            // just that one hosted service registration (leave any other IHostedService
+            // entries alone — Aspire/OTel may register their own) so the host boots and
+            // we can hit the /alive, /hello, and /openapi endpoints without Postgres.
+            builder.ConfigureTestServices(services =>
+            {
+                foreach (var descriptor in services.Where(d =>
+                    d.ServiceType == typeof(IHostedService)
+                    && d.ImplementationType == typeof(ActivityCatalogSeeder)).ToList())
+                {
+                    services.Remove(descriptor);
+                }
             });
         }
     }

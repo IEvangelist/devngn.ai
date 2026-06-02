@@ -4,6 +4,7 @@
 
 using System.Text.Json.Serialization;
 using Devngn.Wellness.Api.Auth;
+using Devngn.Wellness.Api.Catalog;
 using Devngn.Wellness.Api.Consent;
 using Devngn.Wellness.Api.Crypto;
 using Devngn.Wellness.Api.Data;
@@ -50,6 +51,11 @@ builder.Services.AddWellnessMicrosoftCalendar(builder.Configuration);
 // I/O — options are validated at startup so bad config doesn't silently make
 // every gap ineligible.
 builder.Services.AddWellnessGaps(builder.Configuration);
+
+// Curated wellness activity catalog (mobility, breathing, posture, etc.). Loads
+// from an embedded JSON resource, fails startup if validation fails, and seeds
+// the database via a hosted service on app start.
+builder.Services.AddWellnessActivityCatalog();
 
 // IHttpContextAccessor + scoped ICurrentUserContext for endpoints that need the
 // authenticated user id without re-parsing the JWT.
@@ -106,6 +112,7 @@ app.MapScheduleSourceEndpoints();
 app.MapScheduleEventEndpoints();
 app.MapScheduleConnectEndpoints();
 app.MapGapEndpoints();
+app.MapActivityEndpoints();
 
 app.Run();
 
