@@ -12,6 +12,7 @@ using Devngn.Wellness.Api.Goals;
 using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Profiles;
 using Devngn.Wellness.Api.Schedule;
+using Devngn.Wellness.Api.Schedule.Gaps;
 using Devngn.Wellness.Api.Schedule.Google;
 using Devngn.Wellness.Api.Schedule.Microsoft;
 using Microsoft.AspNetCore.OpenApi;
@@ -44,6 +45,11 @@ builder.Services.AddWellnessGoogleCalendar(builder.Configuration);
 // Microsoft Graph OAuth + calendarView sync. Mirrors the Google story: token-exchange
 // client opts out of resilience (rotated refresh tokens), Graph client keeps defaults.
 builder.Services.AddWellnessMicrosoftCalendar(builder.Configuration);
+
+// Pure gap-detection engine + GET /v1/gaps endpoint. The detector itself has no
+// I/O — options are validated at startup so bad config doesn't silently make
+// every gap ineligible.
+builder.Services.AddWellnessGaps(builder.Configuration);
 
 // IHttpContextAccessor + scoped ICurrentUserContext for endpoints that need the
 // authenticated user id without re-parsing the JWT.
@@ -99,6 +105,7 @@ app.MapEquipmentEndpoints();
 app.MapScheduleSourceEndpoints();
 app.MapScheduleEventEndpoints();
 app.MapScheduleConnectEndpoints();
+app.MapGapEndpoints();
 
 app.Run();
 
