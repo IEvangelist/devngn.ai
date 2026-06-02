@@ -2,8 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // SPDX-License-Identifier: MIT
 
+using System.Text.Json.Serialization;
 using Devngn.Wellness.Api.Auth;
+using Devngn.Wellness.Api.Consent;
 using Devngn.Wellness.Api.Data;
+using Devngn.Wellness.Api.EquipmentApi;
+using Devngn.Wellness.Api.Goals;
+using Devngn.Wellness.Api.Identity;
+using Devngn.Wellness.Api.Profiles;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 
@@ -21,6 +27,18 @@ builder.AddNpgsqlDbContext<WellnessDbContext>("wellnessdb");
 // for github.com + api.github.com. Options are validated at startup so a missing
 // signing key fails the process rather than producing insecure tokens.
 builder.AddWellnessAuth();
+
+// IHttpContextAccessor + scoped ICurrentUserContext for endpoints that need the
+// authenticated user id without re-parsing the JWT.
+builder.AddWellnessIdentity();
+
+// Enum payloads cross the wire as their string names (e.g. "Mobility") rather than
+// integer ordinals so the OpenAPI doc — and the generated TS types — stay stable as
+// the C# enums grow.
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 builder.Services.AddOpenApi("v1", options =>
 {
@@ -57,6 +75,10 @@ app.MapGet("/v1/hello", () => Results.Ok(new HelloResponse("devngn.ai wellness",
     .WithTags("Meta");
 
 app.MapAuthEndpoints();
+app.MapConsentEndpoints();
+app.MapProfileEndpoints();
+app.MapGoalEndpoints();
+app.MapEquipmentEndpoints();
 
 app.Run();
 

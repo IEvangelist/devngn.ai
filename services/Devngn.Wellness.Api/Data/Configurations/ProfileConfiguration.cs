@@ -24,5 +24,21 @@ internal sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
         b.Property(x => x.PreferredIntensity).HasConversion<string>().HasMaxLength(20);
 
         b.HasIndex(x => x.UserId).IsUnique();
+
+        b.HasOne(x => x.User)
+            .WithOne(x => x.Profile)
+            .HasForeignKey<Profile>(x => x.UserId)
+            .HasPrincipalKey<User>(x => x.Id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Second FK on the same user_id column points at ConsentRecord.UserId.
+        // Deleting a ConsentRecord (consent revocation) cascades to wipe the Profile,
+        // and inserts after revocation fail the FK check even if a stale auth filter
+        // had previously waved the request through.
+        b.HasOne<ConsentRecord>()
+            .WithOne()
+            .HasForeignKey<Profile>(x => x.UserId)
+            .HasPrincipalKey<ConsentRecord>(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

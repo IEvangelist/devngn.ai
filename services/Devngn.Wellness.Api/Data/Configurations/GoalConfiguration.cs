@@ -25,6 +25,15 @@ internal sealed class GoalConfiguration : IEntityTypeConfiguration<Goal>
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // See ProfileConfiguration for the rationale on this second FK: it enforces
+        // "no wellness data without a current consent record" at the database level,
+        // so concurrent consent revocation cannot leave orphan goals behind.
+        b.HasOne<ConsentRecord>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .HasPrincipalKey(nameof(ConsentRecord.UserId))
+            .OnDelete(DeleteBehavior.Cascade);
+
         b.HasIndex(x => new { x.UserId, x.Category });
     }
 }

@@ -18,6 +18,11 @@ internal sealed class ConsentRecordConfiguration : IEntityTypeConfiguration<Cons
         b.Property(x => x.Version).IsRequired().HasMaxLength(40);
         b.Property(x => x.Text).IsRequired();
 
-        b.HasIndex(x => x.UserId).IsUnique();
+        // Promoted from a unique index to an alternate key (UNIQUE CONSTRAINT) so other
+        // wellness tables can declare FOREIGN KEYs into ConsentRecord.UserId. This is the
+        // DB-level enforcement of "no wellness data without consent": deleting a
+        // ConsentRecord cascades to Profile / Goals / Equipment, and inserting any of
+        // those without an existing ConsentRecord row fails the FK check.
+        b.HasAlternateKey(x => x.UserId);
     }
 }

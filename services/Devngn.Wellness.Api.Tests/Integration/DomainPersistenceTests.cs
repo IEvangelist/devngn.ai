@@ -124,11 +124,53 @@ public sealed class DomainPersistenceTests(PostgresContainerFixture fixture)
     {
         await using var ctx = fixture.CreateContext();
         var user = NewUser();
+        user.Consent = new ConsentRecord { Version = "1.0", Text = "ok" };
         user.Equipment.Add(new Equipment { Tag = "mat", DisplayName = "Yoga mat" });
         user.Equipment.Add(new Equipment { Tag = "mat", DisplayName = "Duplicate" });
         ctx.Users.Add(user);
 
         await Assert.ThrowsAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Equipment_without_consent_record_violates_foreign_key()
+    {
+        // The dual-FK schema (Equipment.UserId references both User.Id and
+        // ConsentRecord.UserId) is what guarantees we never accumulate wellness data
+        // for a user who has not — or has just revoked — consent. The endpoint layer
+        // returns a friendly 403 before reaching this; this test pins the DB invariant.
+        await using var ctx = fixture.CreateContext();
+        var user = NewUser();
+        ctx.Users.Add(user);
+        await ctx.SaveChangesAsync();
+
+        ctx.Equipment.Add(new Equipment { UserId = user.Id, Tag = "mat", DisplayName = "Yoga mat" });
+        await Assert.ThrowsAsync<DbUpdateException>(() => ctx.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Deleting_consent_cascades_to_profile_goals_and_equipment_but_leaves_user()
+    {
+        await using var ctx = fixture.CreateContext();
+
+        var user = NewUser();
+        user.Consent = new ConsentRecord { Version = "1.0", Text = "ok" };
+        user.Profile = new Profile { FitnessBaseline = FitnessBaseline.Light };
+        user.Goals.Add(new Goal { Title = "g", Category = GoalCategory.Posture, StartDate = new DateOnly(2026, 1, 1) });
+        user.Equipment.Add(new Equipment { Tag = "mat", DisplayName = "Yoga mat" });
+        ctx.Users.Add(user);
+        await ctx.SaveChangesAsync();
+
+        var consent = await ctx.ConsentRecords.SingleAsync(c => c.UserId == user.Id);
+        ctx.ConsentRecords.Remove(consent);
+        await ctx.SaveChangesAsync();
+
+        await using var verify = fixture.CreateContext();
+        Assert.NotNull(await verify.Users.SingleOrDefaultAsync(x => x.Id == user.Id));
+        Assert.False(await verify.ConsentRecords.AnyAsync(x => x.UserId == user.Id));
+        Assert.False(await verify.Profiles.AnyAsync(x => x.UserId == user.Id));
+        Assert.False(await verify.Goals.AnyAsync(x => x.UserId == user.Id));
+        Assert.False(await verify.Equipment.AnyAsync(x => x.UserId == user.Id));
     }
 
     [Fact]

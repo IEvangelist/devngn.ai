@@ -24,6 +24,20 @@ internal sealed class EquipmentConfiguration : IEntityTypeConfiguration<Equipmen
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        b.HasIndex(x => new { x.UserId, x.Tag }).IsUnique();
+        // See ProfileConfiguration for the rationale on this second FK: it enforces
+        // "no wellness data without a current consent record" at the database level,
+        // so concurrent consent revocation cannot leave orphan equipment behind.
+        b.HasOne<ConsentRecord>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .HasPrincipalKey(nameof(ConsentRecord.UserId))
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // The application catches Npgsql 23505 (unique violation) keyed on this
+        // constraint name to surface a clean 409 on duplicate-tag POSTs without
+        // misreporting any unrelated unique violation as a duplicate tag.
+        b.HasIndex(x => new { x.UserId, x.Tag })
+            .IsUnique()
+            .HasDatabaseName("ix_equipment_user_id_tag");
     }
 }
