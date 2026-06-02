@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "description": "devngn.ai - the dev engine for managing your AI-bits.",
+  "license": "MIT",
+  "author": "David Pine",
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {

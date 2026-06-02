@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Devngn.ServiceDefaults.Tests/Devngn.ServiceDefaults.Tests.csproj" />
+  <Project Path="Devngn.ServiceDefaults/Devngn.ServiceDefaults.csproj" />
+</Solution>

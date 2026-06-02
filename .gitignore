@@ -8,3 +8,13 @@ dist
 !.env.example
 *.tsbuildinfo
 coverage
+
+# .NET build artifacts
+bin/
+obj/
+[Tt]est[Rr]esults/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates

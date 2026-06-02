@@ -167,4 +167,4 @@ This repository is private and currently represents the foundation of the produc
 
 ## License
 
-No license has been added yet.
+Licensed under the [MIT License](./LICENSE). Copyright (c) 2026-Present David Pine.
