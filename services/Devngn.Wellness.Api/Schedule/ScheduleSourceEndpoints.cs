@@ -5,6 +5,7 @@
 using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.Data.Entities;
 using Devngn.Wellness.Api.Identity;
+using Devngn.Wellness.Api.Schedule.Google;
 using Devngn.Wellness.Api.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ internal static class ScheduleSourceEndpoints
             .ValidateBody<RouteHandlerBuilder, UpdateScheduleSourceRequest>()
             .WithName("UpdateScheduleSource");
         group.MapDelete("{id:guid}", DeleteAsync).WithName("DeleteScheduleSource");
+        group.MapPost("{id:guid}/sync", SyncAsync).WithName("SyncScheduleSource");
 
         return app;
     }
@@ -155,6 +157,58 @@ internal static class ScheduleSourceEndpoints
         var userId = currentUser.UserId!.Value;
         var affected = await db.ScheduleSources.Where(s => s.Id == id && s.UserId == userId).ExecuteDeleteAsync(ct);
         return affected > 0 ? Results.NoContent() : Results.NotFound();
+    }
+
+    private static async Task<IResult> SyncAsync(
+        Guid id,
+        ICurrentUserContext currentUser,
+        WellnessDbContext db,
+        GoogleScheduleSyncService googleSync,
+        CancellationToken ct)
+    {
+        var userId = currentUser.UserId!.Value;
+
+        // Dispatch by source type so the same endpoint serves whichever provider the
+        // user owns. Microsoft sync arrives in phase 7c and slots in here.
+        var type = await db.ScheduleSources
+            .Where(s => s.Id == id && s.UserId == userId)
+            .Select(s => (ScheduleSourceType?)s.Type)
+            .SingleOrDefaultAsync(ct);
+        if (type is null)
+        {
+            return Results.NotFound();
+        }
+
+        ScheduleSyncResult result = type switch
+        {
+            ScheduleSourceType.Google => await googleSync.SyncAsync(id, userId, ct),
+            ScheduleSourceType.User => new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0, "user_source_not_syncable"),
+            ScheduleSourceType.Microsoft => new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0, "microsoft_not_implemented"),
+            _ => new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0, "unknown_provider"),
+        };
+
+        return result.Outcome switch
+        {
+            ScheduleSyncOutcome.Success => Results.Ok(new { synced = result.EventCount }),
+            ScheduleSyncOutcome.NotFound => Results.NotFound(),
+            ScheduleSyncOutcome.LockHeld => Results.Problem(
+                title: "sync_in_progress",
+                detail: "A sync is already running for this source.",
+                statusCode: StatusCodes.Status409Conflict),
+            ScheduleSyncOutcome.Disabled => Results.Problem(
+                title: "source_disabled",
+                detail: "The source is disabled; re-enable it via PATCH before syncing.",
+                statusCode: StatusCodes.Status409Conflict),
+            ScheduleSyncOutcome.NeedsReconnect => Results.Problem(
+                title: "needs_reconnect",
+                detail: $"Source needs reconnection ({result.ErrorCode}).",
+                statusCode: StatusCodes.Status422UnprocessableEntity),
+            ScheduleSyncOutcome.TransientFailure => Results.Problem(
+                title: "sync_transient_failure",
+                detail: $"Sync failed transiently ({result.ErrorCode}); retry later.",
+                statusCode: StatusCodes.Status503ServiceUnavailable),
+            _ => Results.Problem(statusCode: StatusCodes.Status500InternalServerError),
+        };
     }
 
     internal static ScheduleSourceResponse Map(ScheduleSource s) => new(

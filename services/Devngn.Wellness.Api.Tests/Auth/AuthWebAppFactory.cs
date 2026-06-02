@@ -54,6 +54,9 @@ internal sealed class AuthWebAppFactory(
                 ["Auth:Jwt:SigningKey"] = TestSigningKey,
                 ["Auth:Jwt:KeyId"] = "test-kid",
                 ["Auth:Jwt:AccessTokenLifetimeMinutes"] = "60",
+                ["Auth:Google:ClientId"] = "test-google-client-id",
+                ["Auth:Google:ClientSecret"] = "test-google-client-secret",
+                ["Auth:Google:RedirectUri"] = "https://localhost:5001/v1/schedule/callback/google",
             };
             configureConfig?.Invoke(settings);
             config.AddInMemoryCollection(settings);

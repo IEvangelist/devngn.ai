@@ -82,6 +82,10 @@ public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.
                     ["Auth:Jwt:Issuer"] = "wellness-smoke",
                     ["Auth:Jwt:Audience"] = "wellness-smoke",
                     ["Auth:Jwt:SigningKey"] = Devngn.Wellness.Api.Tests.Auth.AuthWebAppFactory.TestSigningKey,
+                    // AddWellnessGoogleCalendar also validates options at startup.
+                    ["Auth:Google:ClientId"] = "test-google-client-id",
+                    ["Auth:Google:ClientSecret"] = "test-google-client-secret",
+                    ["Auth:Google:RedirectUri"] = "https://localhost:5001/v1/schedule/callback/google",
                 });
             });
         }
