@@ -6,6 +6,7 @@ using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.Data.Entities;
 using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Schedule.Google;
+using Devngn.Wellness.Api.Schedule.Microsoft;
 using Devngn.Wellness.Api.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -164,12 +165,14 @@ internal static class ScheduleSourceEndpoints
         ICurrentUserContext currentUser,
         WellnessDbContext db,
         GoogleScheduleSyncService googleSync,
+        MicrosoftScheduleSyncService microsoftSync,
         CancellationToken ct)
     {
         var userId = currentUser.UserId!.Value;
 
         // Dispatch by source type so the same endpoint serves whichever provider the
-        // user owns. Microsoft sync arrives in phase 7c and slots in here.
+        // user owns. Both Google (phase 7b) and Microsoft (phase 7c) implement ISync;
+        // user-pushed sources don't sync (clients POST events directly).
         var type = await db.ScheduleSources
             .Where(s => s.Id == id && s.UserId == userId)
             .Select(s => (ScheduleSourceType?)s.Type)
@@ -182,8 +185,8 @@ internal static class ScheduleSourceEndpoints
         ScheduleSyncResult result = type switch
         {
             ScheduleSourceType.Google => await googleSync.SyncAsync(id, userId, ct),
+            ScheduleSourceType.Microsoft => await microsoftSync.SyncAsync(id, userId, ct),
             ScheduleSourceType.User => new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0, "user_source_not_syncable"),
-            ScheduleSourceType.Microsoft => new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0, "microsoft_not_implemented"),
             _ => new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0, "unknown_provider"),
         };
 

@@ -8,6 +8,7 @@ using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.Data.Entities;
 using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Schedule.Google;
+using Devngn.Wellness.Api.Schedule.Microsoft;
 using Devngn.Wellness.Api.Schedule.OAuth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,10 +30,16 @@ internal static class ScheduleConnectEndpoints
             .RequireConsent()
             .WithName("BeginGoogleConnect");
 
+        connect.MapGet("microsoft", BeginMicrosoftAsync)
+            .RequireAuthorization()
+            .RequireConsent()
+            .WithName("BeginMicrosoftConnect");
+
         // /callback is anonymous because the OAuth redirect doesn't carry our JWT —
         // the user is identified by the persisted state row instead.
         var callback = app.MapGroup("/v1/schedule/callback").WithTags("ScheduleConnect");
         callback.MapGet("google", CompleteGoogleAsync).WithName("CompleteGoogleConnect");
+        callback.MapGet("microsoft", CompleteMicrosoftAsync).WithName("CompleteMicrosoftConnect");
 
         return app;
     }
@@ -218,5 +225,189 @@ internal static class ScheduleConnectEndpoints
     {
         var sep = path.Contains('?') ? '&' : '?';
         return $"{path}{sep}{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}";
+    }
+
+    private static async Task<IResult> BeginMicrosoftAsync(
+        [FromQuery(Name = "returnPath")] string? returnPath,
+        ICurrentUserContext currentUser,
+        IOptions<MicrosoftCalendarOptions> options,
+        IScheduleOAuthStateStore stateStore,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        if (!AuthEndpoints.IsSafeRelativePath(returnPath))
+        {
+            return Results.BadRequest(new
+            {
+                error = "invalid_return_path",
+                message = "returnPath must be a relative path beginning with '/' with no scheme or '//'.",
+            });
+        }
+
+        var opts = options.Value;
+        var state = PkcePair.NewState();
+        var (verifier, challenge) = PkcePair.Generate();
+        var expiresAt = clock.GetUtcNow().Add(opts.OAuthStateTtl);
+
+        await stateStore.PersistAsync(
+            ScheduleOAuthProvider.Microsoft,
+            state,
+            currentUser.UserId!.Value,
+            verifier,
+            string.IsNullOrEmpty(returnPath) ? "/" : returnPath!,
+            expiresAt,
+            ct);
+
+        // No prompt=consent by default. offline_access already requests a refresh
+        // token; forcing the consent UI on every connect is needlessly disruptive in
+        // managed tenants. If the initial code exchange comes back without a refresh
+        // token we surface "missing_refresh_token" and the user can retry.
+        var redirect = $"https://login.microsoftonline.com/{Uri.EscapeDataString(opts.TenantId)}/oauth2/v2.0/authorize"
+            + "?response_type=code"
+            + $"&client_id={Uri.EscapeDataString(opts.ClientId)}"
+            + $"&redirect_uri={Uri.EscapeDataString(opts.RedirectUri)}"
+            + $"&scope={Uri.EscapeDataString(opts.Scope)}"
+            + $"&state={Uri.EscapeDataString(state)}"
+            + $"&code_challenge={Uri.EscapeDataString(challenge)}"
+            + "&code_challenge_method=S256"
+            + "&response_mode=query";
+
+        return Results.Redirect(redirect);
+    }
+
+    private static async Task<IResult> CompleteMicrosoftAsync(
+        [FromQuery(Name = "code")] string? code,
+        [FromQuery(Name = "state")] string? state,
+        [FromQuery(Name = "error")] string? error,
+        IScheduleOAuthStateStore stateStore,
+        IMicrosoftCalendarClient microsoft,
+        IRefreshTokenProtector protector,
+        WellnessDbContext db,
+        IOptions<MicrosoftCalendarOptions> options,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(state))
+        {
+            return Results.BadRequest(new { error = "missing_state" });
+        }
+
+        var snapshot = await stateStore.ConsumeAsync(ScheduleOAuthProvider.Microsoft, state, ct);
+        if (snapshot is null)
+        {
+            return Results.BadRequest(new { error = "invalid_state" });
+        }
+
+        var returnPath = snapshot.ReturnPath;
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            return Results.Redirect(AppendError(returnPath, error));
+        }
+
+        if (string.IsNullOrEmpty(code))
+        {
+            return Results.Redirect(AppendError(returnPath, "missing_code"));
+        }
+
+        var userExists = await db.Users.AnyAsync(u => u.Id == snapshot.UserId, ct);
+        if (!userExists)
+        {
+            return Results.Redirect(AppendError(returnPath, "user_not_found"));
+        }
+        var hasConsent = await db.ConsentRecords.AnyAsync(c => c.UserId == snapshot.UserId, ct);
+        if (!hasConsent)
+        {
+            return Results.Redirect(AppendError(returnPath, "consent_required"));
+        }
+
+        MicrosoftTokenResult token;
+        try
+        {
+            token = await microsoft.ExchangeAuthorizationCodeAsync(code, snapshot.CodeVerifier, ct);
+        }
+        catch (MicrosoftInvalidGrantException)
+        {
+            return Results.Redirect(AppendError(returnPath, "invalid_grant"));
+        }
+        catch (MicrosoftTransientException)
+        {
+            return Results.Redirect(AppendError(returnPath, "microsoft_unavailable"));
+        }
+
+        if (string.IsNullOrEmpty(token.RefreshToken))
+        {
+            // Without a refresh token we can never sync — refuse to create a half-broken
+            // source. User can re-run /connect/microsoft to retry.
+            return Results.Redirect(AppendError(returnPath, "missing_refresh_token"));
+        }
+
+        // Scope-downgrade defense: check resource permissions only. Microsoft does NOT
+        // reliably echo `offline_access` in the access-token-response scope field (it's
+        // a flag, not a resource scope), so requiring it back would generate false negatives.
+        // Resource permissions like Calendars.Read may come back bare OR prefixed with
+        // https://graph.microsoft.com/ — normalize both before set-comparing.
+        var requestedResourceScopes = NormalizeResourceScopes(options.Value.Scope);
+        var grantedResourceScopes = NormalizeResourceScopes(token.GrantedScope ?? string.Empty);
+        if (requestedResourceScopes.Except(grantedResourceScopes, StringComparer.OrdinalIgnoreCase).Any())
+        {
+            return Results.Redirect(AppendError(returnPath, "insufficient_scope"));
+        }
+
+        var existing = await db.ScheduleSources
+            .SingleOrDefaultAsync(s => s.UserId == snapshot.UserId && s.Type == ScheduleSourceType.Microsoft, ct);
+
+        var now = clock.GetUtcNow();
+        var ciphertext = protector.Protect(token.RefreshToken);
+
+        if (existing is null)
+        {
+            db.ScheduleSources.Add(new ScheduleSource
+            {
+                UserId = snapshot.UserId,
+                Type = ScheduleSourceType.Microsoft,
+                DisplayName = "Microsoft Calendar",
+                ProtectedRefreshToken = ciphertext,
+                Scope = token.GrantedScope,
+                LastRefreshAt = now,
+                ConnectionStatus = ScheduleSourceConnectionStatus.Connected,
+                IsEnabled = true,
+                CreatedAt = now,
+            });
+        }
+        else
+        {
+            existing.ProtectedRefreshToken = ciphertext;
+            existing.Scope = token.GrantedScope;
+            existing.LastRefreshAt = now;
+            existing.ConnectionStatus = ScheduleSourceConnectionStatus.Connected;
+            existing.IsEnabled = true;
+            existing.LastSyncErrorCode = null;
+            existing.LastSyncErrorAt = null;
+        }
+
+        await db.SaveChangesAsync(ct);
+
+        return Results.Redirect(AppendQuery(returnPath, "connected", "microsoft"));
+    }
+
+    /// <summary>
+    /// Returns the set of RESOURCE scopes from a space-delimited Microsoft scope string.
+    /// Strips the optional <c>https://graph.microsoft.com/</c> prefix and filters out
+    /// OpenID-Connect / OAuth meta-scopes (<c>openid</c>, <c>profile</c>, <c>email</c>,
+    /// <c>offline_access</c>) that don't represent a graph permission and aren't always
+    /// reflected in the access-token-response scope field.
+    /// </summary>
+    private static HashSet<string> NormalizeResourceScopes(string scopeString)
+    {
+        const string GraphPrefix = "https://graph.microsoft.com/";
+        var meta = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "openid", "profile", "email", "offline_access",
+        };
+        return [.. scopeString
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => s.StartsWith(GraphPrefix, StringComparison.OrdinalIgnoreCase) ? s[GraphPrefix.Length..] : s)
+            .Where(s => !meta.Contains(s))];
     }
 }

@@ -9,26 +9,24 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 
-namespace Devngn.Wellness.Api.Schedule.Google;
+namespace Devngn.Wellness.Api.Schedule.Microsoft;
 
 /// <summary>
-/// Orchestrates one sync pass for a Google-backed <see cref="ScheduleSource"/>: takes a
-/// PG advisory lock to serialize concurrent syncs for the same source, decrypts the
-/// refresh token, refreshes the access token, fetches free/busy, and window-replaces
-/// the source's events. Idempotent.
+/// Orchestrates one sync pass for a Microsoft-backed <see cref="ScheduleSource"/>. Same
+/// pattern as <see cref="Google.GoogleScheduleSyncService"/>: take an advisory lock,
+/// refresh the access token, fetch busy windows, window-replace events, rotate the
+/// stored refresh token only when Microsoft issues a new one. Idempotent.
 /// </summary>
-internal sealed class GoogleScheduleSyncService(
+internal sealed class MicrosoftScheduleSyncService(
     WellnessDbContext db,
-    IGoogleCalendarClient google,
+    IMicrosoftCalendarClient microsoft,
     IRefreshTokenProtector protector,
-    IOptions<GoogleCalendarOptions> options,
+    IOptions<MicrosoftCalendarOptions> options,
     TimeProvider clock,
-    ILogger<GoogleScheduleSyncService> logger)
+    ILogger<MicrosoftScheduleSyncService> logger)
 {
     public async Task<ScheduleSyncResult> SyncAsync(Guid sourceId, Guid userId, CancellationToken ct)
     {
-        // Step 1: preflight read — no transaction needed; just want to bail early on
-        // states that don't merit calling Google.
         var preflight = await db.ScheduleSources
             .AsNoTracking()
             .SingleOrDefaultAsync(s => s.Id == sourceId && s.UserId == userId, ct);
@@ -37,7 +35,7 @@ internal sealed class GoogleScheduleSyncService(
             return new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0);
         }
 
-        if (preflight.Type != ScheduleSourceType.Google)
+        if (preflight.Type != ScheduleSourceType.Microsoft)
         {
             return new ScheduleSyncResult(ScheduleSyncOutcome.NotFound, 0, "wrong_provider");
         }
@@ -54,10 +52,9 @@ internal sealed class GoogleScheduleSyncService(
 
         if (string.IsNullOrEmpty(preflight.ProtectedRefreshToken))
         {
-            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "missing_refresh_token", deleteFutureFromUtc: null, ct: ct);
+            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "missing_refresh_token", deleteFutureFromUtc: null, ct);
         }
 
-        // Step 2: decrypt refresh token (no DB or network).
         string plaintextRefreshToken;
         try
         {
@@ -65,56 +62,64 @@ internal sealed class GoogleScheduleSyncService(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to unprotect refresh token for source {SourceId}.", sourceId);
-            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "protector_failed", deleteFutureFromUtc: null, ct: ct);
+            logger.LogWarning(ex, "Failed to unprotect refresh token for Microsoft source {SourceId}.", sourceId);
+            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "protector_failed", deleteFutureFromUtc: null, ct);
         }
 
-        // Step 3: call Google. NEVER inside the EF execution strategy — strategy retries
-        // would duplicate refresh-token exchanges and Google would invalidate one.
-        GoogleTokenResult token;
+        // Call Microsoft OUTSIDE the EF execution strategy — strategy retries would
+        // duplicate refresh-token exchanges and Microsoft would invalidate one.
+        MicrosoftTokenResult token;
         try
         {
-            token = await google.RefreshAccessTokenAsync(plaintextRefreshToken, ct);
+            token = await microsoft.RefreshAccessTokenAsync(plaintextRefreshToken, ct);
         }
-        catch (GoogleInvalidGrantException)
+        catch (MicrosoftInvalidGrantException)
         {
-            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "invalid_grant", deleteFutureFromUtc: clock.GetUtcNow(), ct: ct);
+            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "invalid_grant", deleteFutureFromUtc: clock.GetUtcNow(), ct);
         }
-        catch (GoogleTransientException ex)
+        catch (MicrosoftTransientException ex)
         {
-            logger.LogWarning(ex, "Transient failure refreshing Google token for source {SourceId}.", sourceId);
-            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.Error, "transient_token", deleteFutureFromUtc: null, ct: ct);
+            logger.LogWarning(ex, "Transient failure refreshing Microsoft token for source {SourceId}.", sourceId);
+            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.Error, "transient_token", deleteFutureFromUtc: null, ct);
         }
 
         var opts = options.Value;
         var syncStart = clock.GetUtcNow();
         var syncEnd = syncStart.Add(opts.SyncWindow);
 
-        IReadOnlyList<GoogleBusyWindow> busy;
+        IReadOnlyList<MicrosoftBusyWindow> busy;
         try
         {
-            busy = await google.QueryFreeBusyAsync(token.AccessToken, syncStart, syncEnd, ct);
+            busy = await microsoft.QueryBusyWindowsAsync(token.AccessToken, syncStart, syncEnd, ct);
         }
-        catch (GoogleInvalidGrantException)
+        catch (MicrosoftInvalidGrantException)
         {
-            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "invalid_grant", deleteFutureFromUtc: syncStart, ct: ct);
+            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.NeedsReconnect, "invalid_grant", deleteFutureFromUtc: syncStart, ct);
         }
-        catch (GoogleTransientException ex)
+        catch (MicrosoftForbiddenException)
         {
-            logger.LogWarning(ex, "Transient failure querying Google freeBusy for source {SourceId}.", sourceId);
-            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.Error, "transient_freebusy", deleteFutureFromUtc: null, ct: ct);
+            // Tenant policy / conditional access / scope dropped on consent. Mark Error,
+            // NOT NeedsReconnect — the refresh token is still valid and reconnecting
+            // would change nothing. Don't delete future events.
+            logger.LogWarning("Microsoft Graph forbade calendarView for source {SourceId} — likely tenant policy.", sourceId);
+            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.Error, "forbidden", deleteFutureFromUtc: null, ct);
+        }
+        catch (MicrosoftTransientException ex)
+        {
+            logger.LogWarning(ex, "Transient failure querying Microsoft calendarView for source {SourceId}.", sourceId);
+            return await PersistTerminalAsync(sourceId, userId, ScheduleSourceConnectionStatus.Error, "transient_calendar", deleteFutureFromUtc: null, ct);
         }
 
-        // Step 4: persist everything inside an execution strategy + transaction so
-        // Aspire's NpgsqlRetryingExecutionStrategy can retry on transient DB faults
-        // without re-issuing Google calls.
+        // Microsoft sometimes returns the same refresh_token on refresh and sometimes
+        // omits it entirely. Only persist a rotated token if it's BOTH non-null AND
+        // genuinely different — otherwise we'd churn the encrypted blob for nothing.
         var rotatedRefreshToken = !string.IsNullOrEmpty(token.RefreshToken) &&
             !string.Equals(token.RefreshToken, plaintextRefreshToken, StringComparison.Ordinal)
             ? token.RefreshToken
             : null;
 
         var strategy = db.Database.CreateExecutionStrategy();
-        return await strategy.ExecuteAsync<(Guid sourceId, Guid userId, GoogleTokenResult token, IReadOnlyList<GoogleBusyWindow> busy, string? rotated, DateTimeOffset syncStart, DateTimeOffset syncEnd),
+        return await strategy.ExecuteAsync<(Guid sourceId, Guid userId, MicrosoftTokenResult token, IReadOnlyList<MicrosoftBusyWindow> busy, string? rotated, DateTimeOffset syncStart, DateTimeOffset syncEnd),
             ScheduleSyncResult>(
             (sourceId, userId, token, busy, rotatedRefreshToken, syncStart, syncEnd),
             PersistSyncAsync,
@@ -124,13 +129,11 @@ internal sealed class GoogleScheduleSyncService(
 
     private async Task<ScheduleSyncResult> PersistSyncAsync(
         DbContext _,
-        (Guid sourceId, Guid userId, GoogleTokenResult token, IReadOnlyList<GoogleBusyWindow> busy, string? rotated, DateTimeOffset syncStart, DateTimeOffset syncEnd) ctx,
+        (Guid sourceId, Guid userId, MicrosoftTokenResult token, IReadOnlyList<MicrosoftBusyWindow> busy, string? rotated, DateTimeOffset syncStart, DateTimeOffset syncEnd) ctx,
         CancellationToken ct)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
-        // PG advisory locks are session-level; scoping with _xact_lock auto-releases at
-        // commit/rollback so we don't have to babysit cleanup on a process crash.
         var advisoryKey = ToAdvisoryKey(ctx.sourceId);
         if (!await TryAcquireAdvisoryLockAsync(advisoryKey, ct))
         {
@@ -138,8 +141,6 @@ internal sealed class GoogleScheduleSyncService(
             return new ScheduleSyncResult(ScheduleSyncOutcome.LockHeld, 0, "sync_in_progress");
         }
 
-        // Reload the source with tracking inside the same transaction so state read +
-        // state write are consistent under the advisory lock.
         var source = await db.ScheduleSources
             .SingleOrDefaultAsync(s => s.Id == ctx.sourceId && s.UserId == ctx.userId, ct);
         if (source is null)
@@ -158,9 +159,6 @@ internal sealed class GoogleScheduleSyncService(
         }
         source.LastRefreshAt = clock.GetUtcNow();
 
-        // Window-replace: nuke this source's events in the sync window, then insert
-        // fresh ones. Free/busy windows from Google have no stable IDs, so this is the
-        // only correct merge strategy.
         await db.ScheduleEvents
             .Where(e => e.SourceId == ctx.sourceId &&
                         e.EndUtc > ctx.syncStart &&
@@ -193,11 +191,6 @@ internal sealed class GoogleScheduleSyncService(
         return new ScheduleSyncResult(ScheduleSyncOutcome.Success, ctx.busy.Count);
     }
 
-    /// <summary>
-    /// Persists a terminal-error state on the source: status flip, error code, optional
-    /// deletion of future events (for invalid_grant). Wrapped in an execution strategy
-    /// so it composes safely with Aspire's NpgsqlRetryingExecutionStrategy.
-    /// </summary>
     private async Task<ScheduleSyncResult> PersistTerminalAsync(
         Guid sourceId,
         Guid userId,
@@ -249,8 +242,6 @@ internal sealed class GoogleScheduleSyncService(
 
     private async Task<bool> TryAcquireAdvisoryLockAsync(long key, CancellationToken ct)
     {
-        // pg_try_advisory_xact_lock returns boolean. EF Core's SqlQueryRaw<T> for a
-        // scalar primitive requires the projected column be named "Value".
         var result = await db.Database
             .SqlQueryRaw<bool>("SELECT pg_try_advisory_xact_lock({0}) AS \"Value\"", key)
             .ToListAsync(ct);
@@ -258,8 +249,9 @@ internal sealed class GoogleScheduleSyncService(
     }
 
     /// <summary>
-    /// Derives a 64-bit lock key from a Guid by XOR-folding its 16 bytes. Smaller hashes
-    /// (e.g. <c>hashtext()</c>) can collide and would serialize unrelated sources.
+    /// XOR-folds the 16 bytes of a Guid into a 64-bit advisory lock key. Same approach
+    /// as the Google sync service so the key spaces stay independent (different sourceIds
+    /// for different providers can't collide because they live in disjoint Guid space).
     /// </summary>
     internal static long ToAdvisoryKey(Guid id)
     {

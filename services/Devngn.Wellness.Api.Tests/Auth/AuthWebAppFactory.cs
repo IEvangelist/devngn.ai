@@ -57,6 +57,10 @@ internal sealed class AuthWebAppFactory(
                 ["Auth:Google:ClientId"] = "test-google-client-id",
                 ["Auth:Google:ClientSecret"] = "test-google-client-secret",
                 ["Auth:Google:RedirectUri"] = "https://localhost:5001/v1/schedule/callback/google",
+                ["Auth:Microsoft:ClientId"] = "test-microsoft-client-id",
+                ["Auth:Microsoft:ClientSecret"] = "test-microsoft-client-secret",
+                ["Auth:Microsoft:RedirectUri"] = "https://localhost:5001/v1/schedule/callback/microsoft",
+                ["Auth:Microsoft:TenantId"] = "common",
             };
             configureConfig?.Invoke(settings);
             config.AddInMemoryCollection(settings);

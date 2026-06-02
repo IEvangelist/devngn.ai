@@ -13,6 +13,7 @@ using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Profiles;
 using Devngn.Wellness.Api.Schedule;
 using Devngn.Wellness.Api.Schedule.Google;
+using Devngn.Wellness.Api.Schedule.Microsoft;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 
@@ -39,6 +40,10 @@ builder.Services.AddWellnessDataProtection(builder.Configuration);
 // Google Calendar OAuth + free/busy sync. Two named HttpClients: token exchange (no
 // retries — refresh tokens rotate) and free/busy (default resilience).
 builder.Services.AddWellnessGoogleCalendar(builder.Configuration);
+
+// Microsoft Graph OAuth + calendarView sync. Mirrors the Google story: token-exchange
+// client opts out of resilience (rotated refresh tokens), Graph client keeps defaults.
+builder.Services.AddWellnessMicrosoftCalendar(builder.Configuration);
 
 // IHttpContextAccessor + scoped ICurrentUserContext for endpoints that need the
 // authenticated user id without re-parsing the JWT.
