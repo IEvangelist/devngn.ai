@@ -4,6 +4,7 @@
 
 using System.Security.Cryptography;
 using Devngn.Wellness.Api.Auth;
+using Devngn.Wellness.Api.Crypto;
 using Devngn.Wellness.Api.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Npgsql;
 
 namespace Devngn.Wellness.Api.Tests.Auth;
 
@@ -74,6 +76,20 @@ internal sealed class AuthWebAppFactory(
             services.RemoveAll<WellnessDbContext>();
             services.AddDbContextPool<WellnessDbContext>(o => o.UseNpgsql(connectionString));
 #pragma warning restore EF1001
+
+            // PostgresXmlRepository (DataProtection key ring) uses its own keyed
+            // NpgsqlDataSource registered by AddWellnessDataProtection. That factory
+            // reads ConnectionStrings:wellnessdb from configuration — but
+            // appsettings.Development.json wins over our InMemory config (see the EF
+            // surgery above). Override the keyed singleton so DataProtection writes
+            // land in the test container, not the dev DB. This also exercises the same
+            // code path the DataProtection roundtrip tests assert against.
+            services.RemoveAll<NpgsqlDataSource>();
+            services.RemoveAll<NpgsqlConnection>();
+            services.RemoveAllKeyed<NpgsqlDataSource>(WellnessDataProtectionExtensions.DataProtectionDataSourceKey);
+            services.AddKeyedSingleton(
+                WellnessDataProtectionExtensions.DataProtectionDataSourceKey,
+                (_, _) => NpgsqlDataSource.Create(connectionString));
 
             configureServices?.Invoke(services);
         });

@@ -22,15 +22,29 @@ internal sealed class ScheduleEventConfiguration : IEntityTypeConfiguration<Sche
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Same DB-level consent enforcement as the other wellness tables.
+        b.HasOne<ConsentRecord>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .HasPrincipalKey(nameof(ConsentRecord.UserId))
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Composite FK to ScheduleSource(Id, UserId): the DB refuses any event whose
+        // SourceId belongs to a different user than UserId. Subsumes the legacy
+        // single-column FK on SourceId; that FK is dropped in the AddScheduleSourcesPhase7a
+        // migration. Keep the navigation `Source` for query ergonomics.
         b.HasOne(x => x.Source)
-            .WithMany(x => x.Events)
-            .HasForeignKey(x => x.SourceId)
+            .WithMany(s => s.Events)
+            .HasForeignKey(x => new { x.SourceId, x.UserId })
+            .HasPrincipalKey(s => new { s.Id, s.UserId })
             .OnDelete(DeleteBehavior.Cascade);
 
         // Hot path: "give me this user's busy windows in [from, to)".
         b.HasIndex(x => new { x.UserId, x.StartUtc, x.EndUtc });
 
-        // Idempotent ingest from external providers.
+        // Idempotent ingest from external providers; for free/busy syncs the provider
+        // adapters don't supply an ExternalId — those use replace-window semantics —
+        // but direct-push events from CLI/extension/user use this for safe retries.
         b.HasIndex(x => new { x.SourceId, x.ExternalId })
             .IsUnique()
             .HasFilter("\"ExternalId\" IS NOT NULL");

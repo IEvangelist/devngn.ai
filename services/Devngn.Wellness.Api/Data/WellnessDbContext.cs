@@ -31,6 +31,10 @@ public sealed class WellnessDbContext(DbContextOptions<WellnessDbContext> option
 
     public DbSet<Prompt> Prompts => Set<Prompt>();
 
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
+    public DbSet<ScheduleOAuthState> ScheduleOAuthStates => Set<ScheduleOAuthState>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

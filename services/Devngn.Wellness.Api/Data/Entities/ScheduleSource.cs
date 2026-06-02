@@ -5,8 +5,8 @@
 namespace Devngn.Wellness.Api.Data.Entities;
 
 /// <summary>
-/// A schedule provider the user has connected. Holds an opaque reference to OAuth
-/// credentials stored outside the wellness service (no raw tokens persisted here).
+/// A schedule provider the user has connected. Holds the encrypted refresh-token blob
+/// for OAuth-backed providers and the connection state machine that drives sync.
 /// </summary>
 public sealed class ScheduleSource
 {
@@ -23,6 +23,25 @@ public sealed class ScheduleSource
     /// sources that are populated by direct API push.
     /// </summary>
     public string? CredentialRef { get; set; }
+
+    /// <summary>
+    /// Base64-encoded payload of <c>IDataProtector.Protect(refreshTokenBytes)</c>. Only
+    /// set for OAuth providers; never logged and never returned to API responses.
+    /// </summary>
+    public string? ProtectedRefreshToken { get; set; }
+
+    /// <summary>Comma-separated set of OAuth scopes granted at authorization time.</summary>
+    public string? Scope { get; set; }
+
+    /// <summary>UTC timestamp of the most recent successful refresh-token exchange.</summary>
+    public DateTimeOffset? LastRefreshAt { get; set; }
+
+    /// <summary>Stable short code identifying the most recent sync error class (e.g. "invalid_grant", "rate_limited").</summary>
+    public string? LastSyncErrorCode { get; set; }
+
+    public DateTimeOffset? LastSyncErrorAt { get; set; }
+
+    public ScheduleSourceConnectionStatus ConnectionStatus { get; set; } = ScheduleSourceConnectionStatus.Connected;
 
     public bool IsEnabled { get; set; } = true;
 

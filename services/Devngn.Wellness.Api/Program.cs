@@ -5,11 +5,13 @@
 using System.Text.Json.Serialization;
 using Devngn.Wellness.Api.Auth;
 using Devngn.Wellness.Api.Consent;
+using Devngn.Wellness.Api.Crypto;
 using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.EquipmentApi;
 using Devngn.Wellness.Api.Goals;
 using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Profiles;
+using Devngn.Wellness.Api.Schedule;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 
@@ -27,6 +29,11 @@ builder.AddNpgsqlDbContext<WellnessDbContext>("wellnessdb");
 // for github.com + api.github.com. Options are validated at startup so a missing
 // signing key fails the process rather than producing insecure tokens.
 builder.AddWellnessAuth();
+
+// ASP.NET Core DataProtection with a Postgres-backed key ring + IRefreshTokenProtector
+// for encrypting OAuth refresh tokens at rest. Must register BEFORE WellnessIdentity
+// so the IHttpContextAccessor pipeline is independent of the key ring.
+builder.Services.AddWellnessDataProtection(builder.Configuration);
 
 // IHttpContextAccessor + scoped ICurrentUserContext for endpoints that need the
 // authenticated user id without re-parsing the JWT.
@@ -79,6 +86,8 @@ app.MapConsentEndpoints();
 app.MapProfileEndpoints();
 app.MapGoalEndpoints();
 app.MapEquipmentEndpoints();
+app.MapScheduleSourceEndpoints();
+app.MapScheduleEventEndpoints();
 
 app.Run();
 
