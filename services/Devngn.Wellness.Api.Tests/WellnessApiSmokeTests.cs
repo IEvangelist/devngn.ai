@@ -74,7 +74,14 @@ public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.
                     // Aspire's AddNpgsqlDbContext requires the connection string at registration
                     // time but does not connect until first query, so a placeholder is sufficient
                     // for endpoints that don't hit the database.
-                    ["ConnectionStrings:wellnessdb"] = "Host=localhost;Port=5432;Database=test;Username=test;Password=test"
+                    ["ConnectionStrings:wellnessdb"] = "Host=localhost;Port=5432;Database=test;Username=test;Password=test",
+                    // AddWellnessAuth validates options at startup; provide test values so the
+                    // app boots even though these smoke tests never exercise the auth endpoints.
+                    ["Auth:GitHub:ClientId"] = "test-client-id",
+                    ["Auth:GitHub:ClientSecret"] = "test-client-secret",
+                    ["Auth:Jwt:Issuer"] = "wellness-smoke",
+                    ["Auth:Jwt:Audience"] = "wellness-smoke",
+                    ["Auth:Jwt:SigningKey"] = Devngn.Wellness.Api.Tests.Auth.AuthWebAppFactory.TestSigningKey,
                 });
             });
         }

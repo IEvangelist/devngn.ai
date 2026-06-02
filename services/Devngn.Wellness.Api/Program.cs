@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // SPDX-License-Identifier: MIT
 
+using Devngn.Wellness.Api.Auth;
 using Devngn.Wellness.Api.Data;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
@@ -15,6 +16,11 @@ builder.AddServiceDefaults();
 // Postgres + EF Core wired through Aspire's integration: registers DbContext,
 // health check, retries, OpenTelemetry instrumentation, and connection pooling.
 builder.AddNpgsqlDbContext<WellnessDbContext>("wellnessdb");
+
+// GitHub OAuth (Device + Web flow), JWT issuance/validation, and named HttpClients
+// for github.com + api.github.com. Options are validated at startup so a missing
+// signing key fails the process rather than producing insecure tokens.
+builder.AddWellnessAuth();
 
 builder.Services.AddOpenApi("v1", options =>
 {
@@ -34,6 +40,9 @@ var app = builder.Build();
 // /health (all checks) and /alive (liveness only) from Devngn.ServiceDefaults.
 app.MapDefaultEndpoints();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 if (app.Environment.IsDevelopment())
 {
     // /openapi/v1.json
@@ -46,6 +55,8 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/v1/hello", () => Results.Ok(new HelloResponse("devngn.ai wellness", DateTimeOffset.UtcNow)))
     .WithName("Hello")
     .WithTags("Meta");
+
+app.MapAuthEndpoints();
 
 app.Run();
 
