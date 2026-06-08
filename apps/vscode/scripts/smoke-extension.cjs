@@ -60,7 +60,11 @@ const vscode = {
     },
     createStatusBarItem() {
       return {
+        text: "",
+        tooltip: "",
+        command: "",
         show() {},
+        hide() {},
         dispose() {},
       };
     },
@@ -76,9 +80,12 @@ const vscode = {
     registerWebviewViewProvider() {
       return { dispose() {} };
     },
-    showInformationMessage() {},
+    showInformationMessage() {
+      return Promise.resolve(undefined);
+    },
     showWarningMessage(message) {
       errorMessages.push(message);
+      return Promise.resolve(undefined);
     },
     showErrorMessage(message) {
       errorMessages.push(message);
@@ -91,6 +98,13 @@ const vscode = {
     },
   },
   workspace: {
+    getConfiguration() {
+      return {
+        get(_key, defaultValue) {
+          return defaultValue;
+        },
+      };
+    },
     workspaceFolders: [
       {
         uri: {
@@ -108,6 +122,7 @@ Module._load = (request, parent, isMain) =>
   try {
     const extension = require(bundlePath);
     const subscriptions = [];
+    const secretStore = new Map();
     extension.activate({
       extension: {
         packageJSON: {
@@ -115,6 +130,22 @@ Module._load = (request, parent, isMain) =>
         },
       },
       subscriptions,
+      secrets: {
+        get(key) {
+          return Promise.resolve(secretStore.get(key));
+        },
+        store(key, value) {
+          secretStore.set(key, value);
+          return Promise.resolve();
+        },
+        delete(key) {
+          secretStore.delete(key);
+          return Promise.resolve();
+        },
+        onDidChange() {
+          return { dispose() {} };
+        },
+      },
     });
 
     if (subscriptions.length === 0) {

@@ -124,6 +124,9 @@ importers:
       '@devngn/vendors':
         specifier: workspace:*
         version: link:../../packages/vendors
+      '@devngn/wellness-types':
+        specifier: workspace:*
+        version: link:../../packages/wellness-types
     devDependencies:
       '@types/vscode':
         specifier: ^1.105.0

@@ -20,6 +20,7 @@ import {
 } from "@devngn/core";
 import { recognizePatterns, type PatternMatch } from "@devngn/patterns";
 import { getBundledRegistry } from "@devngn/vendors";
+import { activateWellness } from "./wellness/controller.js";
 
 let telemetry: DevngnTelemetryRuntime | null = null;
 
@@ -121,6 +122,8 @@ export function activate(context: vscode.ExtensionContext): void {
       openTokenUsagePanel(state);
     }),
   );
+
+  activateWellness(context);
 }
 
 export function deactivate(): Thenable<void> | void {

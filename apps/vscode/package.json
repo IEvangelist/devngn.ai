@@ -13,8 +13,12 @@
     "Other"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onCommand:devngn.scan",
     "onCommand:devngn.openTokenUsage",
+    "onCommand:devngn.wellness.signIn",
+    "onCommand:devngn.wellness.start",
+    "onCommand:devngn.wellness.next",
     "onView:devngn.aiBits",
     "onView:devngn.tokenUsage"
   ],
@@ -28,8 +32,48 @@
       {
         "command": "devngn.openTokenUsage",
         "title": "devngn: Open Token Usage"
+      },
+      {
+        "command": "devngn.wellness.signIn",
+        "title": "devngn wellness: Sign in"
+      },
+      {
+        "command": "devngn.wellness.signOut",
+        "title": "devngn wellness: Sign out"
+      },
+      {
+        "command": "devngn.wellness.start",
+        "title": "devngn wellness: Start prompts"
+      },
+      {
+        "command": "devngn.wellness.stop",
+        "title": "devngn wellness: Stop prompts"
+      },
+      {
+        "command": "devngn.wellness.next",
+        "title": "devngn wellness: Suggest a break now"
       }
     ],
+    "configuration": {
+      "title": "devngn wellness",
+      "properties": {
+        "devngn.wellness.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:5000",
+          "description": "Base URL of the devngn.ai Wellness API."
+        },
+        "devngn.wellness.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically subscribe to wellness prompts on startup when signed in."
+        },
+        "devngn.wellness.timeZone": {
+          "type": "string",
+          "default": "",
+          "description": "IANA time zone for gap detection (e.g. 'America/New_York'). Empty uses the system time zone."
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -57,14 +101,15 @@
   "scripts": {
     "build": "tsup --config tsup.config.ts",
     "lint": "tsc --noEmit -p tsconfig.json",
-    "test": "pnpm build && node scripts/smoke-extension.cjs"
+    "test": "vitest run && pnpm build && node scripts/smoke-extension.cjs"
   },
   "dependencies": {
     "@devngn/ai": "workspace:*",
     "@devngn/analytics": "workspace:*",
     "@devngn/core": "workspace:*",
     "@devngn/patterns": "workspace:*",
-    "@devngn/vendors": "workspace:*"
+    "@devngn/vendors": "workspace:*",
+    "@devngn/wellness-types": "workspace:*"
   },
   "devDependencies": {
     "@types/vscode": "^1.105.0"
