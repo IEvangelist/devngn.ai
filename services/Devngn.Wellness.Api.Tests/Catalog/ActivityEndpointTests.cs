@@ -225,6 +225,9 @@ public sealed class ActivityEndpointTests(PostgresContainerFixture postgres)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<WellnessDbContext>();
+        // Prompts reference activities with a restrict FK, so clear any prompt detritus
+        // left on the shared container by prompt-delivery tests before wiping the catalog.
+        await db.Prompts.ExecuteDeleteAsync();
         await db.Activities.ExecuteDeleteAsync();
         var seeder = ActivatorUtilities.CreateInstance<ActivityCatalogSeeder>(factory.Services);
         await seeder.StartAsync(CancellationToken.None);

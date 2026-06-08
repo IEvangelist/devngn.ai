@@ -194,6 +194,29 @@ public sealed class GapEndpointTests(PostgresContainerFixture postgres)
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Get_shifts_first_gap_past_cooldown_after_a_recent_prompt()
+    {
+        using var factory = Factory();
+        var seeded = await factory.SeedAuthenticatedUserAsync();
+        var activityId = await SeedActivityAsync(factory);
+        // A prompt delivered at 09:15 with the default 30-minute cooldown pushes the
+        // 09:00 free interval's start to 09:45 (then capped to a 60-minute window).
+        await SeedPromptAsync(factory, seeded.Id, activityId,
+            new DateTimeOffset(2026, 6, 15, 9, 15, 0, TimeSpan.Zero));
+
+        using var client = factory.CreateClientWithBearer(seeded.Token);
+        var response = await client.GetAsync(
+            $"/v1/gaps?from=2026-06-15T09:00:00Z&to=2026-06-15T17:00:00Z&tz=UTC");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var gaps = await response.Content.ReadFromJsonAsync<List<GapResponse>>();
+        Assert.NotNull(gaps);
+        var first = gaps![0];
+        Assert.Equal(new DateTimeOffset(2026, 6, 15, 9, 45, 0, TimeSpan.Zero), first.StartUtc);
+        Assert.Equal(new DateTimeOffset(2026, 6, 15, 10, 45, 0, TimeSpan.Zero), first.EndUtc);
+    }
+
     private static async Task<Guid> SeedUserSourceAsync(
         AuthWebAppFactory factory,
         Guid userId,
@@ -231,6 +254,48 @@ public sealed class GapEndpointTests(PostgresContainerFixture postgres)
             StartUtc = start,
             EndUtc = end,
             Busy = true,
+        });
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task<Guid> SeedActivityAsync(AuthWebAppFactory factory)
+    {
+        var slug = $"test-{Guid.NewGuid():N}";
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<WellnessDbContext>();
+        var activity = new Activity
+        {
+            Slug = slug,
+            Title = slug,
+            Description = "Test activity",
+            BodyArea = BodyArea.Core,
+            Intensity = IntensityLevel.Low,
+            DurationSeconds = 30,
+            EquipmentTags = [],
+            AnimationProvider = "local",
+            AnimationAssetId = slug,
+        };
+        db.Activities.Add(activity);
+        await db.SaveChangesAsync();
+        return activity.Id;
+    }
+
+    private static async Task SeedPromptAsync(
+        AuthWebAppFactory factory,
+        Guid userId,
+        Guid activityId,
+        DateTimeOffset deliveredAt)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<WellnessDbContext>();
+        db.Prompts.Add(new Prompt
+        {
+            UserId = userId,
+            ActivityId = activityId,
+            GapStartUtc = deliveredAt,
+            GapEndUtc = deliveredAt.AddMinutes(30),
+            DeliveredAt = deliveredAt,
+            DeliveredVia = DeliveryChannel.Web,
         });
         await db.SaveChangesAsync();
     }

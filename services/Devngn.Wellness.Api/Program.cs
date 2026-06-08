@@ -12,6 +12,7 @@ using Devngn.Wellness.Api.EquipmentApi;
 using Devngn.Wellness.Api.Goals;
 using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Profiles;
+using Devngn.Wellness.Api.Prompts;
 using Devngn.Wellness.Api.Schedule;
 using Devngn.Wellness.Api.Schedule.Gaps;
 using Devngn.Wellness.Api.Schedule.Google;
@@ -57,6 +58,11 @@ builder.Services.AddWellnessGaps(builder.Configuration);
 // the database via a hosted service on app start.
 builder.Services.AddWellnessActivityCatalog();
 
+// Prompt delivery: pure activity matcher + scoped orchestration service that turns an
+// active gap into a persisted, delivered prompt. Backs POST /v1/prompts/next and the
+// SSE / WebSocket streams.
+builder.Services.AddWellnessPrompts(builder.Configuration);
+
 // IHttpContextAccessor + scoped ICurrentUserContext for endpoints that need the
 // authenticated user id without re-parsing the JWT.
 builder.AddWellnessIdentity();
@@ -90,6 +96,9 @@ app.MapDefaultEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Required for the GET /v1/prompts/ws WebSocket subscription.
+app.UseWebSockets();
+
 if (app.Environment.IsDevelopment())
 {
     // /openapi/v1.json
@@ -113,6 +122,7 @@ app.MapScheduleEventEndpoints();
 app.MapScheduleConnectEndpoints();
 app.MapGapEndpoints();
 app.MapActivityEndpoints();
+app.MapPromptEndpoints();
 
 app.Run();
 

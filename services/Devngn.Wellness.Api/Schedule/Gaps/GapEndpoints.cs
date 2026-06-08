@@ -101,9 +101,19 @@ internal static class GapEndpoints
 
         var busy = rows.ConvertAll(r => new BusyInterval(r.StartUtc, r.EndUtc));
 
-        // Phase 10 will source this from the prompt history table; until then,
-        // the cooldown step is a no-op for every caller.
-        var recentPrompts = Array.Empty<DateTimeOffset>();
+        // Cooldown source: prompts delivered within one cooldown window before the
+        // query range. The detector advances each candidate gap's start past the
+        // cooldown after the most recent of these, so a user who was just prompted
+        // sees their next gap shifted instead of getting nagged again immediately.
+        var cooldownLookback = TimeSpan.FromMinutes(options.Value.PromptCooldownMinutes);
+        var recentPrompts = await db.Prompts
+            .AsNoTracking()
+            .Where(p => p.UserId == userId
+                && p.DeliveredAt >= rangeStart - cooldownLookback
+                && p.DeliveredAt < rangeEnd)
+            .OrderBy(p => p.DeliveredAt)
+            .Select(p => p.DeliveredAt)
+            .ToListAsync(ct);
 
         var gaps = detector.Detect(busy, rangeStart, rangeEnd, recentPrompts, userTz, options.Value, now);
         var response = gaps.Select(g => new GapResponse(g.StartUtc, g.EndUtc, g.DurationMinutes)).ToList();
