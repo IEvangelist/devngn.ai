@@ -95,6 +95,9 @@ public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.
                     ["Auth:Microsoft:ClientSecret"] = "test-microsoft-client-secret",
                     ["Auth:Microsoft:RedirectUri"] = "https://localhost:5001/v1/schedule/callback/microsoft",
                     ["Auth:Microsoft:TenantId"] = "common",
+                    // Phase 9.1 added a Development-only auto-migrate at startup; smoke
+                    // tests intentionally run without a real database, so opt out.
+                    ["Wellness:AutoMigrate"] = "false",
                 });
             });
 

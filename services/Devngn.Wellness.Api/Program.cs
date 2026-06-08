@@ -17,6 +17,7 @@ using Devngn.Wellness.Api.Schedule.Gaps;
 using Devngn.Wellness.Api.Schedule.Google;
 using Devngn.Wellness.Api.Schedule.Microsoft;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -96,6 +97,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     // /scalar/v1
     app.MapScalarApiReference();
+
+    // Apply pending EF Core migrations so a fresh Aspire AppHost run against
+    // a brand-new Postgres container can boot without an out-of-band
+    // `dotnet ef database update`. Guarded to Development only; CI/prod
+    // applies migrations through a deliberate deployment step. Tests that
+    // run without a real DB opt out via `Wellness:AutoMigrate=false`.
+    if (app.Configuration.GetValue("Wellness:AutoMigrate", true))
+    {
+        await using var scope = app.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<WellnessDbContext>();
+        await db.Database.MigrateAsync();
+    }
 }
 
 // Smoke endpoint until domain endpoints land in subsequent milestones.
