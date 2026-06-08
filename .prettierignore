@@ -4,3 +4,4 @@
 # raw generator output.
 services/Devngn.Wellness.Api/openapi/v1.json
 packages/wellness-types/src/schema.ts
+packages/wellness-types/src/openapi.json

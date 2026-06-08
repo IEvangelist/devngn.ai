@@ -17,6 +17,14 @@ export default defineConfig({
           label: "Start here",
           items: [{ label: "Getting started", slug: "getting-started" }],
         },
+        {
+          label: "Wellness",
+          items: [
+            { label: "Wellness service", slug: "wellness" },
+            { label: "API reference", link: "/wellness/reference" },
+            { label: "OpenAPI document", link: "/wellness/openapi.json" },
+          ],
+        },
       ],
     }),
   ],

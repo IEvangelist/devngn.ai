@@ -13,8 +13,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "generate": "openapi-typescript ../../services/Devngn.Wellness.Api/openapi/v1.json --output ./src/schema.ts",
-    "generate:check": "pnpm generate && git diff --exit-code -- src/schema.ts",
+    "generate": "openapi-typescript ../../services/Devngn.Wellness.Api/openapi/v1.json --output ./src/schema.ts && node -e \"require('fs').copyFileSync('../../services/Devngn.Wellness.Api/openapi/v1.json','./src/openapi.json')\"",
+    "generate:check": "pnpm generate && git diff --exit-code -- src/schema.ts src/openapi.json",
     "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
     "lint": "tsc --noEmit -p tsconfig.json"
   },

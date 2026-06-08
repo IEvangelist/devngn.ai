@@ -21,6 +21,7 @@
     "@devngn/patterns": "workspace:*",
     "@devngn/research": "workspace:*",
     "@devngn/vendors": "workspace:*",
+    "@devngn/wellness-types": "workspace:*",
     "astro": "^5.16.4"
   },
   "devDependencies": {

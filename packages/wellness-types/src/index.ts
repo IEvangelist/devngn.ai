@@ -13,11 +13,16 @@
  * `operations`) and adds ergonomic aliases for the request/response DTOs and
  * enums so consumers (the VS Code extension and CLI daemon) can `fetch` the
  * API with full typing without reaching into `components["schemas"][...]`.
+ *
+ * It also bundles the raw OpenAPI document itself (`wellnessOpenApiDocument`,
+ * a generated copy of the API's committed `openapi/v1.json`) so the hosted site
+ * can serve it to an OpenAPI viewer without reaching across package boundaries.
  */
 
 export type * from "./schema.js";
 
 import type { components, operations, paths } from "./schema.js";
+import openApiDocument from "./openapi.json" with { type: "json" };
 
 /** The full generated OpenAPI path map (route -> verb -> operation). */
 export type WellnessPaths = paths;
@@ -93,3 +98,27 @@ export type PromptResponse = WellnessSchemas["PromptResponse"];
 export type ProblemDetails = WellnessSchemas["ProblemDetails"];
 export type HttpValidationProblemDetails =
   WellnessSchemas["HttpValidationProblemDetails"];
+
+// --- OpenAPI document -------------------------------------------------------
+
+/**
+ * Minimal structural shape of an OpenAPI 3.x document. Deliberately loose — the
+ * fully typed surface lives in `paths`/`components`/`operations`; this exists so
+ * `wellnessOpenApiDocument` has a small, stable `.d.ts` instead of a giant
+ * inferred JSON literal type.
+ */
+export interface WellnessOpenApiDocument {
+  openapi: string;
+  info: { title: string; version: string; [key: string]: unknown };
+  paths: Record<string, unknown>;
+  components?: { schemas?: Record<string, unknown>; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+/**
+ * The Wellness API's OpenAPI document, bundled from the API's committed
+ * `services/Devngn.Wellness.Api/openapi/v1.json`. Regenerated (and drift-guarded)
+ * by `pnpm --filter @devngn/wellness-types generate` — do not edit by hand.
+ */
+export const wellnessOpenApiDocument =
+  openApiDocument as unknown as WellnessOpenApiDocument;

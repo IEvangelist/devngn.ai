@@ -99,6 +99,9 @@ importers:
       '@devngn/vendors':
         specifier: workspace:*
         version: link:../../packages/vendors
+      '@devngn/wellness-types':
+        specifier: workspace:*
+        version: link:../../packages/wellness-types
       astro:
         specifier: ^5.16.4
         version: 5.18.1(@types/node@24.12.2)(rollup@4.60.2)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.3)

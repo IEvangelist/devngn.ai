@@ -1,0 +1,534 @@
+---
+import { wellnessOpenApiDocument } from "@devngn/wellness-types";
+
+type Schema = {
+  $ref?: string;
+  type?: string | string[];
+  format?: string;
+  items?: Schema;
+  enum?: (string | number)[];
+  properties?: Record<string, Schema>;
+  required?: string[];
+  description?: string;
+  oneOf?: Schema[];
+  anyOf?: Schema[];
+  allOf?: Schema[];
+  additionalProperties?: boolean | Schema;
+};
+type MediaType = { schema?: Schema };
+type Parameter = {
+  name: string;
+  in: string;
+  required?: boolean;
+  description?: string;
+  schema?: Schema;
+};
+type RequestBody = { required?: boolean; content?: Record<string, MediaType> };
+type ResponseObject = {
+  description?: string;
+  content?: Record<string, MediaType>;
+};
+type Operation = {
+  tags?: string[];
+  operationId?: string;
+  summary?: string;
+  description?: string;
+  parameters?: Parameter[];
+  requestBody?: RequestBody;
+  responses?: Record<string, ResponseObject>;
+};
+type PathItem = Record<string, Operation>;
+
+const doc = wellnessOpenApiDocument as unknown as {
+  openapi?: string;
+  info: { title: string; version: string; description?: string };
+  paths: Record<string, PathItem>;
+  components?: { schemas?: Record<string, Schema> };
+};
+
+const HTTP_METHODS = ["get", "put", "post", "patch", "delete", "options", "head"];
+
+const schemas = doc.components?.schemas ?? {};
+const schemaNames = new Set(Object.keys(schemas));
+
+function refName(ref: string): string {
+  return ref.slice(ref.lastIndexOf("/") + 1);
+}
+
+type TypeLabel = { label: string; ref?: string };
+
+function describeType(schema: Schema | undefined): TypeLabel {
+  if (!schema) return { label: "any" };
+  if (schema.$ref) {
+    const name = refName(schema.$ref);
+    return { label: name, ref: name };
+  }
+  if (Array.isArray(schema.type)) {
+    const nonNull = schema.type.filter((t) => t !== "null");
+    const nullable = schema.type.includes("null");
+    if (nonNull.length === 1 && nonNull[0] === "array") {
+      const inner = describeType(schema.items);
+      return {
+        label: `${inner.label}[]${nullable ? " | null" : ""}`,
+        ref: inner.ref,
+      };
+    }
+    const base = nonNull
+      .map((t) => (t === schema.type?.[0] && schema.format ? `${t} (${schema.format})` : t))
+      .join(" | ");
+    return { label: nullable ? `${base} | null` : base || "any" };
+  }
+  if (schema.type === "array") {
+    const inner = describeType(schema.items);
+    return { label: `${inner.label}[]`, ref: inner.ref };
+  }
+  if (schema.enum) {
+    return { label: schema.enum.map((v) => JSON.stringify(v)).join(" | ") };
+  }
+  for (const key of ["oneOf", "anyOf", "allOf"] as const) {
+    const variants = schema[key];
+    if (variants?.length) {
+      const parts = variants.map((v) => describeType(v));
+      const ref = parts.find((p) => p.ref)?.ref;
+      const join = key === "allOf" ? " & " : " | ";
+      return { label: parts.map((p) => p.label).join(join), ref };
+    }
+  }
+  if (schema.type) {
+    return { label: schema.format ? `${schema.type} (${schema.format})` : schema.type };
+  }
+  if (schema.properties) return { label: "object" };
+  return { label: "any" };
+}
+
+const methodColors: Record<string, string> = {
+  get: "#70f0c8",
+  post: "#8aa8ff",
+  put: "#f0c674",
+  patch: "#c792ea",
+  delete: "#ff6f7d",
+};
+
+type Endpoint = { method: string; path: string; op: Operation };
+const groups = new Map<string, Endpoint[]>();
+const tagOrder: string[] = [];
+
+for (const [path, item] of Object.entries(doc.paths)) {
+  for (const method of HTTP_METHODS) {
+    const op = item[method];
+    if (!op) continue;
+    const tag = op.tags?.[0] ?? "Default";
+    if (!groups.has(tag)) {
+      groups.set(tag, []);
+      tagOrder.push(tag);
+    }
+    groups.get(tag)!.push({ method, path, op });
+  }
+}
+
+const description = doc.info.description;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{doc.info.title} — API reference</title>
+    <meta name="description" content="OpenAPI reference for the devngn.ai Wellness API." />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080b12;
+        --panel: #111827;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #70f0c8;
+        --border: rgba(255, 255, 255, 0.12);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+      }
+      a {
+        color: var(--accent);
+      }
+      code,
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 16rem minmax(0, 1fr);
+        max-width: 1200px;
+        margin: 0 auto;
+        gap: 2rem;
+        padding: 2rem 1.5rem 6rem;
+      }
+      nav {
+        position: sticky;
+        top: 2rem;
+        align-self: start;
+        max-height: calc(100vh - 4rem);
+        overflow: auto;
+        font-size: 0.9rem;
+      }
+      nav a {
+        display: block;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 0.15rem 0;
+      }
+      nav a:hover {
+        color: var(--text);
+      }
+      nav .section {
+        margin-top: 1rem;
+        color: var(--text);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.72rem;
+      }
+      header.page {
+        margin-bottom: 1rem;
+      }
+      header.page h1 {
+        margin: 0;
+        font-size: 2.4rem;
+      }
+      .badge-version {
+        display: inline-block;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.1rem 0.6rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 1rem 0 2rem;
+      }
+      .toolbar a {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.4rem 0.9rem;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      section.tag {
+        margin-top: 2.5rem;
+      }
+      section.tag > h2 {
+        font-size: 1.4rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.4rem;
+      }
+      .op {
+        background: rgba(17, 24, 39, 0.6);
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0;
+      }
+      .op-head {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .method {
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        padding: 0.15rem 0.55rem;
+        border-radius: 0.4rem;
+        color: #05120e;
+      }
+      .op-path {
+        font-size: 1rem;
+      }
+      .op-summary {
+        color: var(--muted);
+        margin: 0.35rem 0 0;
+      }
+      h4 {
+        margin: 1rem 0 0.4rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.4rem 0.6rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .req {
+        color: #ff8a94;
+        font-size: 0.75rem;
+      }
+      .status {
+        font-weight: 700;
+      }
+      section.schema {
+        background: rgba(17, 24, 39, 0.45);
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0;
+        scroll-margin-top: 1.5rem;
+      }
+      section.schema h3 {
+        margin: 0 0 0.5rem;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      }
+      .enum-values code {
+        display: inline-block;
+        border: 1px solid var(--border);
+        border-radius: 0.4rem;
+        padding: 0.1rem 0.5rem;
+        margin: 0.15rem 0.25rem 0.15rem 0;
+        color: var(--accent);
+      }
+      @media (max-width: 880px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        nav {
+          position: static;
+          max-height: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <nav aria-label="API navigation">
+        <a href="/wellness/">← Wellness docs</a>
+        <div class="section">Endpoints</div>
+        {tagOrder.map((tag) => <a href={`#tag-${tag}`}>{tag}</a>)}
+        <div class="section">Schemas</div>
+        {Object.keys(schemas).map((name) => <a href={`#schema-${name}`}>{name}</a>)}
+      </nav>
+
+      <main>
+        <header class="page">
+          <h1>{doc.info.title}</h1>
+          <span class="badge-version">OpenAPI {doc.openapi ?? "3.1"} · {doc.info.version}</span>
+          {description && <p class="op-summary">{description}</p>}
+        </header>
+
+        <div class="toolbar">
+          <a href="/wellness/openapi.json">Download openapi.json</a>
+          <a href="/wellness/">Read the guide</a>
+        </div>
+
+        {
+          tagOrder.map((tag) => (
+            <section class="tag" id={`tag-${tag}`}>
+              <h2>{tag}</h2>
+              {groups.get(tag)!.map(({ method, path, op }) => (
+                <article class="op">
+                  <div class="op-head">
+                    <span
+                      class="method"
+                      style={`background:${methodColors[method] ?? "#94a3b8"}`}
+                    >
+                      {method}
+                    </span>
+                    <span class="op-path mono">{path}</span>
+                  </div>
+                  {(op.summary || op.description) && (
+                    <p class="op-summary">{op.summary ?? op.description}</p>
+                  )}
+
+                  {op.parameters && op.parameters.length > 0 && (
+                    <>
+                      <h4>Parameters</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>In</th>
+                            <th>Type</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {op.parameters.map((p) => {
+                            const t = describeType(p.schema);
+                            return (
+                              <tr>
+                                <td class="mono">
+                                  {p.name}
+                                  {p.required && <span class="req"> *</span>}
+                                </td>
+                                <td>{p.in}</td>
+                                <td class="mono">
+                                  {t.ref && schemaNames.has(t.ref) ? (
+                                    <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                  ) : (
+                                    t.label
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+
+                  {op.requestBody?.content && (
+                    <>
+                      <h4>Request body{op.requestBody.required ? " (required)" : ""}</h4>
+                      <table>
+                        <tbody>
+                          {Object.entries(op.requestBody.content).map(([ct, media]) => {
+                            const t = describeType(media.schema);
+                            return (
+                              <tr>
+                                <td class="mono">{ct}</td>
+                                <td class="mono">
+                                  {t.ref && schemaNames.has(t.ref) ? (
+                                    <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                  ) : (
+                                    t.label
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+
+                  {op.responses && (
+                    <>
+                      <h4>Responses</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Body</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(op.responses).map(([status, res]) => {
+                            const entries = Object.entries(res.content ?? {});
+                            return (
+                              <tr>
+                                <td class="status">{status}</td>
+                                <td>{res.description ?? ""}</td>
+                                <td class="mono">
+                                  {entries.length === 0
+                                    ? "—"
+                                    : entries.map(([ct, media]) => {
+                                        const t = describeType(media.schema);
+                                        return (
+                                          <div>
+                                            {t.ref && schemaNames.has(t.ref) ? (
+                                              <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                            ) : (
+                                              t.label
+                                            )}
+                                            <span class="op-summary"> ({ct})</span>
+                                          </div>
+                                        );
+                                      })}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+                </article>
+              ))}
+            </section>
+          ))
+        }
+
+        <section class="tag" id="schemas">
+          <h2>Schemas</h2>
+          {
+            Object.entries(schemas).map(([name, schema]) => {
+              const props = schema.properties ?? {};
+              const required = new Set(schema.required ?? []);
+              return (
+                <section class="schema" id={`schema-${name}`}>
+                  <h3>{name}</h3>
+                  {schema.description && <p class="op-summary">{schema.description}</p>}
+                  {schema.enum ? (
+                    <div class="enum-values">
+                      {schema.enum.map((v) => (
+                        <code>{String(v)}</code>
+                      ))}
+                    </div>
+                  ) : Object.keys(props).length > 0 ? (
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Property</th>
+                          <th>Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(props).map(([prop, propSchema]) => {
+                          const t = describeType(propSchema);
+                          return (
+                            <tr>
+                              <td class="mono">
+                                {prop}
+                                {required.has(prop) && <span class="req"> *</span>}
+                              </td>
+                              <td class="mono">
+                                {t.ref && schemaNames.has(t.ref) ? (
+                                  <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                ) : (
+                                  t.label
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p class="op-summary mono">{describeType(schema).label}</p>
+                  )}
+                </section>
+              );
+            })
+          }
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
