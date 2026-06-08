@@ -18,6 +18,14 @@ const wellnessDb = postgres.addDatabase("wellnessdb");
 // belong in dotnet user-secrets (or the deployment environment); these
 // placeholders are enough to bring the service up and exercise endpoints
 // that don't actually round-trip with the upstream identity provider.
+const wellnessMigrator = builder
+  .addProject(
+    "wellness-migrator",
+    "../Devngn.Wellness.MigrationWorker/Devngn.Wellness.MigrationWorker.csproj",
+  )
+  .withReference(wellnessDb)
+  .waitFor(wellnessDb);
+
 const wellnessApi = builder
   .addProject(
     "wellness-api",
@@ -25,7 +33,15 @@ const wellnessApi = builder
     { launchProfileOrOptions: "https" },
   )
   .withReference(wellnessDb)
-  .waitFor(wellnessDb);
+  .waitForCompletion(wellnessMigrator);
+
+// Surface Scalar (and the raw OpenAPI document) as one-click links on the
+// wellness-api resource panel in the Aspire dashboard. `withUrl` ADDS new
+// URL annotations alongside the endpoint URLs (vs. `withUrlForEndpoint`
+// which would replace them). The absolute URLs match launchSettings.json's
+// `https` profile (Aspire's DCP proxies through these declared ports).
+await wellnessApi.withUrl("https://localhost:7107/scalar/v1", { displayText: "Scalar API reference" });
+await wellnessApi.withUrl("https://localhost:7107/openapi/v1.json", { displayText: "OpenAPI document" });
 
 const devEnv: Record<string, string> = {
   // GitHub OAuth (web flow) — placeholders; real flow needs registered app.

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <UserSecretsId>devngn-wellness-migrationworker</UserSecretsId>
+    <RootNamespace>Devngn.Wellness.MigrationWorker</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Devngn.ServiceDefaults\Devngn.ServiceDefaults.csproj" />
+    <!--
+      Reference the API project for WellnessDbContext + the Migrations/ assembly.
+      This pulls a little ASP.NET tooling into the worker, but avoids a large
+      refactor extracting a separate Data library. Revisit if the migrator ever
+      needs to ship as an independent container image.
+    -->
+    <ProjectReference Include="..\Devngn.Wellness.Api\Devngn.Wellness.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+</Project>

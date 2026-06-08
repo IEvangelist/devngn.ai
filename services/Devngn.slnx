@@ -3,4 +3,5 @@
   <Project Path="Devngn.ServiceDefaults/Devngn.ServiceDefaults.csproj" />
   <Project Path="Devngn.Wellness.Api.Tests/Devngn.Wellness.Api.Tests.csproj" />
   <Project Path="Devngn.Wellness.Api/Devngn.Wellness.Api.csproj" />
+  <Project Path="Devngn.Wellness.MigrationWorker/Devngn.Wellness.MigrationWorker.csproj" />
 </Solution>
