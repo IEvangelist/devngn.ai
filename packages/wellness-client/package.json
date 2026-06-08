@@ -1,0 +1,23 @@
+{
+  "name": "@devngn/wellness-client",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dependency-free fetch/SSE client for the devngn.ai Wellness API, shared by the VS Code extension and CLI daemon.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@devngn/wellness-types": "workspace:*"
+  }
+}

@@ -45,6 +45,18 @@ import {
   getBundledRegistry,
   getResearchFreshnessSummary,
 } from "@devngn/vendors";
+import { WellnessClient } from "@devngn/wellness-client";
+import { runWellnessDaemon, type DaemonLogger } from "./wellness/daemon.js";
+import { createDefaultNotifier } from "./wellness/notifier.js";
+import { runDeviceFlowLogin } from "./wellness/signIn.js";
+import {
+  createFileTokenSource,
+  deleteSession,
+  readSession,
+  wellnessSessionPath,
+  writeSession,
+} from "./wellness/tokenStore.js";
+import { resolveHostTimeZone } from "./wellness/util.js";
 
 interface JsonOption {
   json?: boolean;
@@ -552,6 +564,148 @@ program
       () =>
         `devngn ${payload.clientVersion}; registry vendors: ${payload.registry.total}.`,
     );
+  });
+
+const DEFAULT_WELLNESS_API_URL = "http://localhost:5000";
+
+const wellnessCommand = program
+  .command("wellness")
+  .description(
+    "Stream movement-break prompts and raise OS notifications when your schedule opens up.",
+  );
+
+wellnessCommand
+  .command("login")
+  .description("Sign in to the wellness service with the GitHub device flow.")
+  .option("--api-url <url>", "Wellness API base URL.", DEFAULT_WELLNESS_API_URL)
+  .action(async (options: { apiUrl: string }) => {
+    const file = wellnessSessionPath(
+      getDefaultDevngnStoragePaths({ workspace: process.cwd() }).stateDirectory,
+    );
+    const client = new WellnessClient({
+      baseUrl: options.apiUrl,
+      getToken: createFileTokenSource(file).getToken,
+    });
+
+    const session = await runDeviceFlowLogin(client, {
+      log: {
+        info: (line) => console.log(line),
+        error: (line) => console.error(line),
+      },
+    });
+    if (session === null) {
+      recordCliFlow("cli.command", {
+        command: "wellness login",
+        signedIn: false,
+      });
+      process.exitCode = 1;
+      return;
+    }
+
+    await writeSession(file, session);
+    recordCliFlow("cli.command", { command: "wellness login", signedIn: true });
+    console.log(
+      `Signed in${session.login ? ` as ${session.login}` : ""}. Run \`devngn wellness daemon\` to start receiving movement breaks.`,
+    );
+  });
+
+wellnessCommand
+  .command("logout")
+  .description("Sign out and delete the stored wellness session.")
+  .action(async () => {
+    const file = wellnessSessionPath(
+      getDefaultDevngnStoragePaths({ workspace: process.cwd() }).stateDirectory,
+    );
+    await deleteSession(file);
+    recordCliFlow("cli.command", { command: "wellness logout" });
+    console.log("Signed out of the wellness service.");
+  });
+
+wellnessCommand
+  .command("daemon")
+  .description(
+    "Subscribe to the prompt stream and raise OS notifications until interrupted.",
+  )
+  .option("--api-url <url>", "Wellness API base URL.", DEFAULT_WELLNESS_API_URL)
+  .option(
+    "--tz <iana>",
+    "IANA time zone for gap windows. Defaults to the host zone.",
+  )
+  .option("--once", "Exit after the first prompt (useful for testing).")
+  .action(async (options: { apiUrl: string; tz?: string; once?: boolean }) => {
+    const file = wellnessSessionPath(
+      getDefaultDevngnStoragePaths({ workspace: process.cwd() }).stateDirectory,
+    );
+    const session = await readSession(file);
+    if (session === null) {
+      console.error("Not signed in. Run `devngn wellness login` first.");
+      process.exitCode = 1;
+      return;
+    }
+
+    const client = new WellnessClient({
+      baseUrl: options.apiUrl,
+      getToken: createFileTokenSource(file).getToken,
+    });
+    const notifier = createDefaultNotifier();
+    const timeZone = options.tz ?? resolveHostTimeZone();
+
+    const controller = new AbortController();
+    let interrupts = 0;
+    const onInterrupt = (): void => {
+      interrupts += 1;
+      if (interrupts >= 2) {
+        process.exit(130);
+      }
+      console.log(
+        "\nStopping wellness daemon… (press Ctrl+C again to force quit)",
+      );
+      controller.abort();
+    };
+    process.on("SIGINT", onInterrupt);
+    process.on("SIGTERM", onInterrupt);
+
+    const log: DaemonLogger = {
+      status: (status) => console.log(`[wellness] ${status}`),
+      prompt: (message) => console.log(`[wellness] ${message.title}`),
+      warn: (error) =>
+        console.warn(
+          `[wellness] ${error instanceof Error ? error.message : String(error)}`,
+        ),
+    };
+
+    try {
+      console.log(
+        `Listening for movement breaks from ${options.apiUrl}${session.login ? ` as ${session.login}` : ""}. Press Ctrl+C to stop.`,
+      );
+      const result = await runWellnessDaemon({
+        client,
+        notifier,
+        log,
+        timeZone,
+        signal: controller.signal,
+        once: options.once,
+      });
+      recordCliFlow("cli.command", {
+        command: "wellness daemon",
+        reason: result.reason,
+      });
+
+      if (result.reason === "unauthorized") {
+        console.error(
+          "Wellness session is no longer valid. Run `devngn wellness login` again.",
+        );
+        process.exitCode = 1;
+      } else if (result.reason === "forbidden") {
+        console.error(
+          "Wellness access is forbidden. Accept the latest consent in the devngn.ai app, then retry.",
+        );
+        process.exitCode = 1;
+      }
+    } finally {
+      process.off("SIGINT", onInterrupt);
+      process.off("SIGTERM", onInterrupt);
+    }
   });
 
 program

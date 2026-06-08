@@ -21,6 +21,7 @@
       "@devngn/skills": ["./packages/skills/src/index.ts"],
       "@devngn/sync": ["./packages/sync/src/index.ts"],
       "@devngn/vendors": ["./packages/vendors/src/index.ts"],
+      "@devngn/wellness-client": ["./packages/wellness-client/src/index.ts"],
       "@devngn/wellness-types": ["./packages/wellness-types/src/index.ts"]
     }
   }

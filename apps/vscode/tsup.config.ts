@@ -12,6 +12,7 @@ export default defineConfig({
     "@devngn/core",
     "@devngn/patterns",
     "@devngn/vendors",
+    "@devngn/wellness-client",
   ],
   sourcemap: true,
   clean: true,

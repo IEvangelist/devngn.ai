@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import * as vscode from "vscode";
-import type { WellnessClient } from "./client.js";
-import type { StoredSession } from "./session.js";
+import type { StoredSession, WellnessClient } from "@devngn/wellness-client";
 
 /**
  * Drives the GitHub device-authorization flow with VS Code UI: starts a session,

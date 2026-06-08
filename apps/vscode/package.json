@@ -101,7 +101,7 @@
   "scripts": {
     "build": "tsup --config tsup.config.ts",
     "lint": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run && pnpm build && node scripts/smoke-extension.cjs"
+    "test": "vitest run --passWithNoTests && pnpm build && node scripts/smoke-extension.cjs"
   },
   "dependencies": {
     "@devngn/ai": "workspace:*",
@@ -109,6 +109,7 @@
     "@devngn/core": "workspace:*",
     "@devngn/patterns": "workspace:*",
     "@devngn/vendors": "workspace:*",
+    "@devngn/wellness-client": "workspace:*",
     "@devngn/wellness-types": "workspace:*"
   },
   "devDependencies": {

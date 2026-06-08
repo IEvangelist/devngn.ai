@@ -7,10 +7,11 @@ import type { PromptResponse } from "@devngn/wellness-types";
 import {
   WellnessAuthError,
   WellnessClient,
+  isSessionUsable,
   type StreamStatus,
   type StreamStopReason,
-} from "./client.js";
-import { isSessionUsable, type StoredSession } from "./session.js";
+  type StoredSession,
+} from "@devngn/wellness-client";
 import { runDeviceFlowSignIn } from "./signIn.js";
 import { openPromptPreview, presentPrompt } from "./ui.js";
 

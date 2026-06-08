@@ -31,6 +31,8 @@
     "@devngn/skills": "workspace:*",
     "@devngn/sync": "workspace:*",
     "@devngn/vendors": "workspace:*",
+    "@devngn/wellness-client": "workspace:*",
+    "@devngn/wellness-types": "workspace:*",
     "commander": "^14.0.2",
     "tsx": "^4.20.6"
   }

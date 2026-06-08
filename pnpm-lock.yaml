@@ -124,6 +124,9 @@ importers:
       '@devngn/vendors':
         specifier: workspace:*
         version: link:../../packages/vendors
+      '@devngn/wellness-client':
+        specifier: workspace:*
+        version: link:../../packages/wellness-client
       '@devngn/wellness-types':
         specifier: workspace:*
         version: link:../../packages/wellness-types
@@ -218,6 +221,12 @@ importers:
       '@devngn/vendors':
         specifier: workspace:*
         version: link:../vendors
+      '@devngn/wellness-client':
+        specifier: workspace:*
+        version: link:../wellness-client
+      '@devngn/wellness-types':
+        specifier: workspace:*
+        version: link:../wellness-types
       commander:
         specifier: ^14.0.2
         version: 14.0.3
@@ -281,6 +290,12 @@ importers:
       zod:
         specifier: ^4.3.6
         version: 4.3.6
+
+  packages/wellness-client:
+    dependencies:
+      '@devngn/wellness-types':
+        specifier: workspace:*
+        version: link:../wellness-types
 
   packages/wellness-types:
     devDependencies:
