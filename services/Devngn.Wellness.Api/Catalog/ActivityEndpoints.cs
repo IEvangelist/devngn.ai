@@ -17,7 +17,10 @@ internal static class ActivityEndpoints
             .WithTags("Activities")
             .RequireAuthorization();
 
-        group.MapGet("", ListAsync).WithName("ListActivities");
+        group.MapGet("", ListAsync)
+            .Produces<IReadOnlyList<ActivityResponse>>()
+            .ProducesValidationProblem()
+            .WithName("ListActivities");
         return app;
     }
 

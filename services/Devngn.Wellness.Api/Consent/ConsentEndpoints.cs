@@ -21,15 +21,19 @@ internal static class ConsentEndpoints
             .RequireAuthorization();
 
         group.MapGet("", GetAsync)
+            .Produces<ConsentStateResponse>()
             .WithName("GetConsent")
             .WithSummary("Returns the user's accepted consent (if any) and the current canonical text.");
 
         group.MapPost("", AcceptAsync)
             .ValidateBody<RouteHandlerBuilder, AcceptConsentRequest>()
+            .Produces<ConsentSnapshot>()
+            .ProducesValidationProblem()
             .WithName("AcceptConsent")
             .WithSummary("Idempotently accepts the named consent version using the server's canonical text.");
 
         group.MapDelete("", RevokeAsync)
+            .Produces(StatusCodes.Status204NoContent)
             .WithName("RevokeConsent")
             .WithSummary("Revokes consent and cascade-deletes profile, goals, and equipment.");
 

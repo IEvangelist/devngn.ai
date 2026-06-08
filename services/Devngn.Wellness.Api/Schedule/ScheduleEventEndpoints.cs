@@ -31,11 +31,22 @@ internal static class ScheduleEventEndpoints
             .RequireAuthorization()
             .RequireConsent();
 
-        group.MapGet("", ListAsync).WithName("ListScheduleEvents");
+        group.MapGet("", ListAsync)
+            .Produces<IReadOnlyList<ScheduleEventResponse>>()
+            .ProducesValidationProblem()
+            .WithName("ListScheduleEvents");
         group.MapPost("", PushAsync)
             .ValidateBody<RouteHandlerBuilder, PushScheduleEventsRequest>()
+            .Produces<IReadOnlyList<ScheduleEventResponse>>()
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem()
             .WithName("PushScheduleEvents");
-        group.MapDelete("{id:guid}", DeleteAsync).WithName("DeleteScheduleEvent");
+        group.MapDelete("{id:guid}", DeleteAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DeleteScheduleEvent");
 
         return app;
     }

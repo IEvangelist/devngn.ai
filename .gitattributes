@@ -1,0 +1,4 @@
+# Generated artifacts must stay LF so the generators (ASP.NET OpenAPI,
+# openapi-typescript) and the drift guards don't churn line endings on Windows.
+services/Devngn.Wellness.Api/openapi/v1.json text eol=lf
+packages/wellness-types/src/schema.ts text eol=lf

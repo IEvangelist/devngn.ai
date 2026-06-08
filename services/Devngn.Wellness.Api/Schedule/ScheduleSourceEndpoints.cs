@@ -22,16 +22,38 @@ internal static class ScheduleSourceEndpoints
             .RequireAuthorization()
             .RequireConsent();
 
-        group.MapGet("", ListAsync).WithName("ListScheduleSources");
-        group.MapGet("{id:guid}", GetAsync).WithName("GetScheduleSource");
+        group.MapGet("", ListAsync)
+            .Produces<IReadOnlyList<ScheduleSourceResponse>>()
+            .WithName("ListScheduleSources");
+        group.MapGet("{id:guid}", GetAsync)
+            .Produces<ScheduleSourceResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("GetScheduleSource");
         group.MapPost("", CreateAsync)
             .ValidateBody<RouteHandlerBuilder, CreateScheduleSourceRequest>()
+            .Produces<ScheduleSourceResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesValidationProblem()
             .WithName("CreateScheduleSource");
         group.MapPatch("{id:guid}", PatchAsync)
             .ValidateBody<RouteHandlerBuilder, UpdateScheduleSourceRequest>()
+            .Produces<ScheduleSourceResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem()
             .WithName("UpdateScheduleSource");
-        group.MapDelete("{id:guid}", DeleteAsync).WithName("DeleteScheduleSource");
-        group.MapPost("{id:guid}/sync", SyncAsync).WithName("SyncScheduleSource");
+        group.MapDelete("{id:guid}", DeleteAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DeleteScheduleSource");
+        group.MapPost("{id:guid}/sync", SyncAsync)
+            .Produces<ScheduleSyncResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .WithName("SyncScheduleSource");
 
         return app;
     }
@@ -192,7 +214,7 @@ internal static class ScheduleSourceEndpoints
 
         return result.Outcome switch
         {
-            ScheduleSyncOutcome.Success => Results.Ok(new { synced = result.EventCount }),
+            ScheduleSyncOutcome.Success => Results.Ok(new ScheduleSyncResponse(result.EventCount)),
             ScheduleSyncOutcome.NotFound => Results.NotFound(),
             ScheduleSyncOutcome.LockHeld => Results.Problem(
                 title: "sync_in_progress",

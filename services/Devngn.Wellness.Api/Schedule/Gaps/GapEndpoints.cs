@@ -26,7 +26,10 @@ internal static class GapEndpoints
             .RequireAuthorization()
             .RequireConsent();
 
-        group.MapGet("", ListAsync).WithName("ListGaps");
+        group.MapGet("", ListAsync)
+            .Produces<IReadOnlyList<GapResponse>>()
+            .ProducesValidationProblem()
+            .WithName("ListGaps");
         return app;
     }
 

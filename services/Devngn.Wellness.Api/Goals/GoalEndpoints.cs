@@ -20,15 +20,28 @@ internal static class GoalEndpoints
             .RequireAuthorization()
             .RequireConsent();
 
-        group.MapGet("", ListAsync).WithName("ListGoals");
-        group.MapGet("{id:guid}", GetAsync).WithName("GetGoal");
+        group.MapGet("", ListAsync)
+            .Produces<IReadOnlyList<GoalResponse>>()
+            .WithName("ListGoals");
+        group.MapGet("{id:guid}", GetAsync)
+            .Produces<GoalResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("GetGoal");
         group.MapPost("", CreateAsync)
             .ValidateBody<RouteHandlerBuilder, CreateGoalRequest>()
+            .Produces<GoalResponse>(StatusCodes.Status201Created)
+            .ProducesValidationProblem()
             .WithName("CreateGoal");
         group.MapPut("{id:guid}", UpdateAsync)
             .ValidateBody<RouteHandlerBuilder, UpdateGoalRequest>()
+            .Produces<GoalResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesValidationProblem()
             .WithName("UpdateGoal");
-        group.MapDelete("{id:guid}", DeleteAsync).WithName("DeleteGoal");
+        group.MapDelete("{id:guid}", DeleteAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DeleteGoal");
 
         return app;
     }

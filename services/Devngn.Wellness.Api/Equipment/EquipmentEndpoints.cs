@@ -24,15 +24,29 @@ internal static class EquipmentEndpoints
             .RequireAuthorization()
             .RequireConsent();
 
-        group.MapGet("", ListAsync).WithName("ListEquipment");
-        group.MapGet("{id:guid}", GetAsync).WithName("GetEquipment");
+        group.MapGet("", ListAsync)
+            .Produces<IReadOnlyList<EquipmentResponse>>()
+            .WithName("ListEquipment");
+        group.MapGet("{id:guid}", GetAsync)
+            .Produces<EquipmentResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("GetEquipment");
         group.MapPost("", CreateAsync)
             .ValidateBody<RouteHandlerBuilder, CreateEquipmentRequest>()
+            .Produces<EquipmentResponse>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem()
             .WithName("CreateEquipment");
         group.MapPut("{id:guid}", UpdateAsync)
             .ValidateBody<RouteHandlerBuilder, UpdateEquipmentRequest>()
+            .Produces<EquipmentResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesValidationProblem()
             .WithName("UpdateEquipment");
-        group.MapDelete("{id:guid}", DeleteAsync).WithName("DeleteEquipment");
+        group.MapDelete("{id:guid}", DeleteAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DeleteEquipment");
 
         return app;
     }

@@ -21,22 +21,30 @@ internal static class AuthEndpoints
         var group = endpoints.MapGroup("/v1/auth").WithTags("Auth");
 
         group.MapPost("/github/device", StartDeviceFlowAsync)
+            .Produces<DeviceFlowStartResponse>()
             .WithName("StartDeviceFlow")
             .AllowAnonymous();
 
         group.MapPost("/github/device/poll", PollDeviceFlowAsync)
+            .Produces<AccessTokenResponse>()
+            .Produces<AuthErrorResponse>(StatusCodes.Status400BadRequest)
             .WithName("PollDeviceFlow")
             .AllowAnonymous();
 
         group.MapGet("/github/web/start", StartWebFlow)
+            .Produces<AuthErrorResponse>(StatusCodes.Status400BadRequest)
             .WithName("StartWebFlow")
             .AllowAnonymous();
 
         group.MapGet("/github/web/callback", WebCallbackAsync)
+            .Produces<AccessTokenResponse>()
+            .Produces<AuthErrorResponse>(StatusCodes.Status400BadRequest)
             .WithName("WebCallback")
             .AllowAnonymous();
 
         group.MapGet("/me", GetMeAsync)
+            .Produces<AuthenticatedUserResponse>()
+            .Produces<AuthErrorResponse>(StatusCodes.Status404NotFound)
             .WithName("GetMe")
             .RequireAuthorization();
 

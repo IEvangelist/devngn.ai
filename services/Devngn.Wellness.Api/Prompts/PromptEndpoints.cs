@@ -36,12 +36,27 @@ internal static class PromptEndpoints
             .RequireAuthorization()
             .RequireConsent();
 
-        group.MapGet("", ListAsync).WithName("ListPrompts");
-        group.MapPost("next", NextAsync).WithName("NextPrompt");
-        group.MapPost("{id:guid}/dismiss", DismissAsync).WithName("DismissPrompt");
-        group.MapPost("{id:guid}/complete", CompleteAsync).WithName("CompletePrompt");
+        group.MapGet("", ListAsync)
+            .Produces<IReadOnlyList<PromptResponse>>()
+            .WithName("ListPrompts");
+        group.MapPost("next", NextAsync)
+            .Produces<PromptResponse>()
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem()
+            .WithName("NextPrompt");
+        group.MapPost("{id:guid}/dismiss", DismissAsync)
+            .Produces<PromptResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DismissPrompt");
+        group.MapPost("{id:guid}/complete", CompleteAsync)
+            .Produces<PromptResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("CompletePrompt");
         group.MapPost("{id:guid}/feedback", FeedbackAsync)
             .ValidateBody<RouteHandlerBuilder, FeedbackRequest>()
+            .Produces<PromptResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesValidationProblem()
             .WithName("SubmitPromptFeedback");
         group.MapGet("stream", StreamAsync).WithName("StreamPrompts");
         group.MapGet("ws", WebSocketAsync).WithName("PromptsWebSocket");

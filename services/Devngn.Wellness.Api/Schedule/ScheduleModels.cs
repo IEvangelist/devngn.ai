@@ -100,3 +100,6 @@ public sealed record ScheduleEventResponse(
     DateTimeOffset StartUtc,
     DateTimeOffset EndUtc,
     bool Busy);
+
+/// <summary>Response body for a successful <c>POST /v1/schedule/sources/{id}/sync</c>.</summary>
+public sealed record ScheduleSyncResponse(int Synced);

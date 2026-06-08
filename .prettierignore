@@ -1,0 +1,6 @@
+# Generated API contract + client types — authored by the OpenAPI document
+# generator (ASP.NET Core) and openapi-typescript, not by hand. Reformatting them
+# would fight the generators on every run and break the drift guards that compare
+# raw generator output.
+services/Devngn.Wellness.Api/openapi/v1.json
+packages/wellness-types/src/schema.ts

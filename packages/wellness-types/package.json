@@ -1,0 +1,24 @@
+{
+  "name": "@devngn/wellness-types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Types-only TypeScript surface for the devngn.ai Wellness API, generated from its OpenAPI document.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "generate": "openapi-typescript ../../services/Devngn.Wellness.Api/openapi/v1.json --output ./src/schema.ts",
+    "generate:check": "pnpm generate && git diff --exit-code -- src/schema.ts",
+    "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.9.1"
+  }
+}

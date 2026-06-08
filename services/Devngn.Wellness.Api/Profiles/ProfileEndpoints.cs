@@ -20,11 +20,19 @@ internal static class ProfileEndpoints
             .RequireAuthorization()
             .RequireConsent();
 
-        group.MapGet("", GetAsync).WithName("GetProfile");
+        group.MapGet("", GetAsync)
+            .Produces<ProfileResponse>()
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("GetProfile");
         group.MapPut("", UpsertAsync)
             .ValidateBody<RouteHandlerBuilder, UpsertProfileRequest>()
+            .Produces<ProfileResponse>()
+            .ProducesValidationProblem()
             .WithName("UpsertProfile");
-        group.MapDelete("", DeleteAsync).WithName("DeleteProfile");
+        group.MapDelete("", DeleteAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("DeleteProfile");
 
         return app;
     }
