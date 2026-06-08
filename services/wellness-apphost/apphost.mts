@@ -4,7 +4,9 @@
 // Run `pnpm --filter @devngn/wellness-apphost restore` after a fresh checkout
 // so Aspire regenerates `.aspire/modules/` for your machine, then
 // `pnpm --filter @devngn/wellness-apphost start` to launch the dashboard,
-// Postgres container, and the Devngn.Wellness.Api project together.
+// Postgres container, the Devngn.Wellness.Api project, and the apps/site
+// frontend together. The `start` script builds apps/site first so the
+// wellness-site resource has its standalone server output to run.
 
 import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
@@ -71,5 +73,24 @@ const devEnv: Record<string, string> = {
 for (const [key, value] of Object.entries(devEnv)) {
   await wellnessApi.withEnvironment(key, value);
 }
+
+// Frontend: the Astro (Starlight) web app at apps/site that hosts the wellness
+// docs and the server-rendered OpenAPI reference (/wellness/, /wellness/reference).
+// It builds to a standalone @astrojs/node server which honors the HOST/PORT env
+// vars, so Aspire assigns the port (injected as PORT via the endpoint's `env`)
+// and proxies + visualizes it in the dashboard alongside the API. Runs the built
+// output, so build the site first (`pnpm --filter @devngn/site build`) before
+// `aspire start` on a fresh checkout. withReference wires API service discovery
+// for when the site calls the live API.
+const wellnessSite = builder
+  .addExecutable("wellness-site", "node", "../../apps/site", [
+    "dist/server/entry.mjs",
+  ])
+  .withHttpEndpoint({ env: "PORT", name: "http" })
+  .withEnvironment("HOST", "127.0.0.1")
+  .withReference(wellnessApi)
+  .waitFor(wellnessApi);
+
+await wellnessSite.withExternalHttpEndpoints();
 
 await builder.build().run();
