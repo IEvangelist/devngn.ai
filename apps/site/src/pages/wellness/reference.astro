@@ -1,7 +1,8 @@
 ---
 import { wellnessOpenApiDocument } from "@devngn/wellness-types";
 import ThemeInit from "../../components/ThemeInit.astro";
-import ThemeToggle from "../../components/ThemeToggle.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
 import Icon from "../../components/Icon.astro";
 import "../../styles/retro.css";
 
@@ -179,56 +180,6 @@ const schemaCount = Object.keys(schemas).length;
         font-family: var(--font-mono);
       }
 
-      /* Top bar -------------------------------------------------------- */
-      .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.85rem 1.5rem;
-        background: var(--bg);
-        border-bottom: var(--border);
-      }
-      .topbar .brand {
-        font-family: var(--font-display);
-        font-weight: 900;
-        font-size: 1.15rem;
-        letter-spacing: -0.03em;
-        text-decoration: none;
-        color: var(--text);
-      }
-      .topbar .brand .dot {
-        color: var(--accent);
-      }
-      .topbar .right {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-      }
-      .ghost {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-family: var(--font-mono);
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        text-decoration: none;
-        color: var(--text);
-        border: var(--border-w) solid var(--ink);
-        background: var(--surface-bg);
-        box-shadow: var(--shadow-sm);
-        padding: 0.45rem 0.7rem;
-      }
-      .ghost:hover {
-        background: var(--accent-3);
-        color: var(--accent-ink);
-      }
-
       /* Layout --------------------------------------------------------- */
       .layout {
         display: grid;
@@ -240,7 +191,7 @@ const schemaCount = Object.keys(schemas).length;
       }
       nav {
         position: sticky;
-        top: 4.5rem;
+        top: 1.5rem;
         align-self: start;
         max-height: calc(100vh - 6rem);
         overflow: auto;
@@ -561,13 +512,7 @@ const schemaCount = Object.keys(schemas).length;
     </style>
   </head>
   <body>
-    <header class="topbar">
-      <a class="brand" href="/">devngn<span class="dot">.</span>ai</a>
-      <div class="right">
-        <a class="ghost" href="/wellness/"><Icon name="book" size={15} stroke={2.8} /> Guide</a>
-        <ThemeToggle />
-      </div>
-    </header>
+    <SiteHeader active="api" />
 
     <div class="layout">
       <nav aria-label="API navigation">
@@ -825,5 +770,7 @@ const schemaCount = Object.keys(schemas).length;
         </section>
       </main>
     </div>
+
+    <SiteFooter />
   </body>
 </html>

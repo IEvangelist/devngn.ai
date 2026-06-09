@@ -16,6 +16,8 @@ export default defineConfig({
       customCss: ["./src/styles/retro.css"],
       components: {
         ThemeSelect: "./src/components/ThemeSelect.astro",
+        SiteTitle: "./src/components/SiteTitle.astro",
+        SocialIcons: "./src/components/SocialIcons.astro",
       },
       sidebar: [
         {

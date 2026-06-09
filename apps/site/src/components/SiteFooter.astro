@@ -1,0 +1,59 @@
+---
+// Shared marketing/docs footer so every standalone page ends the same way.
+---
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <span class="site-footer-license">MIT · Copyright © 2026–Present David Pine</span>
+    <nav class="site-footer-links" aria-label="Footer">
+      <a href="/getting-started/">Docs</a>
+      <a href="/wellness/">Wellness</a>
+      <a href="/wellness/reference">API reference</a>
+      <a href="/registry/">Registry</a>
+      <a href="/registry/v1/vendors.json">Registry JSON (raw)</a>
+      <a href="https://github.com/IEvangelist/devngn.ai">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: var(--border);
+    margin-top: 5rem;
+  }
+  .site-footer-inner {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .site-footer-license {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .site-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .site-footer-links a {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    font-weight: 700;
+    color: var(--ink);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 1px;
+  }
+  .site-footer-links a:hover {
+    background: var(--accent-3);
+    color: var(--accent-ink);
+  }
+</style>

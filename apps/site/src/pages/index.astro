@@ -4,7 +4,9 @@ import { listImportantDevngnFlows } from "@devngn/analytics";
 import { summarizePatternTrends } from "@devngn/patterns";
 import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
 import ThemeInit from "../components/ThemeInit.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import Icon from "../components/Icon.astro";
 import "../styles/retro.css";
 
 const vendors = getBundledRegistry();
@@ -16,43 +18,51 @@ const telemetryFlows = listImportantDevngnFlows();
 const values = [
   {
     tag: "Aware",
+    icon: "eye",
     body: "Opt in and build a wellness profile. devngn already knows your machine — now, with consent, it can respect the human at the keyboard.",
   },
   {
     tag: "Right-timed",
+    icon: "clock",
     body: "Gap detection watches your real calendar and todos. Prompts arrive when a genuine opening appears, not when you're heads-down.",
   },
   {
     tag: "Effortless",
+    icon: "bolt",
     body: "Five-second animated movement breaks, matched to your body and the equipment you actually have. No gym, no context switch.",
   },
   {
     tag: "Tracked",
+    icon: "pulse",
     body: "Every break, streak, and goal is recorded. Progress is real and reviewable — not a vague intention to 'move more later'.",
   },
   {
     tag: "Goalified",
+    icon: "target",
     body: "Turn wellbeing into concrete, measurable goals across mobility, strength, breathing, and posture, with progress events.",
   },
   {
     tag: "Gamified",
+    icon: "trophy",
     body: "Streaks, milestones, and momentum turn healthy habits into something that actually sticks day after day.",
   },
   {
     tag: "Social",
+    icon: "people",
     body: "Wellness is better together. Share goals and streaks with your team, cheer each other on, and stay honest.",
   },
   {
     tag: "Human-first",
+    icon: "heart",
     body: "Consent-gated and private by design. Calendars are read free/busy only, nothing is stored until you say so, and you can delete it all.",
   },
 ];
 
 const steps = [
-  { n: "01", title: "Opt in", body: "Accept consent and sketch a profile: baseline, preferred intensity, and the gear within reach." },
-  { n: "02", title: "We watch for real gaps", body: "Connect Google or Microsoft calendars (free/busy only) or push your own events. The engine finds true openings." },
-  { n: "03", title: "A 5-second nudge appears", body: "When a gap opens, a short movement-break prompt lands in VS Code or as an OS notification from the CLI daemon." },
-  { n: "04", title: "Track, share, and level up", body: "Complete it, build a streak, hit goals, and bring your team along. Small breaks, compounded." },
+  { n: "01", icon: "check", title: "Opt in", body: "Accept consent and sketch a profile: baseline, preferred intensity, and the gear within reach." },
+  { n: "02", icon: "calendar", title: "We watch for real gaps", body: "Connect Google or Microsoft calendars (free/busy only) or push your own events. The engine finds true openings." },
+  { n: "03", icon: "bell", title: "A 5-second nudge appears", body: "When a gap opens, a short movement-break prompt lands in VS Code or as an OS notification from the CLI daemon." },
+  { n: "04", icon: "flame", title: "Track, share, and level up", body: "Complete it, build a streak, hit goals, and bring your team along. Small breaks, compounded." },
 ];
 ---
 
@@ -92,54 +102,6 @@ const steps = [
         margin: 0 auto;
         max-width: 1140px;
         padding: 0 1.5rem 5rem;
-      }
-
-      /* Top bar */
-      .topbar {
-        max-width: 1140px;
-        margin: 0 auto;
-        padding: 1.25rem 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        flex-wrap: wrap;
-      }
-      .brand {
-        font-family: var(--font-display);
-        font-weight: 900;
-        font-size: 1.4rem;
-        letter-spacing: -0.03em;
-        text-decoration: none;
-      }
-      .brand .dot {
-        color: var(--accent);
-      }
-      .topbar-right {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-      }
-      .topnav {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-      }
-      .topnav a {
-        font-family: var(--font-mono);
-        font-size: 0.82rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        text-decoration: none;
-        padding: 0.4rem 0.7rem;
-        border: 2px solid transparent;
-        font-weight: 700;
-      }
-      .topnav a:hover {
-        border: 2px solid var(--ink);
-        background: var(--accent-3);
-        color: var(--accent-ink);
       }
 
       .eyebrow {
@@ -340,6 +302,27 @@ const steps = [
         transform: translate(-2px, -2px);
         box-shadow: var(--shadow);
       }
+      .card-head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.75rem;
+      }
+      .card-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        flex: none;
+        border: 2px solid var(--ink);
+        background: var(--surface-bg);
+        color: var(--ink);
+        box-shadow: var(--shadow-sm);
+      }
+      .card-icon :global(svg) {
+        display: block;
+      }
       .card .tag {
         display: inline-block;
         font-family: var(--font-display);
@@ -350,7 +333,7 @@ const steps = [
         color: var(--accent-ink);
         border: 2px solid var(--ink);
         padding: 0.2rem 0.55rem;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0;
       }
       .card:nth-child(8n + 1) .tag {
         background: var(--accent);
@@ -396,6 +379,27 @@ const steps = [
         background: var(--surface-bg);
         box-shadow: var(--shadow-sm);
         padding: 1.25rem;
+      }
+      .step-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .step-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.4rem;
+        height: 2.4rem;
+        flex: none;
+        border: 2px solid var(--ink);
+        background: var(--accent);
+        color: var(--accent-ink);
+        box-shadow: var(--shadow-sm);
+      }
+      .step-icon :global(svg) {
+        display: block;
       }
       .step .n {
         font-family: var(--font-display);
@@ -455,42 +459,6 @@ const steps = [
         color: var(--accent);
       }
 
-      /* Footer */
-      footer {
-        margin-top: 5rem;
-        border-top: var(--border);
-        padding-top: 1.5rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem 2rem;
-        align-items: center;
-        justify-content: space-between;
-      }
-      footer .links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-      }
-      footer a {
-        font-family: var(--font-mono);
-        font-size: 0.82rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        text-decoration: none;
-        font-weight: 700;
-        border-bottom: 2px solid var(--accent);
-        padding-bottom: 1px;
-      }
-      footer a:hover {
-        background: var(--accent-3);
-        color: var(--accent-ink);
-      }
-      footer .license {
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        color: var(--muted);
-      }
-
       @media (max-width: 820px) {
         .hero {
           grid-template-columns: 1fr;
@@ -500,18 +468,7 @@ const steps = [
     </style>
   </head>
   <body>
-    <header class="topbar">
-      <a class="brand" href="/">devngn<span class="dot">.</span>ai</a>
-      <div class="topbar-right">
-        <nav class="topnav" aria-label="Primary">
-          <a href="/getting-started/">Docs</a>
-          <a href="/wellness/">Wellness</a>
-          <a href="/wellness/reference">API</a>
-          <a href="https://github.com/IEvangelist/devngn.ai">GitHub</a>
-        </nav>
-        <ThemeToggle />
-      </div>
-    </header>
+    <SiteHeader />
 
     <main>
       <section class="hero">
@@ -573,7 +530,12 @@ const steps = [
           {
             values.map((v) => (
               <article class="card">
-                <span class="tag">{v.tag}</span>
+                <div class="card-head">
+                  <span class="card-icon">
+                    <Icon name={v.icon} size={22} stroke={2.4} />
+                  </span>
+                  <span class="tag">{v.tag}</span>
+                </div>
                 <p>{v.body}</p>
               </article>
             ))
@@ -588,7 +550,12 @@ const steps = [
           {
             steps.map((s) => (
               <article class="step">
-                <div class="n">{s.n}</div>
+                <div class="step-head">
+                  <div class="n">{s.n}</div>
+                  <span class="step-icon">
+                    <Icon name={s.icon} size={24} stroke={2.4} />
+                  </span>
+                </div>
                 <h3>{s.title}</h3>
                 <p>{s.body}</p>
               </article>
@@ -642,17 +609,7 @@ const steps = [
         </div>
       </section>
 
-      <footer>
-        <span class="license">MIT · Copyright © 2026–Present David Pine</span>
-        <div class="links">
-          <a href="/getting-started/">Docs</a>
-          <a href="/wellness/">Wellness</a>
-          <a href="/wellness/reference">API reference</a>
-          <a href="/registry/">Registry</a>
-          <a href="/registry/v1/vendors.json">Registry JSON (raw)</a>
-          <a href="https://github.com/IEvangelist/devngn.ai">GitHub</a>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   </body>
 </html>
