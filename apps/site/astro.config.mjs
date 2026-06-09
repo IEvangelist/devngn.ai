@@ -11,7 +11,9 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "devngn.ai",
-      description: "The dev engine for managing your AI-bits.",
+      description:
+        "Human-first developer wellness — move more, tracked and shared.",
+      customCss: ["./src/styles/retro.css"],
       sidebar: [
         {
           label: "Start here",

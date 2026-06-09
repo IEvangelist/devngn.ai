@@ -1,9 +1,15 @@
 ---
 title: Getting started
-description: Start managing your AI-bits with devngn.ai.
+description: devngn.ai puts the human first — developer wellness that fits into your workday.
 ---
 
-devngn.ai is the dev engine for managing your AI-bits: the instructions, skills, rules, prompts, memories, model preferences, vendor folders, evals, and AI tooling configuration that collect across developer workspaces.
+**devngn.ai puts the human first.** We help the people who build software stay healthy while they do it — turning the small gaps in a developer's day into short, restorative movement. Aware, responsible, and built for the betterment of the engineer and the civilization they're building.
+
+:::tip[Start with the Wellness service]
+The flagship of devngn.ai is opt-in [developer wellness](/wellness/): build a profile, set goals, and get ~5-second movement-break prompts the moment a real gap opens in your schedule — tracked, shared, goalified, and social. Read the [Wellness guide](/wellness/) or browse the [API reference](/wellness/reference).
+:::
+
+Under the hood, devngn.ai is also the **dev engine for managing your AI-bits**: the instructions, skills, rules, prompts, memories, model preferences, vendor folders, evals, and AI tooling configuration that collect across developer workspaces.
 
 The first product milestone focuses on three surfaces:
 

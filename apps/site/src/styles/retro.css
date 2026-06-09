@@ -1,0 +1,329 @@
+/*
+ * devngn.ai retro / neo-brutalist design system.
+ * Shared tokens + Starlight theme overrides. Standalone pages import this for
+ * the palette/border/shadow tokens and layer their own block styles on top.
+ */
+
+:root {
+  /* Retro palette */
+  --paper: #fdf3df;
+  --paper-2: #fffaee;
+  --surface: #ffffff;
+  --ink: #16130d;
+  --ink-soft: #574f3c;
+  --accent: #ff5a1f; /* orange */
+  --accent-ink: #16130d;
+  --accent-2: #11b3a3; /* teal */
+  --accent-3: #ffcf2e; /* yellow */
+  --accent-4: #6c4cf1; /* purple */
+  --accent-5: #ff4d8d; /* pink */
+  --accent-6: #2f6bff; /* blue */
+
+  /* Block geometry */
+  --border-w: 3px;
+  --border: var(--border-w) solid var(--ink);
+  --shadow-color: var(--ink);
+  --shadow-sm: 4px 4px 0 var(--shadow-color);
+  --shadow: 6px 6px 0 var(--shadow-color);
+  --shadow-lg: 10px 10px 0 var(--shadow-color);
+  --radius: 0px;
+
+  /* Typography */
+  --font-display:
+    "Arial Black", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-body:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif;
+  --font-mono:
+    ui-monospace, "Cascadia Code", "Cascadia Mono", "Segoe UI Mono", Consolas,
+    Menlo, monospace;
+
+  /* Theme-flippable surface tokens (light defaults; standalone pages use these) */
+  --bg: var(--paper);
+  --surface-bg: var(--surface);
+  --text: #221d12;
+  --muted: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------------------------
+ * Starlight theme overrides
+ * ------------------------------------------------------------------------- */
+
+:root[data-theme="light"] {
+  --bg: var(--paper);
+  --surface-bg: var(--surface);
+  --text: #221d12;
+  --muted: #574f3c;
+  --ink: #16130d;
+  --shadow-color: #16130d;
+
+  --sl-font: var(--font-body);
+  --sl-font-mono: var(--font-mono);
+
+  --sl-color-bg: var(--paper);
+  --sl-color-bg-nav: var(--paper);
+  --sl-color-bg-sidebar: var(--paper-2);
+  --sl-color-bg-inline-code: #ffe4b0;
+  --sl-color-bg-accent: var(--accent);
+
+  --sl-color-text: #2a2417;
+  --sl-color-white: #16130d;
+  --sl-color-black: var(--paper);
+  --sl-color-gray-1: #221d12;
+  --sl-color-gray-2: #322b1b;
+  --sl-color-gray-3: #574f3c;
+  --sl-color-gray-4: #6f6750;
+  --sl-color-gray-5: #8c8262;
+  --sl-color-gray-6: #efe5cb;
+  --sl-color-gray-7: #f6eed6;
+
+  --sl-color-accent: var(--accent);
+  --sl-color-accent-low: #ffd9c2;
+  --sl-color-accent-high: #ad3409;
+  --sl-color-text-accent: #ad3409;
+
+  --sl-color-hairline: var(--ink);
+  --sl-color-hairline-light: var(--ink);
+  --sl-color-hairline-shade: var(--ink);
+}
+
+:root[data-theme="dark"] {
+  --bg: #17130c;
+  --surface-bg: #221c12;
+  --text: #fdf3df;
+  --muted: #cdbf9f;
+  --ink: #fdf3df;
+  --shadow-color: #0b0905;
+
+  --sl-font: var(--font-body);
+  --sl-font-mono: var(--font-mono);
+
+  --sl-color-bg: #17130c;
+  --sl-color-bg-nav: #17130c;
+  --sl-color-bg-sidebar: #1f1910;
+  --sl-color-bg-inline-code: #2f2615;
+  --sl-color-bg-accent: var(--accent);
+
+  --sl-color-text: #ece2c8;
+  --sl-color-white: #fdf3df;
+  --sl-color-black: #17130c;
+  --sl-color-gray-1: #fdf3df;
+  --sl-color-gray-2: #e7dcc0;
+  --sl-color-gray-3: #cdbf9f;
+  --sl-color-gray-4: #9b906f;
+  --sl-color-gray-5: #5f5740;
+  --sl-color-gray-6: #2c2517;
+  --sl-color-gray-7: #221c12;
+
+  --sl-color-accent: var(--accent);
+  --sl-color-accent-low: #5a2a14;
+  --sl-color-accent-high: #ffd9c2;
+  --sl-color-text-accent: #ff8a5c;
+
+  --sl-color-hairline: var(--ink);
+  --sl-color-hairline-light: var(--ink);
+  --sl-color-hairline-shade: var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+ * Starlight component blockification
+ * ------------------------------------------------------------------------- */
+
+.sl-markdown-content {
+  --sl-content-width: 50rem;
+}
+
+/* Site header: thick block rule */
+header.header {
+  border-bottom: var(--border);
+  background: var(--sl-color-bg-nav);
+}
+
+.site-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+
+/* Headings */
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  color: var(--sl-color-white);
+}
+
+.sl-markdown-content h1 {
+  line-height: 1;
+}
+
+.sl-markdown-content h2 {
+  margin-top: 2.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: var(--border);
+}
+
+.sl-markdown-content h2::before {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.5rem;
+  vertical-align: -0.05em;
+  background: var(--accent);
+  border: 2px solid var(--ink);
+}
+
+.sl-markdown-content h3 {
+  margin-top: 1.75rem;
+}
+
+/* Links */
+.sl-markdown-content a {
+  color: var(--sl-color-text-accent);
+  font-weight: 700;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
+
+.sl-markdown-content a:hover {
+  background: var(--accent-3);
+  color: var(--ink);
+  box-shadow: 0 0 0 2px var(--accent-3);
+  text-decoration: none;
+}
+
+/* Inline code */
+.sl-markdown-content :not(pre) > code {
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  padding: 0.05em 0.4em;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* Code blocks */
+.sl-markdown-content pre {
+  border: var(--border);
+  border-radius: 0;
+  box-shadow: var(--shadow);
+  background: #16130d;
+  color: #f6eed6;
+}
+
+:root[data-theme="light"] .sl-markdown-content pre {
+  background: #1c1810;
+}
+
+/* Callouts / asides as solid blocks */
+.starlight-aside {
+  border: var(--border);
+  border-radius: 0;
+  box-shadow: var(--shadow-sm);
+  border-inline-start-width: var(--border-w);
+  padding: 1rem 1.15rem;
+}
+
+.starlight-aside__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.starlight-aside--note {
+  background: color-mix(in srgb, var(--accent-6) 16%, var(--sl-color-bg));
+}
+.starlight-aside--tip {
+  background: color-mix(in srgb, var(--accent-2) 18%, var(--sl-color-bg));
+}
+.starlight-aside--caution {
+  background: color-mix(in srgb, var(--accent-3) 24%, var(--sl-color-bg));
+}
+.starlight-aside--danger {
+  background: color-mix(in srgb, var(--accent-5) 18%, var(--sl-color-bg));
+}
+
+/* Tables */
+.sl-markdown-content table {
+  border: var(--border);
+  border-collapse: separate;
+  border-spacing: 0;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.sl-markdown-content th {
+  background: var(--accent-3);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.8rem;
+  border-bottom: var(--border);
+}
+
+.sl-markdown-content th,
+.sl-markdown-content td {
+  border-right: 2px solid var(--ink);
+  padding: 0.5rem 0.75rem;
+}
+
+.sl-markdown-content th:last-child,
+.sl-markdown-content td:last-child {
+  border-right: 0;
+}
+
+.sl-markdown-content tr:not(:last-child) td {
+  border-bottom: 2px solid var(--ink);
+}
+
+/* Sidebar nav */
+.sidebar-content a {
+  border-radius: 0;
+  font-weight: 600;
+}
+
+.sidebar-content a[aria-current="page"] {
+  background: var(--accent);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+  font-weight: 800;
+}
+
+.sidebar-content a:hover {
+  background: var(--accent-3);
+  color: var(--ink);
+}
+
+/* Sidebar group headings */
+.sidebar-content summary,
+.sidebar-content .group-label span,
+.sidebar-content h2 {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+/* Search button as a block */
+button[data-open-modal] {
+  border: var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-mono);
+}
+
+/* Pagination / content footer links */
+.sl-markdown-content .sl-link-card,
+a.pagination-links--prev,
+a.pagination-links--next {
+  border: var(--border);
+  border-radius: 0;
+  box-shadow: var(--shadow-sm);
+}
