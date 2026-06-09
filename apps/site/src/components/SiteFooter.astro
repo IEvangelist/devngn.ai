@@ -1,18 +1,113 @@
 ---
-// Shared marketing/docs footer so every standalone page ends the same way.
+// Shared marketing/docs footer so every page ends the same way. A tall,
+// multi-column footer: brand + mission, product / resources / legal link
+// columns (each link carries a retro icon), and a bottom license bar.
+import Icon from "./Icon.astro";
+
+interface FooterLink {
+  label: string;
+  href: string;
+  icon: string;
+  external?: boolean;
+}
+
+interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+
+const repo = "https://github.com/IEvangelist/devngn.ai";
+
+const columns: FooterColumn[] = [
+  {
+    title: "Product",
+    links: [
+      { label: "Docs", href: "/getting-started/", icon: "book" },
+      { label: "Wellness service", href: "/wellness/", icon: "heart" },
+      { label: "API reference", href: "/wellness/reference", icon: "braces" },
+      { label: "Vendor registry", href: "/registry/", icon: "code" },
+      { label: "Registry JSON (raw)", href: "/registry/v1/vendors.json", icon: "download" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Getting started", href: "/getting-started/", icon: "arrow" },
+      { label: "GitHub repository", href: repo, icon: "github", external: true },
+      { label: "Report an issue", href: `${repo}/issues`, icon: "spark", external: true },
+      { label: "davidpine.dev", href: "https://davidpine.dev", icon: "globe", external: true },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Terms of Use", href: "/terms/", icon: "file" },
+      { label: "Privacy", href: "/privacy/", icon: "shield" },
+      { label: "MIT License", href: `${repo}/blob/main/LICENSE`, icon: "check", external: true },
+    ],
+  },
+];
+
+const social: FooterLink[] = [
+  { label: "GitHub", href: repo, icon: "github", external: true },
+  { label: "davidpine.dev", href: "https://davidpine.dev", icon: "globe", external: true },
+];
+
+const ext = (l: FooterLink) =>
+  l.external ? { rel: "noopener", target: "_blank" } : {};
 ---
 
 <footer class="site-footer">
   <div class="site-footer-inner">
-    <span class="site-footer-license">MIT · Copyright © 2026–Present David Pine</span>
-    <nav class="site-footer-links" aria-label="Footer">
-      <a href="/getting-started/">Docs</a>
-      <a href="/wellness/">Wellness</a>
-      <a href="/wellness/reference">API reference</a>
-      <a href="/registry/">Registry</a>
-      <a href="/registry/v1/vendors.json">Registry JSON (raw)</a>
-      <a href="https://github.com/IEvangelist/devngn.ai">GitHub</a>
-    </nav>
+    <div class="footer-top">
+      <div class="footer-brand-col">
+        <a class="footer-brand" href="/">devngn<span class="dot">.</span>ai</a>
+        <p class="footer-tagline">
+          Human-first developer wellness. We honor the body behind the keyboard —
+          opt-in, private by design, and yours to delete anytime.
+        </p>
+        <div class="footer-social" aria-label="Social links">
+          {
+            social.map((l) => (
+              <a
+                class="footer-social-btn"
+                href={l.href}
+                aria-label={l.label}
+                title={l.label}
+                {...ext(l)}
+              >
+                <Icon name={l.icon} size={18} stroke={2.6} label={l.label} />
+              </a>
+            ))
+          }
+        </div>
+      </div>
+
+      {
+        columns.map((col) => (
+          <nav class="footer-col" aria-label={col.title}>
+            <h2 class="footer-col-title">{col.title}</h2>
+            <ul>
+              {col.links.map((l) => (
+                <li>
+                  <a class="footer-link" href={l.href} {...ext(l)}>
+                    <Icon name={l.icon} size={15} stroke={2.6} />
+                    <span>{l.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div class="footer-bottom">
+      <span class="site-footer-license">
+        MIT · Copyright © 2026–Present David Pine
+      </span>
+      <span class="footer-note">Built to put the human first.</span>
+    </div>
   </div>
 </footer>
 
@@ -20,40 +115,139 @@
   .site-footer {
     border-top: var(--border);
     margin-top: 5rem;
+    background: var(--surface-bg);
   }
   .site-footer-inner {
     max-width: 1140px;
     margin: 0 auto;
-    padding: 1.5rem;
+    padding: 3.25rem 1.5rem 2rem;
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: 2.5rem 2rem;
+  }
+  @media (max-width: 900px) {
+    .footer-top {
+      grid-template-columns: 1fr 1fr;
+    }
+    .footer-brand-col {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 560px) {
+    .footer-top {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .footer-brand {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.6rem;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .footer-brand .dot {
+    color: var(--accent);
+  }
+  .footer-tagline {
+    margin: 0.85rem 0 1.25rem;
+    max-width: 30rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .footer-social {
+    display: flex;
+    gap: 0.6rem;
+  }
+  .footer-social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 2px solid var(--ink);
+    /* Use --ink (not --shadow-color) so the offset block stays visible in
+       dark theme, where the global shadow color is near-black. */
+    box-shadow: 3px 3px 0 var(--ink);
+    transition:
+      transform 0.08s ease,
+      box-shadow 0.08s ease,
+      background 0.08s ease;
+  }
+  .footer-social-btn :global(svg) {
+    display: block;
+  }
+  .footer-social-btn:hover {
+    background: var(--accent);
+    color: var(--accent-ink);
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 var(--ink);
+  }
+
+  .footer-col-title {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--accent);
+  }
+  .footer-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 0.2rem 0.35rem 0.2rem 0;
+    line-height: 1.2;
+  }
+  .footer-link :global(svg) {
+    display: block;
+    flex: 0 0 auto;
+    color: var(--accent);
+  }
+  .footer-link:hover {
+    color: var(--accent-ink);
+    background: var(--accent-3);
+  }
+  .footer-link:hover :global(svg) {
+    color: var(--accent-ink);
+  }
+
+  .footer-bottom {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem 2rem;
+    gap: 0.5rem 1.5rem;
     align-items: center;
     justify-content: space-between;
+    margin-top: 2.75rem;
+    padding-top: 1.5rem;
+    border-top: 2px dashed var(--ink);
   }
-  .site-footer-license {
+  .site-footer-license,
+  .footer-note {
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--muted);
-  }
-  .site-footer-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-  .site-footer-links a {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    text-decoration: none;
-    font-weight: 700;
-    color: var(--ink);
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 1px;
-  }
-  .site-footer-links a:hover {
-    background: var(--accent-3);
-    color: var(--accent-ink);
   }
 </style>

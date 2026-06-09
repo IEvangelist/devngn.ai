@@ -18,6 +18,7 @@ export default defineConfig({
         ThemeSelect: "./src/components/ThemeSelect.astro",
         SiteTitle: "./src/components/SiteTitle.astro",
         SocialIcons: "./src/components/SocialIcons.astro",
+        Footer: "./src/components/StarlightFooter.astro",
       },
       sidebar: [
         {

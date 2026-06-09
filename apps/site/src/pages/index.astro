@@ -122,21 +122,23 @@ const steps = [
         gap: 2.5rem;
         grid-template-columns: minmax(0, 1.5fr) minmax(17rem, 0.8fr);
         align-items: end;
-        padding-top: 2rem;
+        padding-top: 0.5rem;
       }
       h1 {
         font-family: var(--font-display);
         font-size: clamp(2.8rem, 8vw, 6rem);
-        line-height: 1.02;
+        line-height: 1.12;
         letter-spacing: -0.03em;
-        margin: 1rem 0 1.25rem;
+        margin: 0.5rem 0 1rem;
         text-wrap: balance;
       }
+      /* Solid retro block behind "human". A slightly looser line-height gives
+         the block clearance so it hugs the word instead of bleeding up into
+         the line above ("Put the"). */
       h1 .hl {
         background: var(--accent);
         color: var(--accent-ink);
-        padding: 0 0.2em;
-        box-shadow: var(--shadow-sm);
+        padding: 0 0.18em;
         -webkit-box-decoration-break: clone;
         box-decoration-break: clone;
       }
@@ -608,8 +610,8 @@ const steps = [
           </div>
         </div>
       </section>
-
-      <SiteFooter />
     </main>
+
+    <SiteFooter />
   </body>
 </html>

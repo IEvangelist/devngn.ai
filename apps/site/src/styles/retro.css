@@ -356,7 +356,10 @@ a.pagination-links--next {
   background: var(--surface-bg);
   border: var(--border-w) solid var(--ink);
   border-radius: 0;
-  box-shadow: var(--shadow-sm);
+  /* Use --ink for the offset shadow (not --shadow-color): it is dark in light
+     theme and cream in dark theme, so the retro block stays visible in both.
+     The global --shadow-color is near-black and disappears on the dark header. */
+  box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
   transition:
     transform 0.08s ease,
@@ -368,12 +371,12 @@ a.pagination-links--next {
   background: var(--accent-3);
   color: var(--accent-ink);
   transform: translate(-2px, -2px);
-  box-shadow: var(--shadow);
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
 .retro-theme-toggle:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--shadow-color);
+  box-shadow: 1px 1px 0 var(--ink);
 }
 
 .retro-theme-toggle:focus-visible {

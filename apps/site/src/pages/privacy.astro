@@ -1,0 +1,95 @@
+---
+import LegalLayout from "../layouts/LegalLayout.astro";
+
+export const prerender = true;
+---
+
+<LegalLayout
+  title="Privacy Policy"
+  description="How devngn.ai handles your data — opt-in, private by design, and yours to delete anytime."
+  kicker="Legal"
+  updated="June 9, 2026"
+>
+  <p>
+    devngn.ai is built human-first, and that includes your privacy. This policy
+    explains what we collect, why, and the control you keep over it. The short
+    version: <strong>nothing personal is stored until you opt in</strong>, we read
+    your calendar as free/busy only, and you can export or delete everything at any
+    time.
+  </p>
+
+  <h2>What we collect</h2>
+  <p>Only after you explicitly opt in, and only what the feature needs:</p>
+  <ul>
+    <li><strong>Wellness profile</strong> — baseline, preferred intensity, and notes you choose to provide.</li>
+    <li><strong>Goals and progress</strong> — the goals you set and the movement breaks you complete.</li>
+    <li><strong>Equipment</strong> — the gear you register as available to you.</li>
+    <li><strong>Schedule signals</strong> — <strong>free/busy</strong> windows from a connected calendar, or events you push yourself, used to find real gaps.</li>
+    <li><strong>Account basics</strong> — an identifier from your sign-in provider so your data is yours.</li>
+  </ul>
+
+  <h2>What we don't collect</h2>
+  <ul>
+    <li>We do <strong>not</strong> read the titles, attendees, or contents of your calendar events — only free/busy availability.</li>
+    <li>We don't sell your data, and we don't use it for advertising.</li>
+    <li>We don't store anything personal before you opt in.</li>
+  </ul>
+
+  <h2>How we use it</h2>
+  <p>
+    Your data powers the core experience: detecting genuine gaps in your day,
+    tailoring five-second movement prompts to your profile and equipment, and
+    tracking streaks, goals, and progress so it's real and reviewable.
+  </p>
+
+  <h2>Sharing and social features</h2>
+  <p>
+    Wellness is better together, but it's opt-in. Goals and streaks are private to
+    you unless <strong>you choose</strong> to share them with a team or teammates.
+    You control what is shared and can stop sharing at any time.
+  </p>
+
+  <h2>Third-party connections</h2>
+  <ul>
+    <li><strong>Calendar providers</strong> (e.g., Google, Microsoft) — accessed for free/busy availability only, with your authorization.</li>
+    <li><strong>Sign-in</strong> — handled through your chosen provider (such as GitHub) using standard OAuth.</li>
+  </ul>
+  <p>
+    These providers process data under their own privacy policies. You can revoke
+    their access from your provider's settings at any time.
+  </p>
+
+  <h2>Storage and hosting</h2>
+  <p>
+    Your wellness data is stored in the project's hosted database. The
+    <a href="/registry/">vendor registry</a> and marketing pages are public and
+    contain no personal data. On the marketing site, local storage is used only to
+    remember your light/dark theme preference — that's it.
+  </p>
+
+  <h2>Your control</h2>
+  <ul>
+    <li><strong>Export</strong> — you can request a copy of your data.</li>
+    <li><strong>Delete</strong> — you can delete all of it whenever you want, and withdrawing consent stops further collection.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>
+    devngn.ai is intended for professional developers and is not directed to
+    children under 13. We don't knowingly collect data from children.
+  </p>
+
+  <h2>Changes</h2>
+  <p>
+    If this policy changes, we'll update the "last updated" date above. Significant
+    changes will be highlighted where appropriate.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions or requests about your data? Reach out via
+    <a href="https://davidpine.dev" rel="noopener" target="_blank">davidpine.dev</a>
+    or open an issue on
+    <a href="https://github.com/IEvangelist/devngn.ai/issues" rel="noopener" target="_blank">GitHub</a>.
+  </p>
+</LegalLayout>
