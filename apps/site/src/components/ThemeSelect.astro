@@ -1,0 +1,11 @@
+---
+/*
+ * Starlight ThemeSelect override → icon-only toggle.
+ * Starlight's own ThemeProvider still handles the pre-paint `data-theme`
+ * init reading `localStorage['starlight-theme']`; this just swaps the ugly
+ * <select> for the shared retro toggle button.
+ */
+import ThemeToggle from "./ThemeToggle.astro";
+---
+
+<ThemeToggle />

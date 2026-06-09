@@ -1,0 +1,322 @@
+---
+import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
+import ThemeInit from "../../components/ThemeInit.astro";
+import ThemeToggle from "../../components/ThemeToggle.astro";
+import Icon from "../../components/Icon.astro";
+import "../../styles/retro.css";
+
+const payload = {
+  schemaVersion: 1,
+  generatedAt: new Date().toISOString(),
+  slogan: "Manage your AI-bits",
+  research: getResearchFreshnessSummary(),
+  vendors: getBundledRegistry(),
+};
+
+const json = JSON.stringify(payload, null, 2);
+const vendorCount = payload.vendors.length;
+
+/* Self-contained retro JSON highlighter — no Shiki/runtime dependency, so it
+ * renders reliably in on-demand SSR and stays on-palette. */
+function highlightJson(src: string): string {
+  const esc = src
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return esc.replace(
+    /("(?:\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(?:\s*:)?|\b(?:true|false)\b|\bnull\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+    (match) => {
+      let cls = "t-num";
+      if (/^"/.test(match)) {
+        cls = /:$/.test(match) ? "t-key" : "t-str";
+      } else if (match === "true" || match === "false") {
+        cls = "t-bool";
+      } else if (match === "null") {
+        cls = "t-null";
+      }
+      return `<span class="${cls}">${match}</span>`;
+    },
+  );
+}
+
+const highlighted = highlightJson(json);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <ThemeInit />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vendor registry — devngn.ai</title>
+    <meta
+      name="description"
+      content="The devngn.ai public vendor registry — a human-readable, syntax-highlighted view of the same JSON tools consume."
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          repeating-linear-gradient(45deg, transparent 0 28px, rgba(127, 110, 70, 0.05) 28px 29px),
+          var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+      }
+      a {
+        color: inherit;
+      }
+      .topbar {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .brand {
+        font-family: var(--font-display);
+        font-weight: 900;
+        font-size: 1.4rem;
+        letter-spacing: -0.03em;
+        text-decoration: none;
+      }
+      .brand .dot {
+        color: var(--accent);
+      }
+      .back {
+        font-family: var(--font-mono);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border: 2px solid var(--ink);
+        padding: 0.4rem 0.7rem;
+        box-shadow: var(--shadow-sm);
+        background: var(--surface-bg);
+      }
+      .back:hover {
+        background: var(--accent-3);
+        color: var(--accent-ink);
+      }
+      .topbar .right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 1rem 1.5rem 5rem;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 0.76rem;
+        background: var(--ink);
+        color: var(--bg);
+        padding: 0.35rem 0.7rem;
+      }
+      h1 {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 5vw, 3.2rem);
+        line-height: 1.02;
+        letter-spacing: -0.025em;
+        margin: 1rem 0 0.5rem;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+        max-width: 44rem;
+        margin: 0 0 1.5rem;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-size: 0.82rem;
+        text-decoration: none;
+        padding: 0.55rem 1rem;
+        border: var(--border);
+        background: var(--surface-bg);
+        color: var(--text);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        transition:
+          transform 0.08s ease,
+          box-shadow 0.08s ease;
+      }
+      .btn:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: var(--shadow);
+        background: var(--accent-3);
+        color: var(--accent-ink);
+      }
+      .btn:active {
+        transform: translate(2px, 2px);
+        box-shadow: 1px 1px 0 var(--shadow-color);
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: var(--accent-ink);
+      }
+      .code-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: var(--border);
+        padding: 0.5rem 0.85rem;
+        background: var(--accent-3);
+      }
+      .code-bar .dot {
+        width: 0.85rem;
+        height: 0.85rem;
+        border: 2px solid var(--ink);
+      }
+      .code-bar .dot.a {
+        background: var(--accent-5);
+      }
+      .code-bar .dot.b {
+        background: var(--accent);
+      }
+      .code-bar .dot.c {
+        background: var(--accent-2);
+      }
+      .code-bar .name {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--accent-ink);
+        margin-left: 0.35rem;
+      }
+      .code-wrap {
+        border: var(--border);
+        box-shadow: var(--shadow-lg);
+        background: #13110b;
+      }
+      .code-wrap pre.json {
+        margin: 0;
+        padding: 1.25rem 1.4rem;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 0.86rem;
+        line-height: 1.6;
+        color: #ece0c2;
+        white-space: pre;
+        tab-size: 2;
+      }
+      .code-wrap pre.json :global(.t-key) {
+        color: #ffae66;
+      }
+      .code-wrap pre.json :global(.t-str) {
+        color: #5fe3cb;
+      }
+      .code-wrap pre.json :global(.t-num) {
+        color: #c3a6ff;
+      }
+      .code-wrap pre.json :global(.t-bool) {
+        color: #ff8aa6;
+      }
+      .code-wrap pre.json :global(.t-null) {
+        color: #9b906f;
+        font-style: italic;
+      }
+      .copied {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--accent-ink);
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+      .copied.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/">devngn<span class="dot">.</span>ai</a>
+      <div class="right">
+        <a class="back" href="/"><Icon name="arrow" size={15} stroke={2.8} /> Home</a>
+        <ThemeToggle />
+      </div>
+    </header>
+
+    <main>
+      <div class="eyebrow"><Icon name="braces" size={14} stroke={2.8} /> Public registry</div>
+      <h1>Vendor registry</h1>
+      <p class="sub">
+        A human-readable, syntax-highlighted view of the {vendorCount} vendors in the devngn.ai
+        registry — the exact payload tools receive from the raw endpoint.
+      </p>
+
+      <div class="toolbar">
+        <button class="btn primary" id="copy-btn" type="button">
+          <Icon name="copy" size={15} stroke={2.6} /> Copy JSON
+        </button>
+        <a class="btn" href="/registry/v1/vendors.json">
+          <Icon name="code" size={15} stroke={2.6} /> Raw JSON (for tools)
+        </a>
+        <a class="btn" href="/registry/v1/vendors.json" download="devngn-vendors.json">
+          <Icon name="download" size={15} stroke={2.6} /> Download
+        </a>
+        <span class="copied" id="copied">Copied!</span>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-bar" aria-hidden="true">
+          <span class="dot a"></span>
+          <span class="dot b"></span>
+          <span class="dot c"></span>
+          <span class="name">vendors.json</span>
+        </div>
+        <pre class="json"><code set:html={highlighted} /></pre>
+      </div>
+    </main>
+
+    <script is:inline>
+      (() => {
+        const btn = document.getElementById("copy-btn");
+        const note = document.getElementById("copied");
+        const code = document.querySelector(".code-wrap pre.json");
+        btn?.addEventListener("click", async () => {
+          const data = code?.innerText ?? "";
+          try {
+            await navigator.clipboard.writeText(data);
+            note?.classList.add("show");
+            setTimeout(() => note?.classList.remove("show"), 1600);
+          } catch {}
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+---
+/*
+ * No-flash theme initialiser for the standalone (non-Starlight) pages.
+ * Resolves the stored Starlight preference (or the OS setting) and sets
+ * `data-theme` on <html> before first paint so retro.css token flips apply
+ * with no flash. Must be rendered as early as possible in <head>.
+ */
+---
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    let t;
+    try {
+      const s = localStorage.getItem("starlight-theme");
+      t = s === "light" || s === "dark" ? s : null;
+    } catch {}
+    if (!t) {
+      t = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+    root.dataset.theme = t;
+  })();
+</script>

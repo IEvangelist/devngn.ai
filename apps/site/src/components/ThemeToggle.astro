@@ -1,0 +1,46 @@
+---
+/*
+ * Shared icon-only theme toggle. Uses event delegation (bound once per page)
+ * so it works whether rendered once on a standalone page or multiple times in
+ * Starlight's header/mobile chrome. Icon visibility is driven purely by the
+ * `data-theme` attribute via CSS in retro.css.
+ */
+import Icon from "./Icon.astro";
+---
+
+<button
+  class="retro-theme-toggle"
+  type="button"
+  data-theme-toggle
+  aria-label="Toggle light and dark theme"
+  title="Toggle light / dark"
+>
+  <Icon name="sun" size={18} stroke={2.6} class="i-sun" />
+  <Icon name="moon" size={18} stroke={2.6} class="i-moon" />
+</button>
+
+<script is:inline>
+  (() => {
+    if (window.__retroThemeBound) return;
+    window.__retroThemeBound = true;
+    const KEY = "starlight-theme";
+    const root = document.documentElement;
+    const sysDark = () =>
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const current = () =>
+      root.dataset.theme === "light" || root.dataset.theme === "dark"
+        ? root.dataset.theme
+        : sysDark()
+          ? "dark"
+          : "light";
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-theme-toggle]");
+      if (!btn) return;
+      const next = current() === "dark" ? "light" : "dark";
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem(KEY, next);
+      } catch {}
+    });
+  })();
+</script>

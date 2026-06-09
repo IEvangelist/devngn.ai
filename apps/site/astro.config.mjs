@@ -14,6 +14,9 @@ export default defineConfig({
       description:
         "Human-first developer wellness — move more, tracked and shared.",
       customCss: ["./src/styles/retro.css"],
+      components: {
+        ThemeSelect: "./src/components/ThemeSelect.astro",
+      },
       sidebar: [
         {
           label: "Start here",

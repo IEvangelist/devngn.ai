@@ -3,6 +3,8 @@ import { listProviderManifests } from "@devngn/ai";
 import { listImportantDevngnFlows } from "@devngn/analytics";
 import { summarizePatternTrends } from "@devngn/patterns";
 import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
+import ThemeInit from "../components/ThemeInit.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
 import "../styles/retro.css";
 
 const vendors = getBundledRegistry();
@@ -57,6 +59,7 @@ const steps = [
 <!doctype html>
 <html lang="en">
   <head>
+    <ThemeInit />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>devngn.ai — Put the human first</title>
@@ -75,7 +78,7 @@ const steps = [
           repeating-linear-gradient(
             45deg,
             transparent 0 28px,
-            rgba(22, 19, 13, 0.025) 28px 29px
+            rgba(127, 110, 70, 0.05) 28px 29px
           ),
           var(--bg);
         color: var(--text);
@@ -112,6 +115,12 @@ const steps = [
       .brand .dot {
         color: var(--accent);
       }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
       .topnav {
         display: flex;
         gap: 0.5rem;
@@ -130,6 +139,7 @@ const steps = [
       .topnav a:hover {
         border: 2px solid var(--ink);
         background: var(--accent-3);
+        color: var(--accent-ink);
       }
 
       .eyebrow {
@@ -140,7 +150,7 @@ const steps = [
         text-transform: uppercase;
         font-size: 0.78rem;
         background: var(--ink);
-        color: var(--paper);
+        color: var(--bg);
         padding: 0.35rem 0.7rem;
       }
 
@@ -155,9 +165,10 @@ const steps = [
       h1 {
         font-family: var(--font-display);
         font-size: clamp(2.8rem, 8vw, 6rem);
-        line-height: 0.92;
+        line-height: 1.02;
         letter-spacing: -0.03em;
         margin: 1rem 0 1.25rem;
+        text-wrap: balance;
       }
       h1 .hl {
         background: var(--accent);
@@ -285,7 +296,7 @@ const steps = [
       .mission {
         margin-top: 4rem;
         border: var(--border);
-        background: var(--ink);
+        background: #16130d;
         color: var(--paper);
         box-shadow: var(--shadow-lg);
         padding: 2.5rem 2rem;
@@ -336,6 +347,7 @@ const steps = [
         font-size: 1.05rem;
         text-transform: uppercase;
         letter-spacing: 0.01em;
+        color: var(--accent-ink);
         border: 2px solid var(--ink);
         padding: 0.2rem 0.55rem;
         margin-bottom: 0.75rem;
@@ -471,6 +483,7 @@ const steps = [
       }
       footer a:hover {
         background: var(--accent-3);
+        color: var(--accent-ink);
       }
       footer .license {
         font-family: var(--font-mono);
@@ -489,12 +502,15 @@ const steps = [
   <body>
     <header class="topbar">
       <a class="brand" href="/">devngn<span class="dot">.</span>ai</a>
-      <nav class="topnav" aria-label="Primary">
-        <a href="/getting-started/">Docs</a>
-        <a href="/wellness/">Wellness</a>
-        <a href="/wellness/reference">API</a>
-        <a href="https://github.com/IEvangelist/devngn.ai">GitHub</a>
-      </nav>
+      <div class="topbar-right">
+        <nav class="topnav" aria-label="Primary">
+          <a href="/getting-started/">Docs</a>
+          <a href="/wellness/">Wellness</a>
+          <a href="/wellness/reference">API</a>
+          <a href="https://github.com/IEvangelist/devngn.ai">GitHub</a>
+        </nav>
+        <ThemeToggle />
+      </div>
     </header>
 
     <main>
@@ -632,7 +648,8 @@ const steps = [
           <a href="/getting-started/">Docs</a>
           <a href="/wellness/">Wellness</a>
           <a href="/wellness/reference">API reference</a>
-          <a href="/registry/v1/vendors.json">Registry JSON</a>
+          <a href="/registry/">Registry</a>
+          <a href="/registry/v1/vendors.json">Registry JSON (raw)</a>
           <a href="https://github.com/IEvangelist/devngn.ai">GitHub</a>
         </div>
       </footer>
