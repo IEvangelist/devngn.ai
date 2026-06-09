@@ -132,15 +132,27 @@ const steps = [
         margin: 0.5rem 0 1rem;
         text-wrap: balance;
       }
-      /* Solid retro block behind "human". A slightly looser line-height gives
-         the block clearance so it hugs the word instead of bleeding up into
-         the line above ("Put the"). */
+      /* Solid retro block behind "human". The display font has a tall ascent,
+         so a plain inline background leaves too much room above the caps and
+         clips tight to the baseline. Draw the block as a pseudo-element on an
+         inline-block instead, so its top/bottom hug the glyphs evenly. */
       h1 .hl {
-        background: var(--accent);
+        position: relative;
+        display: inline-block;
+        line-height: 1;
         color: var(--accent-ink);
-        padding: 0 0.18em;
-        -webkit-box-decoration-break: clone;
-        box-decoration-break: clone;
+        padding: 0 0.24em;
+        isolation: isolate;
+      }
+      h1 .hl::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0.04em;
+        bottom: -0.08em;
+        background: var(--accent);
+        z-index: -1;
       }
       .lede {
         font-size: 1.2rem;
