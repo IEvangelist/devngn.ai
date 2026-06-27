@@ -5,8 +5,9 @@
 // so Aspire regenerates `.aspire/modules/` for your machine, then
 // `pnpm --filter @devngn/wellness-apphost start` to launch the dashboard,
 // Postgres container, the Devngn.Wellness.Api project, and the apps/site
-// frontend together. The `start` script builds apps/site first so the
-// wellness-site resource has its standalone server output to run.
+// frontend together. The apps/site frontend is wired with Aspire's native
+// JavaScript hosting integration (`addViteApp`), which auto-installs its
+// dependencies and runs the Astro dev server — no manual build prestep needed.
 
 import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
@@ -76,18 +77,16 @@ for (const [key, value] of Object.entries(devEnv)) {
 
 // Frontend: the Astro (Starlight) web app at apps/site that hosts the wellness
 // docs and the server-rendered OpenAPI reference (/wellness/, /wellness/reference).
-// It builds to a standalone @astrojs/node server which honors the HOST/PORT env
-// vars, so Aspire assigns the port (injected as PORT via the endpoint's `env`)
-// and proxies + visualizes it in the dashboard alongside the API. Runs the built
-// output, so build the site first (`pnpm --filter @devngn/site build`) before
-// `aspire start` on a fresh checkout. withReference wires API service discovery
-// for when the site calls the live API.
+// Astro is Vite-based, so it's modeled with the native JavaScript hosting
+// integration (Aspire.Hosting.JavaScript) via `addViteApp`. Aspire auto-installs
+// dependencies with pnpm and runs the `dev` script (`astro dev`) — assigning the
+// port, proxying, and visualizing it in the dashboard alongside the API — so no
+// manual `pnpm --filter @devngn/site build` prestep is needed on a fresh checkout.
+// withReference wires API service discovery for when the site calls the live API;
+// waitFor holds startup until the API is ready.
 const wellnessSite = builder
-  .addExecutable("wellness-site", "node", "../../apps/site", [
-    "dist/server/entry.mjs",
-  ])
-  .withHttpEndpoint({ env: "PORT", name: "http" })
-  .withEnvironment("HOST", "127.0.0.1")
+  .addViteApp("wellness-site", "../../apps/site", { runScriptName: "dev" })
+  .withPnpm()
   .withReference(wellnessApi)
   .waitFor(wellnessApi);
 

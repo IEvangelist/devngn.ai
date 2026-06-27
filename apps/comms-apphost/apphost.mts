@@ -1,7 +1,12 @@
+// SPDX-License-Identifier: MIT
 // Aspire TypeScript AppHost for optional devngn notification backends.
-// Run `pnpm --filter @devngn/comms-apphost restore` before starting so Aspire generates `.modules/`.
+//
+// Run `pnpm --filter @devngn/comms-apphost restore` after a fresh checkout so
+// Aspire regenerates `.aspire/modules/` for your machine, then
+// `pnpm --filter @devngn/comms-apphost start` to launch the dashboard together
+// with the MQTT SMS gateway and PlaySMS notification containers.
 
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 const otlpEndpoint = getContainerOtlpEndpoint();

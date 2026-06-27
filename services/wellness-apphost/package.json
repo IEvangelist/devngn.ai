@@ -9,8 +9,8 @@
   "scripts": {
     "restore": "aspire restore",
     "build:site": "pnpm --filter @devngn/site build",
-    "start": "pnpm run build:site && aspire start",
-    "start:isolated": "pnpm run build:site && aspire start --isolated"
+    "start": "aspire start",
+    "start:isolated": "aspire start --isolated"
   },
   "dependencies": {
     "vscode-jsonrpc": "^8.2.0"
