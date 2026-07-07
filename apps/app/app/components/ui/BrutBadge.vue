@@ -42,8 +42,8 @@ defineProps<{
 .brut-badge--purple { background: var(--accent-4); color: #fff; }
 .brut-badge--pink { background: var(--accent-5); color: #2a0313; }
 .brut-badge--blue { background: var(--accent-6); color: #fff; }
-.brut-badge--success { background: var(--success); color: #fff; }
-.brut-badge--danger { background: var(--danger); color: #fff; }
+.brut-badge--success { background: var(--success); color: #023121; }
+.brut-badge--danger { background: var(--danger); color: #3b0000; }
 .brut-badge--sm { font-size: 0.65rem; padding: 0.08rem 0.35rem; }
 .brut-badge--lg { font-size: 0.9rem; padding: 0.3rem 0.7rem; }
 .brut-badge__icon { line-height: 1; }

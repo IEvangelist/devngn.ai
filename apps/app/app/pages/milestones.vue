@@ -26,6 +26,7 @@
       <div
         v-for="milestone in milestones"
         :key="milestone.key"
+        role="article"
         class="milestone-card brut-card"
         :class="{
           'milestone-card--done': milestone.achieved,

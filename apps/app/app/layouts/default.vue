@@ -54,11 +54,12 @@
           ☰
         </button>
 
-        <!-- Stream status indicator -->
+        <!-- Stream status indicator — role="status" permits aria-label (ARIA 1.2) -->
         <span
           class="status-indicator"
           :class="`status-indicator--${streamStatus}`"
           :title="statusLabel"
+          role="status"
           aria-live="polite"
           :aria-label="statusLabel"
         >
@@ -68,8 +69,8 @@
 
         <div class="statusbar__spacer" />
 
-        <!-- XP / level widget — bound to GET /v1/gamification/me -->
-        <div v-if="isAuthenticated" class="statusbar__xp" aria-label="Your level and XP">
+        <!-- XP / level widget — bound to GET /v1/gamification/me — role="group" permits aria-label -->
+        <div v-if="isAuthenticated" role="group" class="statusbar__xp" aria-label="Your level and XP">
           <template v-if="playerState">
             <span class="xp-badge">
               <span aria-hidden="true">⚡</span>
@@ -81,7 +82,7 @@
               :max="Number(playerState.xpForNextLevel)"
               :label="$t('gamification.xpProgress', { into: Number(playerState.xpIntoLevel), forNext: Number(playerState.xpForNextLevel) })"
             />
-            <span class="xp-badge xp-badge--streak" aria-label="Streak">
+            <span class="xp-badge xp-badge--streak" role="img" aria-label="Streak">
               <span aria-hidden="true">🔥</span>
               {{ Number(playerState.currentStreak) }}d
             </span>

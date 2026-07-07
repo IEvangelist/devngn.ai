@@ -4,7 +4,7 @@
   Toast host — mount once at the app root (inside default.vue).
 -->
 <template>
-  <div class="toast-host" aria-live="polite" aria-label="Notifications">
+  <div class="toast-host" role="status" aria-live="polite" aria-label="Notifications">
     <TransitionGroup name="toast-list" tag="div" class="toast-stack">
       <BrutToast
         v-for="t in toasts"

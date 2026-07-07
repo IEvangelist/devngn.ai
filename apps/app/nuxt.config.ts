@@ -25,6 +25,14 @@ export default defineNuxtConfig({
     "@vite-pwa/nuxt",
   ],
 
+  // Register components WITHOUT the subdirectory path-prefix so that
+  // <BrutButton> resolves instead of <UiBrutButton>.
+  // All templates already use the short names; this aligns the runtime
+  // registry with what resolveComponent() looks up.
+  components: {
+    dirs: [{ path: "~/components", pathPrefix: false }],
+  },
+
   css: ["~/assets/css/retro.css"],
 
   app: {

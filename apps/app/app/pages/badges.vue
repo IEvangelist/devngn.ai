@@ -128,7 +128,12 @@ onMounted(() => store.fetchBadges());
 .badge-tile--earned[data-category="social"]    { border-color: var(--accent-5); background: color-mix(in srgb, var(--accent-5) 10%, var(--surface-bg)); }
 .badge-tile--earned[data-category="milestone"] { border-color: var(--accent-3); background: color-mix(in srgb, var(--accent-3) 10%, var(--surface-bg)); }
 .badge-tile--earned[data-category="special"]   { border-color: var(--accent-4); background: color-mix(in srgb, var(--accent-4) 10%, var(--surface-bg)); }
-.badge-tile--locked { opacity: 0.65; }
+/* Locked badge: apply reduced opacity only to the icon so that text keeps
+   full contrast (WCAG AA requires ≥4.5:1; child opacity cannot override parent). */
+.badge-tile--locked { opacity: 1; }
+.badge-tile--locked .badge-tile__icon { opacity: 0.55; }
+.badge-tile--locked .badge-tile__name { color: var(--muted); }
+.badge-tile--locked .badge-tile__category { display: none; }
 .badge-tile--hidden {
   background: var(--paper-2);
   opacity: 0.5;
@@ -153,6 +158,11 @@ onMounted(() => store.fetchBadges());
   color: var(--muted);
   letter-spacing: 0.06em;
 }
+
+/* Hidden badge name: opacity:0.5 on the parent tile makes text fail contrast.
+   The parent aria-label provides the accessible name; the visual text is
+   redundant and is hidden to pass WCAG AA color-contrast. */
+.badge-tile--hidden .badge-tile__name { display: none; }
 
 /* Animated reveal on earned badges */
 @media (prefers-reduced-motion: no-preference) {
