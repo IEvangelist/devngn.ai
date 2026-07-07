@@ -64,6 +64,11 @@ const steps = [
   { n: "03", icon: "bell", title: "A 5-second nudge appears", body: "When a gap opens, a short movement-break prompt lands in VS Code or as an OS notification from the CLI daemon." },
   { n: "04", icon: "flame", title: "Track, share, and level up", body: "Complete it, build a streak, hit goals, and bring your team along. Small breaks, compounded." },
 ];
+
+const description =
+  "devngn.ai is human-first developer wellness. The moment a real gap opens in your schedule, get a five-second movement break tuned to your profile, goals, and equipment — tracked, shared, and social.";
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImage = new URL("/og.png", Astro.site).toString();
 ---
 
 <!doctype html>
@@ -73,10 +78,22 @@ const steps = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>devngn.ai — Put the human first</title>
-    <meta
-      name="description"
-      content="devngn.ai is human-first developer wellness. The moment a real gap opens in your schedule, get a five-second movement break tuned to your profile, goals, and equipment — tracked, shared, and social."
-    />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#ff5a1f" />
+
+    <meta property="og:site_name" content="devngn.ai" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="devngn.ai — Put the human first" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="devngn.ai — Put the human first" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <style>
       * {
         box-sizing: border-box;
@@ -499,9 +516,9 @@ const steps = [
             and the civilization they're building. Tracked, shared, goalified, and social.
           </p>
           <div class="actions">
-            <a class="btn primary" href="/getting-started/">Read the docs</a>
-            <a class="btn alt" href="/wellness/">Explore the wellness service</a>
-            <a class="btn" href="/wellness/reference">Browse the API</a>
+            <a class="btn primary" href="/download/">Get the app</a>
+            <a class="btn alt" href="/features/">Explore features</a>
+            <a class="btn" href="/getting-started/">Read the docs</a>
           </div>
         </div>
         <aside class="stat-card">

@@ -10,10 +10,11 @@ export interface NavLink {
 }
 
 export const navLinks: NavLink[] = [
-  { id: "docs", label: "Docs", href: "/getting-started/", icon: "book" },
+  { id: "features", label: "Features", href: "/features/", icon: "bolt" },
   { id: "wellness", label: "Wellness", href: "/wellness/", icon: "heart" },
-  { id: "api", label: "API", href: "/wellness/reference", icon: "braces" },
-  { id: "registry", label: "Registry", href: "/registry/", icon: "code" },
+  { id: "pricing", label: "Pricing", href: "/pricing/", icon: "tag" },
+  { id: "download", label: "Download", href: "/download/", icon: "download" },
+  { id: "docs", label: "Docs", href: "/getting-started/", icon: "book" },
   {
     id: "github",
     label: "GitHub",

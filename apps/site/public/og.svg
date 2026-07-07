@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="hatch" width="29" height="29" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="29" height="29" fill="#fdf3df" />
+      <rect width="1" height="29" fill="#7f6e46" opacity="0.06" />
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#hatch)" />
+  <rect x="20" y="20" width="1160" height="590" fill="none" stroke="#16130d" stroke-width="6" />
+
+  <!-- brand -->
+  <text x="72" y="108" font-family="Arial Black, Arial, sans-serif" font-size="46" font-weight="900" fill="#16130d">devngn<tspan fill="#ff5a1f">.</tspan>ai</text>
+
+  <!-- eyebrow chip -->
+  <rect x="72" y="140" width="470" height="46" fill="#16130d" />
+  <text x="94" y="172" font-family="Consolas, 'Courier New', monospace" font-size="24" font-weight="700" letter-spacing="3" fill="#fdf3df">HUMAN-FIRST DEV WELLNESS</text>
+
+  <!-- headline -->
+  <text x="70" y="300" font-family="Arial Black, Arial, sans-serif" font-size="96" font-weight="900" fill="#16130d" letter-spacing="-2">Put the</text>
+  <rect x="64" y="326" width="486" height="150" fill="#ff5a1f" stroke="#16130d" stroke-width="4" />
+  <text x="84" y="446" font-family="Arial Black, Arial, sans-serif" font-size="132" font-weight="900" fill="#16130d" letter-spacing="-3">human</text>
+  <text x="70" y="576" font-family="Arial Black, Arial, sans-serif" font-size="96" font-weight="900" fill="#16130d" letter-spacing="-2">first.</text>
+
+  <!-- energy tile, top-right -->
+  <rect x="946" y="120" width="182" height="182" fill="#ff5a1f" stroke="#16130d" stroke-width="6" />
+  <path d="M1052 150 990 240h40l-12 62 70 -92h-46z" fill="#16130d" stroke="#16130d" stroke-width="4" stroke-linejoin="miter" />
+
+  <!-- tagline, lower-right -->
+  <text x="592" y="452" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#574f3c">Move more,</text>
+  <text x="592" y="504" font-family="Arial, sans-serif" font-size="42" font-weight="700" fill="#574f3c">tracked &amp; shared.</text>
+</svg>

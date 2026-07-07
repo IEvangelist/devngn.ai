@@ -1,0 +1,212 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import Icon from "../components/Icon.astro";
+
+export const prerender = true;
+
+const repo = "https://github.com/IEvangelist/devngn.ai";
+const releases = `${repo}/releases/latest`;
+
+// Desktop installer URLs point at the "latest" GitHub release. Asset names are
+// confirmed final and match the desktop app's release workflow
+// (.github/workflows/app-release.yml): Tauri v2 bundles for each platform.
+const platforms = [
+  {
+    icon: "bolt",
+    os: "macOS",
+    note: "Apple Silicon & Intel · macOS 13+",
+    primary: { label: "Download for Apple Silicon", href: `${releases}/download/devngn-macos-aarch64.dmg` },
+    secondary: [
+      { label: "Intel (x64)", href: `${releases}/download/devngn-macos-x64.dmg` },
+    ],
+  },
+  {
+    icon: "code",
+    os: "Windows",
+    note: "Windows 10 & 11 · x64",
+    primary: { label: "Download installer", href: `${releases}/download/devngn-windows-x64-setup.exe` },
+    secondary: [
+      { label: "MSI package", href: `${releases}/download/devngn-windows-x64.msi` },
+    ],
+  },
+  {
+    icon: "target",
+    os: "Linux",
+    note: "AppImage · Debian & Ubuntu",
+    primary: { label: "Download AppImage", href: `${releases}/download/devngn-linux-x86_64.AppImage` },
+    secondary: [
+      { label: ".deb (Debian/Ubuntu)", href: `${releases}/download/devngn-linux-amd64.deb` },
+    ],
+  },
+];
+---
+
+<MarketingLayout
+  title="Download"
+  description="Get devngn.ai on your machine — the desktop app for macOS, Windows, and Linux, plus the CLI and the VS Code extension. Open source, MIT licensed."
+  active="download"
+>
+  <section class="page-hero">
+    <div class="eyebrow">Download</div>
+    <h1>Bring devngn to your <span class="hl">desktop</span>.</h1>
+    <p class="lede">
+      The desktop app keeps your dev engine and your wellness one click away — streaks, goals, and
+      right-timed movement breaks, right from the menu bar. Prefer the terminal or your editor?
+      Those are here too.
+    </p>
+  </section>
+
+  <section class="section" aria-label="Desktop app">
+    <div class="section-kicker">Desktop app</div>
+    <h2 class="section-title">Pick your platform.</h2>
+    <p class="section-sub">
+      Free and open source under the MIT license. Nothing personal is stored until you opt in — and
+      you can delete all of it whenever you want.
+    </p>
+    <div class="grid">
+      {
+        platforms.map((p) => (
+          <article class="card platform">
+            <div class="card-head">
+              <span class="card-icon">
+                <Icon name={p.icon} size={22} stroke={2.4} />
+              </span>
+              <h3>{p.os}</h3>
+            </div>
+            <p class="platform-note">{p.note}</p>
+            <a class="btn primary platform-btn" href={p.primary.href}>
+              <Icon name="download" size={18} stroke={2.6} />
+              {p.primary.label}
+            </a>
+            <ul class="platform-alt">
+              {p.secondary.map((s) => (
+                <li>
+                  <a href={s.href}>{s.label}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+    <p class="release-note">
+      Looking for a specific build, checksums, or release notes? Browse
+      <a href={releases} rel="noopener" target="_blank">all releases on GitHub</a>.
+    </p>
+  </section>
+
+  <section class="section" aria-label="Command line">
+    <div class="section-kicker">Command line</div>
+    <h2 class="section-title">Or live in the terminal.</h2>
+    <p class="section-sub">
+      The <code>devngn</code> CLI runs your scans, diagnostics, provider readiness, token budgets,
+      grounding profiles, and pattern recognition.
+    </p>
+    <div class="code-block">
+      <pre><code># In a repo, after installing dependencies
+pnpm install
+pnpm exec devngn scan
+
+# Common commands
+devngn doctor
+devngn profile show
+devngn ai providers
+devngn patterns recognize</code></pre>
+    </div>
+  </section>
+
+  <section class="section" aria-label="VS Code">
+    <div class="section-kicker">In your editor</div>
+    <h2 class="section-title">VS Code extension.</h2>
+    <p class="section-sub">
+      AI-bit inventory tree views, a token usage dashboard, provider readiness, and recognized
+      ecosystem patterns — without leaving your editor.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/getting-started/">
+        <Icon name="braces" size={18} stroke={2.6} />
+        Getting started
+      </a>
+      <a class="btn" href={repo} rel="noopener" target="_blank">
+        <Icon name="github" size={18} stroke={2.6} />
+        View source
+      </a>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2>Every surface is <span class="pop">open source</span>. Take what you need.</h2>
+    <div class="actions" style="margin-top:0">
+      <a class="btn primary" href="/features/">See all features</a>
+      <a class="btn alt" href="/pricing/">Pricing</a>
+    </div>
+  </section>
+</MarketingLayout>
+
+<style>
+  .platform {
+    display: flex;
+    flex-direction: column;
+  }
+  .platform-note {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin: 0 0 1.1rem;
+  }
+  .platform-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .platform-alt {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+  .platform-alt a {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 1px;
+  }
+  .platform-alt a:hover {
+    background: var(--accent-3);
+    color: var(--accent-ink);
+  }
+  .release-note {
+    margin-top: 1.75rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .release-note a {
+    color: var(--accent-ink);
+    background: var(--accent-3);
+    text-decoration: none;
+    padding: 0 0.2em;
+    border-bottom: 2px solid var(--accent);
+  }
+  .code-block {
+    border: var(--border);
+    background: #16130d;
+    color: #f6eed6;
+    box-shadow: var(--shadow);
+    margin-top: 2rem;
+    overflow-x: auto;
+  }
+  .code-block pre {
+    margin: 0;
+    padding: 1.4rem 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .code-block code {
+    font-family: inherit;
+  }
+</style>

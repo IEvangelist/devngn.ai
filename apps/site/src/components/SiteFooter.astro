@@ -22,20 +22,21 @@ const columns: FooterColumn[] = [
   {
     title: "Product",
     links: [
-      { label: "Docs", href: "/getting-started/", icon: "book" },
+      { label: "Features", href: "/features/", icon: "bolt" },
+      { label: "Pricing", href: "/pricing/", icon: "tag" },
+      { label: "Download", href: "/download/", icon: "download" },
       { label: "Wellness service", href: "/wellness/", icon: "heart" },
-      { label: "API reference", href: "/wellness/reference", icon: "braces" },
-      { label: "Vendor registry", href: "/registry/", icon: "code" },
-      { label: "Registry JSON (raw)", href: "/registry/v1/vendors.json", icon: "download" },
+      { label: "Docs", href: "/getting-started/", icon: "book" },
     ],
   },
   {
-    title: "Resources",
+    title: "Developers",
     links: [
       { label: "Getting started", href: "/getting-started/", icon: "arrow" },
+      { label: "API reference", href: "/wellness/reference", icon: "braces" },
+      { label: "Vendor registry", href: "/registry/", icon: "code" },
+      { label: "Registry JSON (raw)", href: "/registry/v1/vendors.json", icon: "download" },
       { label: "GitHub repository", href: repo, icon: "github", external: true },
-      { label: "Report an issue", href: `${repo}/issues`, icon: "spark", external: true },
-      { label: "davidpine.dev", href: "https://davidpine.dev", icon: "globe", external: true },
     ],
   },
   {
@@ -43,6 +44,7 @@ const columns: FooterColumn[] = [
     links: [
       { label: "Terms of Use", href: "/terms/", icon: "file" },
       { label: "Privacy", href: "/privacy/", icon: "shield" },
+      { label: "Report an issue", href: `${repo}/issues`, icon: "spark", external: true },
       { label: "MIT License", href: `${repo}/blob/main/LICENSE`, icon: "check", external: true },
     ],
   },

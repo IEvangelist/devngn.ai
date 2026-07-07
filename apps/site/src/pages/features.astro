@@ -1,0 +1,199 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import Icon from "../components/Icon.astro";
+
+export const prerender = true;
+
+const capabilities = [
+  {
+    icon: "eye",
+    title: "AI-bit discovery",
+    body: "Finds the instructions, skills, rules, prompts, memories, model preferences, and vendor folders scattered across your machine and every workspace.",
+  },
+  {
+    icon: "target",
+    title: "Self-updating grounding",
+    body: "Builds a live host profile — OS, CPU, GPU, memory, PATH tools, installed AI tools, and your stated preferences — so agents are grounded in reality.",
+  },
+  {
+    icon: "bolt",
+    title: "Provider readiness",
+    body: "Tracks SDK/auth readiness, capability metadata, and token budgets for OpenAI, GitHub Copilot, Anthropic Claude, Google Gemini, and local runtimes.",
+  },
+  {
+    icon: "spark",
+    title: "Pattern intelligence",
+    body: "Recognizes AGENTS.md, Copilot instructions, Claude memory, Cursor/Windsurf rules, MCP configs, promptfoo evals, Continue, and Cline/Roo rules.",
+  },
+  {
+    icon: "pulse",
+    title: "Drift & cleanup",
+    body: "Surfaces duplicate guidance, tooling conflicts, stale AI-bits, and cleanup opportunities before they quietly rot your setup.",
+  },
+  {
+    icon: "code",
+    title: "Hosted registry & API",
+    body: "Versioned public vendor registry plus a protected, subscriber-oriented vendor intelligence API with rate limits and plan-aware access.",
+  },
+];
+
+const wellness = [
+  {
+    icon: "clock",
+    title: "Right-timed nudges",
+    body: "Gap detection watches your real calendar (free/busy only) and todos, so a five-second movement break lands when a genuine opening appears.",
+  },
+  {
+    icon: "trophy",
+    title: "Gamified & goalified",
+    body: "Streaks, milestones, XP, and badges turn mobility, strength, breathing, and posture into concrete goals that actually stick.",
+  },
+  {
+    icon: "people",
+    title: "Social by design",
+    body: "Share goals and streaks with your team, follow teammates, cheer each other on, and stay honest — wellness is better together.",
+  },
+  {
+    icon: "heart",
+    title: "Human-first & private",
+    body: "Consent-gated from the first byte. Calendars are read free/busy only, nothing is stored until you opt in, and you can delete all of it anytime.",
+  },
+];
+
+const surfaces = [
+  {
+    icon: "code",
+    title: "devngn CLI",
+    body: "Scans, diagnostics, provider readiness, token budgeting, grounding profiles, pattern recognition, sync, and update checks — right in your terminal.",
+    cta: { label: "Read the docs", href: "/getting-started/" },
+  },
+  {
+    icon: "braces",
+    title: "VS Code extension",
+    body: "AI-bit inventory tree views, a token usage dashboard, provider readiness, and recognized ecosystem patterns without leaving your editor.",
+    cta: { label: "Getting started", href: "/getting-started/" },
+  },
+  {
+    icon: "download",
+    title: "Desktop app",
+    body: "A dedicated desktop experience for your dev engine and wellness — streaks, goals, and social, always a click away from the menu bar.",
+    cta: { label: "Download", href: "/download/" },
+  },
+  {
+    icon: "pulse",
+    title: "OpenTelemetry + Aspire",
+    body: "Every important flow emits logs, traces, and metrics with OTLP export, ready to light up the Aspire dashboard for full visibility.",
+    cta: { label: "Explore wellness", href: "/wellness/" },
+  },
+];
+---
+
+<MarketingLayout
+  title="Features"
+  description="Everything devngn.ai does: AI-bit discovery, self-updating grounding, provider readiness, pattern intelligence, and human-first developer wellness — across CLI, VS Code, and desktop."
+  active="features"
+>
+  <section class="page-hero">
+    <div class="eyebrow">Features</div>
+    <h1>One engine for your <span class="hl">AI-bits</span> and your wellbeing.</h1>
+    <p class="lede">
+      devngn.ai understands your machine, your tools, and the AI configuration that piles up across
+      workspaces — then puts the human at the keyboard first. Here's the whole picture.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="/download/"><Icon name="download" size={18} stroke={2.6} />Get the app</a>
+      <a class="btn alt" href="/pricing/">See pricing</a>
+      <a class="btn" href="/getting-started/">Read the docs</a>
+    </div>
+  </section>
+
+  <section class="section" aria-label="The dev engine">
+    <div class="section-kicker">The dev engine</div>
+    <h2 class="section-title">Know your AI tooling, end to end.</h2>
+    <p class="section-sub">
+      OS-agnostic and vendor-aware from the start. devngn maps what you have, keeps it grounded, and
+      flags what's drifting — so your agents work from the truth.
+    </p>
+    <div class="grid">
+      {
+        capabilities.map((c) => (
+          <article class="card">
+            <div class="card-head">
+              <span class="card-icon">
+                <Icon name={c.icon} size={22} stroke={2.4} />
+              </span>
+              <h3>{c.title}</h3>
+            </div>
+            <p>{c.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section" aria-label="Human-first wellness">
+    <div class="section-kicker">Human-first wellness</div>
+    <h2 class="section-title">Move more, tracked and shared.</h2>
+    <p class="section-sub">
+      A quiet, opt-in layer that turns the small gaps in a developer's day into real, compounding
+      movement — never another dashboard to babysit.
+    </p>
+    <div class="grid">
+      {
+        wellness.map((c) => (
+          <article class="card">
+            <div class="card-head">
+              <span class="card-icon">
+                <Icon name={c.icon} size={22} stroke={2.4} />
+              </span>
+              <h3>{c.title}</h3>
+            </div>
+            <p>{c.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section" aria-label="Where it runs">
+    <div class="section-kicker">Where it runs</div>
+    <h2 class="section-title">Meet you where you already work.</h2>
+    <p class="section-sub">
+      The same engine, four surfaces. Start in the terminal, live in your editor, keep the app in
+      your menu bar, and watch it all in Aspire.
+    </p>
+    <div class="grid">
+      {
+        surfaces.map((s) => (
+          <article class="card">
+            <div class="card-head">
+              <span class="card-icon">
+                <Icon name={s.icon} size={22} stroke={2.4} />
+              </span>
+              <h3>{s.title}</h3>
+            </div>
+            <p>{s.body}</p>
+            <p style="margin-top:0.9rem">
+              <a
+                class="btn"
+                style="padding:0.5rem 0.9rem;font-size:0.82rem"
+                href={s.cta.href}
+              >
+                {s.cta.label}
+                <Icon name="arrow" size={15} stroke={2.6} />
+              </a>
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2>Put the <span class="pop">human</span> first — and know your engine cold.</h2>
+    <div class="actions" style="margin-top:0">
+      <a class="btn primary" href="/download/"><Icon name="download" size={18} stroke={2.6} />Download</a>
+      <a class="btn alt" href="/pricing/">Pricing</a>
+    </div>
+  </section>
+</MarketingLayout>

@@ -1,0 +1,108 @@
+---
+/*
+ * Shared shell for the standalone marketing pages (Features, Download, Pricing).
+ * Matches the retro/neo-brutalist system: paper background, shared header/footer,
+ * and a full SEO <head> (canonical, OpenGraph, Twitter, favicon, theme-color).
+ *
+ * These pages have no per-request data, so callers should `export const
+ * prerender = true` to serve them as static HTML.
+ */
+import ThemeInit from "../components/ThemeInit.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import "../styles/retro.css";
+import "../styles/marketing.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** nav-links id to highlight in the header. */
+  active?: string;
+  /** OpenGraph type. */
+  ogType?: string;
+  /** Absolute or root-relative social share image. */
+  image?: string;
+  /** Widen the content column (default 1140px). */
+  wide?: boolean;
+}
+
+const {
+  title,
+  description,
+  active,
+  ogType = "website",
+  image = "/og.png",
+  wide = true,
+} = Astro.props;
+
+const siteName = "devngn.ai";
+const fullTitle = title.includes(siteName) ? title : `${title} — ${siteName}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImage = new URL(image, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <ThemeInit />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#ff5a1f" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- OpenGraph -->
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <style define:vars={{ maxw: wide ? "1140px" : "50rem" }}>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          repeating-linear-gradient(
+            45deg,
+            transparent 0 28px,
+            rgba(127, 110, 70, 0.05) 28px 29px
+          ),
+          var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+      }
+      main {
+        margin: 0 auto;
+        max-width: var(--maxw);
+        padding: 0 1.5rem 5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <SiteHeader active={active} />
+    <main>
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

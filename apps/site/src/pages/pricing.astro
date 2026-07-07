@@ -1,0 +1,297 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import Icon from "../components/Icon.astro";
+
+export const prerender = true;
+
+// NOTE: prices are placeholders for David to finalize. Tier names mirror the
+// vendor-intelligence subscription levels (trial/pro/team/enterprise).
+const tiers = [
+  {
+    name: "Free",
+    price: "$0",
+    cadence: "forever",
+    tagline: "The open-source engine, on you.",
+    cta: { label: "Get started", href: "/download/" },
+    featured: false,
+    features: [
+      "devngn CLI, VS Code extension & desktop app",
+      "AI-bit discovery, grounding & pattern recognition",
+      "Public vendor registry (/registry/v1)",
+      "Local wellness: gap detection & movement breaks",
+      "Personal streaks, goals & badges",
+      "MIT licensed — self-host anything",
+    ],
+  },
+  {
+    name: "Pro",
+    price: "$8",
+    cadence: "per month",
+    tagline: "For the developer who wants it dialed in.",
+    cta: { label: "Start free trial", href: "/download/" },
+    featured: true,
+    features: [
+      "Everything in Free",
+      "Hosted sync across all your machines",
+      "Vendor intelligence API (Pro rate limits)",
+      "Calendar-aware gap detection (Google & Microsoft)",
+      "Advanced token budgeting & provider readiness",
+      "Priority research freshness updates",
+    ],
+  },
+  {
+    name: "Team",
+    price: "$6",
+    cadence: "per seat / month",
+    tagline: "Wellness and tooling, together.",
+    cta: { label: "Start a team", href: "/download/" },
+    featured: false,
+    features: [
+      "Everything in Pro",
+      "Shared goals, streaks & social feed",
+      "Team dashboards & leaderboards",
+      "Higher API rate limits (Team plan)",
+      "Shared AI-bit policy & drift reports",
+      "OpenTelemetry export to your Aspire dashboard",
+    ],
+  },
+  {
+    name: "Enterprise",
+    price: "Let's talk",
+    cadence: "custom",
+    tagline: "Scale, security, and support.",
+    cta: { label: "Contact sales", href: "https://davidpine.dev" },
+    ctaExternal: true,
+    featured: false,
+    features: [
+      "Everything in Team",
+      "SSO / SAML & centralized admin",
+      "Enterprise API rate limits & SLAs",
+      "Data residency & audit controls",
+      "Onboarding & dedicated support",
+      "Volume & non-profit pricing",
+    ],
+  },
+];
+
+const faqs = [
+  {
+    q: "Is devngn really open source?",
+    a: "Yes. The CLI, VS Code extension, and desktop app are MIT licensed. Paid plans add hosted sync, team features, and the subscriber vendor intelligence API.",
+  },
+  {
+    q: "What's stored about me?",
+    a: "Nothing personal until you opt in. Calendars are read free/busy only, wellness data is consent-gated, and you can delete all of it at any time.",
+  },
+  {
+    q: "Can I self-host?",
+    a: "The engine and clients are yours under MIT. Hosted sync, team dashboards, and the managed API are the parts we run for you on paid plans.",
+  },
+];
+---
+
+<MarketingLayout
+  title="Pricing"
+  description="Simple, human-first pricing for devngn.ai. Start free with the open-source engine; upgrade for hosted sync, team wellness, and the vendor intelligence API."
+  active="pricing"
+>
+  <section class="page-hero">
+    <div class="eyebrow">Pricing</div>
+    <h1>Start free. <span class="hl">Grow</span> when it helps.</h1>
+    <p class="lede">
+      The engine is open source and free forever. Paid plans add hosted sync, team wellness, and
+      the subscriber vendor intelligence API — priced to stay out of your way.
+    </p>
+  </section>
+
+  <section class="section" aria-label="Plans">
+    <div class="tiers">
+      {
+        tiers.map((t) => (
+          <article class:list={["tier", { featured: t.featured }]}>
+            {t.featured && <span class="tier-flag">Most popular</span>}
+            <h3 class="tier-name">{t.name}</h3>
+            <div class="tier-price">
+              <strong>{t.price}</strong>
+              <span>{t.cadence}</span>
+            </div>
+            <p class="tier-tagline">{t.tagline}</p>
+            <a
+              class:list={["btn", "tier-cta", { primary: t.featured, alt: !t.featured }]}
+              href={t.cta.href}
+              {...(t.ctaExternal ? { rel: "noopener", target: "_blank" } : {})}
+            >
+              {t.cta.label}
+            </a>
+            <ul class="tier-features">
+              {t.features.map((f) => (
+                <li>
+                  <Icon name="check" size={16} stroke={2.6} />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+    <p class="price-disclaimer">
+      Prices shown are introductory placeholders while plans are finalized. Billed annually; monthly
+      available. Non-profit and student discounts on request.
+    </p>
+  </section>
+
+  <section class="section" aria-label="Questions">
+    <div class="section-kicker">Questions</div>
+    <h2 class="section-title">The short answers.</h2>
+    <div class="faqs">
+      {
+        faqs.map((f) => (
+          <article class="faq">
+            <h3>{f.q}</h3>
+            <p>{f.a}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2>Free to start. <span class="pop">Human-first</span> at every tier.</h2>
+    <div class="actions" style="margin-top:0">
+      <a class="btn primary" href="/download/"><Icon name="download" size={18} stroke={2.6} />Download</a>
+      <a class="btn alt" href="/features/">See features</a>
+    </div>
+  </section>
+</MarketingLayout>
+
+<style>
+  .tiers {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+  .tier {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: var(--border);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem 1.4rem;
+  }
+  .tier.featured {
+    background: var(--accent-3);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow);
+  }
+  .tier-flag {
+    position: absolute;
+    top: -0.85rem;
+    right: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--ink);
+    color: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 0.25rem 0.5rem;
+  }
+  .tier-name {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .tier-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin: 0.6rem 0 0.25rem;
+  }
+  .tier-price strong {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    line-height: 1;
+  }
+  .tier-price span {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .tier.featured .tier-price span {
+    color: var(--ink-soft);
+  }
+  .tier-tagline {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin: 0.4rem 0 1.1rem;
+    color: var(--text);
+  }
+  .tier.featured .tier-tagline {
+    color: var(--accent-ink);
+  }
+  .tier-cta {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+  }
+  .tier-features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .tier-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .tier-features svg {
+    flex: 0 0 auto;
+    margin-top: 0.1rem;
+    color: var(--accent);
+  }
+  .tier.featured .tier-features svg {
+    color: var(--accent-ink);
+  }
+  .price-disclaimer {
+    margin-top: 1.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .faqs {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    margin-top: 2rem;
+  }
+  .faq {
+    border: var(--border);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem 1.4rem;
+  }
+  .faq h3 {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .faq p {
+    margin: 0;
+    line-height: 1.55;
+    color: var(--muted);
+    font-size: 0.94rem;
+  }
+</style>

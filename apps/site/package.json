@@ -12,7 +12,7 @@
     "test": "vitest run src/lib/vendor-api.test.ts"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.5",
+    "@astrojs/netlify": "^6.6.5",
     "@astrojs/starlight": "^0.36.0",
     "@devngn/ai": "workspace:*",
     "@devngn/analytics": "workspace:*",
