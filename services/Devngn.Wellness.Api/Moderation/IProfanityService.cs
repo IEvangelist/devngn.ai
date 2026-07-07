@@ -12,8 +12,7 @@ internal interface IProfanityService
 {
     /// <summary>
     /// Returns the sanitized form of <paramref name="text"/> (profanities replaced
-    /// with asterisks). Returns the original text unchanged if the filter service
-    /// is unreachable.
+    /// with asterisks).
     /// </summary>
     Task<string> SanitizeAsync(string text, CancellationToken cancellationToken = default);
 

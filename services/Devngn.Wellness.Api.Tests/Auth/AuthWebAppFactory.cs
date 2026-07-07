@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using Devngn.Wellness.Api.Auth;
 using Devngn.Wellness.Api.Crypto;
 using Devngn.Wellness.Api.Data;
+using Devngn.Wellness.Api.Moderation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -98,7 +99,29 @@ internal sealed class AuthWebAppFactory(
                 WellnessDataProtectionExtensions.DataProtectionDataSourceKey,
                 (_, _) => NpgsqlDataSource.Create(connectionString));
 
+            // Default to a pass-through profanity service so integration tests don't
+            // require the profanity-filter sidecar. ProfanityService now fails CLOSED
+            // (throws when the sidecar is unreachable), which would turn every
+            // /v1/social/profile upsert into a 503 under test. Individual tests can
+            // override this — configureServices runs last and wins DI resolution — to
+            // assert the fail-closed 503 path (see SocialEndpointTests).
+            services.AddSingleton<IProfanityService, PassthroughProfanityService>();
+
             configureServices?.Invoke(services);
         });
+    }
+
+    /// <summary>
+    /// No-op <see cref="IProfanityService"/> that returns text unchanged and reports
+    /// it clean, letting integration tests exercise endpoints that sanitize
+    /// user-supplied text without a running profanity-filter container.
+    /// </summary>
+    private sealed class PassthroughProfanityService : IProfanityService
+    {
+        public Task<string> SanitizeAsync(string text, CancellationToken cancellationToken = default) =>
+            Task.FromResult(text);
+
+        public Task<bool> IsCleanAsync(string text, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
     }
 }

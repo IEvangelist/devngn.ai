@@ -15,6 +15,7 @@ internal sealed class PlayerStateConfiguration : IEntityTypeConfiguration<Player
         b.ToTable("player_states");
         b.HasKey(x => x.UserId);
 
+        b.Property<uint>("xmin").IsRowVersion();
         b.Property(x => x.RankTier).HasConversion<string>().HasMaxLength(20);
 
         // Consent-cascade: wiping a ConsentRecord also wipes the player state.

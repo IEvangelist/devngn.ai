@@ -71,8 +71,8 @@ builder.Services.AddWellnessPrompts(builder.Configuration);
 builder.Services.AddWellnessGamification();
 
 // Profanity filter: typed HttpClient targeting the profanity-filter Aspire resource.
-// Service discovery resolves the base address at runtime; falls back gracefully if
-// the container is unreachable (returns original text / assumes clean).
+// Service discovery resolves the base address at runtime; moderation fails closed
+// with 503 if the container is unreachable.
 builder.Services.AddHttpClient<IProfanityService, ProfanityService>(static c =>
     c.BaseAddress = new Uri("https+http://profanity-filter"));
 

@@ -15,9 +15,6 @@ namespace Devngn.Wellness.Api.Social;
 
 internal static class SocialEndpoints
 {
-    /// <summary>EF-generated unique-index name for (FollowerId, FolloweeId).</summary>
-    public const string UniqueFollowIndexName = "pk_follows";
-
     public static IEndpointRouteBuilder MapSocialEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/v1/social")
@@ -33,6 +30,7 @@ internal static class SocialEndpoints
         group.MapPut("profile", UpsertProfileAsync)
             .ValidateBody<RouteHandlerBuilder, UpsertSocialProfileRequest>()
             .Produces<SocialProfileResponse>()
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .ProducesValidationProblem()
             .WithName("UpsertSocialProfile");
 
@@ -76,7 +74,7 @@ internal static class SocialEndpoints
         return profile is null ? Results.NotFound() : Results.Ok(Map(profile));
     }
 
-    private static async Task<IResult> UpsertProfileAsync(
+    internal static async Task<IResult> UpsertProfileAsync(
         [FromBody] UpsertSocialProfileRequest request,
         ICurrentUserContext currentUser,
         WellnessDbContext db,
@@ -85,10 +83,22 @@ internal static class SocialEndpoints
     {
         var userId = currentUser.UserId!.Value;
 
-        var displayName = await profanity.SanitizeAsync(request.DisplayName.Trim(), ct);
-        var bio = request.Bio is null
-            ? null
-            : await profanity.SanitizeAsync(request.Bio.Trim(), ct);
+        string displayName;
+        string? bio;
+        try
+        {
+            displayName = await profanity.SanitizeAsync(request.DisplayName.Trim(), ct);
+            bio = request.Bio is null
+                ? null
+                : await profanity.SanitizeAsync(request.Bio.Trim(), ct);
+        }
+        catch (ProfanityServiceUnavailableException)
+        {
+            return Results.Problem(
+                title: "Moderation service unavailable",
+                detail: "Profile content could not be checked for profanity. Please try again later.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
 
         var existing = await db.SocialProfiles.SingleOrDefaultAsync(sp => sp.UserId == userId, ct);
         if (existing is null)

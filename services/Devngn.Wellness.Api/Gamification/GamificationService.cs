@@ -18,6 +18,8 @@ internal sealed class GamificationService(
     TimeProvider clock,
     ILogger<GamificationService> logger) : IGamificationService
 {
+    private const int MaxAwardXpConcurrencyAttempts = 3;
+
     /// <inheritdoc/>
     public async Task AwardXpAsync(Guid userId, int amount, XpReason reason, CancellationToken ct = default)
     {
@@ -26,23 +28,51 @@ internal sealed class GamificationService(
             return;
         }
 
+        var state = await GetOrCreatePlayerStateAsync(userId, ct);
         db.XpEvents.Add(new XpEvent { UserId = userId, Amount = amount, Reason = reason, CreatedAt = clock.GetUtcNow() });
 
-        var state = await GetOrCreatePlayerStateAsync(userId, ct);
-        var previousLevel = state.Level;
-
-        state.TotalXp += amount;
-        state.Level = LevelCalculator.ComputeLevel(state.TotalXp);
-        state.RankTier = LevelCalculator.ComputeRankTier(state.Level);
-
-        await db.SaveChangesAsync(ct);
-
-        // Emit a level-up feed item when the player crosses a level boundary.
-        if (state.Level > previousLevel)
+        for (var attempt = 1; attempt <= MaxAwardXpConcurrencyAttempts; attempt++)
         {
-            await AddFeedItemAsync(userId, FeedItemType.LevelUp,
-                $"You reached level {state.Level}!", ct);
-            await db.SaveChangesAsync(ct);
+            var previousLevel = state.Level;
+            ApplyXpDelta(state, amount);
+
+            try
+            {
+                await db.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                if (attempt == MaxAwardXpConcurrencyAttempts || !IsPlayerStateConcurrencyException(ex))
+                {
+                    logger.LogError(
+                        ex,
+                        "Failed to award {Amount} XP to user {UserId} after {Attempt} attempt(s).",
+                        amount,
+                        userId,
+                        attempt);
+                    throw;
+                }
+
+                logger.LogWarning(
+                    ex,
+                    "Concurrency conflict awarding {Amount} XP to user {UserId}; retrying attempt {NextAttempt} of {MaxAttempts}.",
+                    amount,
+                    userId,
+                    attempt + 1,
+                    MaxAwardXpConcurrencyAttempts);
+                await ReloadPlayerStateEntriesAsync(ex, ct);
+                continue;
+            }
+
+            // Emit a level-up feed item when the player crosses a level boundary.
+            if (state.Level > previousLevel)
+            {
+                await AddFeedItemAsync(userId, FeedItemType.LevelUp,
+                    $"You reached level {state.Level}!", ct);
+                await db.SaveChangesAsync(ct);
+            }
+
+            return;
         }
     }
 
@@ -248,13 +278,33 @@ internal sealed class GamificationService(
     {
         // Eligible if any prompt was delivered between 22:00 and 02:00 UTC.
         var cutoff = clock.GetUtcNow().AddDays(-90);
-        var deliveryHours = await db.Prompts
+        var deliveries = await db.Prompts
             .AsNoTracking()
             .Where(p => p.UserId == userId && p.DeliveredAt >= cutoff)
-            .Select(p => p.DeliveredAt.Hour)
+            .Select(p => p.DeliveredAt)
             .ToListAsync(ct);
 
-        return deliveryHours.Any(h => h >= 22 || h < 2);
+        return deliveries.Any(d => d.UtcDateTime.Hour is >= 22 or < 2);
+    }
+
+    private static void ApplyXpDelta(PlayerState state, int amount)
+    {
+        state.TotalXp += amount;
+        state.Level = LevelCalculator.ComputeLevel(state.TotalXp);
+        state.RankTier = LevelCalculator.ComputeRankTier(state.Level);
+    }
+
+    private static bool IsPlayerStateConcurrencyException(DbUpdateConcurrencyException ex) =>
+        ex.Entries.Count > 0 && ex.Entries.All(static e => e.Entity is PlayerState);
+
+    private static async Task ReloadPlayerStateEntriesAsync(
+        DbUpdateConcurrencyException ex,
+        CancellationToken ct)
+    {
+        foreach (var entry in ex.Entries)
+        {
+            await entry.ReloadAsync(ct);
+        }
     }
 
     private async Task<bool> IsComebackStreakEligibleAsync(Guid userId, CancellationToken ct)

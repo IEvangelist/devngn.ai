@@ -155,6 +155,23 @@ public sealed class SocialEndpointTests(PostgresContainerFixture postgres)
         Assert.False(profile.IsPublic);
     }
 
+    [Fact]
+    public async Task UpsertProfile_ProfanityUnavailable_Returns503()
+    {
+        var stub = StubProfanityService.Unavailable();
+        using var factory = FactoryWithStubProfanity(stub);
+        var seeded = await factory.SeedAuthenticatedUserAsync();
+        using var client = factory.CreateClientWithBearer(seeded.Token);
+
+        var response = await client.PutAsJsonAsync("/v1/social/profile", new
+        {
+            displayName = "Alice the Developer",
+            isPublic = true,
+        });
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+    }
+
     // -------------------------------------------------------------------------
     // DTOs and helpers
     // -------------------------------------------------------------------------
@@ -168,14 +185,29 @@ public sealed class SocialEndpointTests(PostgresContainerFixture postgres)
     private sealed class StubProfanityService : IProfanityService
     {
         private readonly (string Find, string Replace)[] _replacements;
+        private readonly bool _throwUnavailable;
 
         public StubProfanityService(params (string Find, string Replace)[] replacements)
+            : this(replacements, throwUnavailable: false)
+        {
+        }
+
+        private StubProfanityService((string Find, string Replace)[] replacements, bool throwUnavailable)
         {
             _replacements = replacements;
+            _throwUnavailable = throwUnavailable;
         }
+
+        public static StubProfanityService Unavailable() =>
+            new([], throwUnavailable: true);
 
         public Task<string> SanitizeAsync(string text, CancellationToken cancellationToken = default)
         {
+            if (_throwUnavailable)
+            {
+                throw new ProfanityServiceUnavailableException("Profanity filter unavailable.");
+            }
+
             var result = text;
             foreach (var (find, replace) in _replacements)
             {
@@ -186,6 +218,11 @@ public sealed class SocialEndpointTests(PostgresContainerFixture postgres)
 
         public Task<bool> IsCleanAsync(string text, CancellationToken cancellationToken = default)
         {
+            if (_throwUnavailable)
+            {
+                throw new ProfanityServiceUnavailableException("Profanity filter unavailable.");
+            }
+
             foreach (var (find, _) in _replacements)
             {
                 if (text.Contains(find, StringComparison.OrdinalIgnoreCase))

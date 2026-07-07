@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Devngn.Wellness.Api.Moderation;
@@ -16,6 +17,10 @@ internal sealed class ProfanityService(
     HttpClient http,
     ILogger<ProfanityService> logger) : IProfanityService
 {
+    private const string FilterPath = "/profanity/filter";
+    private const string ReplacementStrategy = "Asterisk";
+    private const string Target = "Body";
+
     /// <inheritdoc/>
     public async Task<string> SanitizeAsync(string text, CancellationToken cancellationToken = default)
     {
@@ -24,22 +29,15 @@ internal sealed class ProfanityService(
             return text;
         }
 
-        try
+        var result = await SendFilterRequestAsync(text, cancellationToken);
+        if (result.ContainsProfanity && result.FilteredText is null)
         {
-            var response = await http.PostAsJsonAsync(
-                "/filter",
-                new FilterRequest(text, "asterisk"),
-                cancellationToken);
+            logger.LogError("Profanity filter reported profanity but returned no filtered text.");
+            throw new ProfanityServiceUnavailableException(
+                "Profanity filter service returned an invalid response.");
+        }
 
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<FilterResponse>(cancellationToken);
-            return result?.Text ?? text;
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            logger.LogWarning(ex, "Profanity filter service unreachable; returning original text.");
-            return text;
-        }
+        return result.FilteredText ?? text;
     }
 
     /// <inheritdoc/>
@@ -50,27 +48,51 @@ internal sealed class ProfanityService(
             return true;
         }
 
+        var result = await SendFilterRequestAsync(text, cancellationToken);
+        return !result.ContainsProfanity;
+    }
+
+    private async Task<FilterResult> SendFilterRequestAsync(
+        string text,
+        CancellationToken cancellationToken)
+    {
         try
         {
             var response = await http.PostAsJsonAsync(
-                "/filter",
-                new FilterRequest(text, "asterisk"),
+                FilterPath,
+                new FilterRequest(text, ReplacementStrategy, Target),
                 cancellationToken);
-
             response.EnsureSuccessStatusCode();
+
             var result = await response.Content.ReadFromJsonAsync<FilterResponse>(cancellationToken);
-            return result?.NoSwearWords ?? true;
+            if (result?.ContainsProfanity is not { } containsProfanity)
+            {
+                logger.LogError("Profanity filter returned an empty or invalid response.");
+                throw new ProfanityServiceUnavailableException(
+                    "Profanity filter service returned an invalid response.");
+            }
+
+            return new FilterResult(containsProfanity, result.FilteredText);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            logger.LogWarning(ex, "Profanity filter service unreachable; assuming text is clean.");
-            return true;
+            logger.LogWarning(ex, "Profanity filter service unreachable.");
+            throw new ProfanityServiceUnavailableException(
+                "Profanity filter service is unavailable.", ex);
+        }
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
+        {
+            logger.LogError(ex, "Profanity filter returned an unreadable response.");
+            throw new ProfanityServiceUnavailableException(
+                "Profanity filter service returned an invalid response.", ex);
         }
     }
 
-    private sealed record FilterRequest(string Text, string Strategy);
+    private sealed record FilterRequest(string Text, string Strategy, string Target);
 
     private sealed record FilterResponse(
-        [property: JsonPropertyName("text")] string? Text,
-        [property: JsonPropertyName("noSwearWords")] bool NoSwearWords);
+        [property: JsonPropertyName("containsProfanity")] bool? ContainsProfanity,
+        [property: JsonPropertyName("filteredText")] string? FilteredText);
+
+    private sealed record FilterResult(bool ContainsProfanity, string? FilteredText);
 }
