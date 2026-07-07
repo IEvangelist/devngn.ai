@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Devngn.Wellness.Api.Catalog;
+using Devngn.Wellness.Api.Gamification;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -107,7 +108,8 @@ public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.
             {
                 foreach (var descriptor in services.Where(d =>
                     d.ServiceType == typeof(IHostedService)
-                    && d.ImplementationType == typeof(ActivityCatalogSeeder)).ToList())
+                    && (d.ImplementationType == typeof(ActivityCatalogSeeder)
+                        || d.ImplementationType == typeof(GamificationSeeder))).ToList())
                 {
                     services.Remove(descriptor);
                 }

@@ -4,6 +4,7 @@
 
 using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.Data.Entities;
+using Devngn.Wellness.Api.Gamification;
 using Devngn.Wellness.Api.Schedule.Gaps;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,8 +19,10 @@ internal sealed class PromptService(
     WellnessDbContext db,
     IGapDetector detector,
     IPromptMatcher matcher,
+    IGamificationService gamification,
     IOptions<GapDetectionOptions> gapOptions,
     IOptions<PromptDeliveryOptions> promptOptions,
+    ILogger<PromptService> logger,
     TimeProvider clock) : IPromptService
 {
     public async Task<PromptResponse?> GenerateNextPromptAsync(
@@ -143,6 +146,20 @@ internal sealed class PromptService(
         };
         db.Prompts.Add(prompt);
         await db.SaveChangesAsync(cancellationToken);
+
+        // Award gamification XP, update streak, and evaluate badges/milestones.
+        // Errors here must not fail the prompt delivery — the user still gets their prompt.
+        try
+        {
+            await gamification.AwardXpAsync(userId, 10, XpReason.PromptCompleted, cancellationToken);
+            await gamification.UpdateStreakAsync(userId, DateOnly.FromDateTime(now.UtcDateTime), cancellationToken);
+            await gamification.EvaluateBadgesAsync(userId, cancellationToken);
+            await gamification.EvaluateMilestonesAsync(userId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Gamification update failed for user {UserId}; prompt delivery unaffected.", userId);
+        }
 
         return PromptResponse.From(prompt, activity);
     }

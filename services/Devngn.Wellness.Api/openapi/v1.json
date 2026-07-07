@@ -1594,6 +1594,280 @@
           }
         }
       }
+    },
+    "/v1/gamification/me": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "operationId": "GetPlayerState",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerStateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/gamification/badges": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "operationId": "ListBadges",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BadgeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/gamification/milestones": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "operationId": "ListMilestones",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MilestoneResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/gamification/leaderboard": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "operationId": "GetLeaderboard",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeaderboardEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/social/profile": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "operationId": "GetSocialProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialProfileResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Social"
+        ],
+        "operationId": "UpsertSocialProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertSocialProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem\u002Bjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/social/follow/{followeeId}": {
+      "post": {
+        "tags": [
+          "Social"
+        ],
+        "operationId": "Follow",
+        "parameters": [
+          {
+            "name": "followeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Social"
+        ],
+        "operationId": "Unfollow",
+        "parameters": [
+          {
+            "name": "followeeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/v1/social/followers": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "operationId": "ListFollowers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FollowerResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/social/following": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "operationId": "ListFollowing",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FollowResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/social/feed": {
+      "get": {
+        "tags": [
+          "Social"
+        ],
+        "operationId": "GetFeed",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedItemResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1751,6 +2025,49 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "BadgeResponse": {
+        "required": [
+          "key",
+          "name",
+          "description",
+          "icon",
+          "category",
+          "isHidden",
+          "earned",
+          "earnedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
+          "earned": {
+            "type": "boolean"
+          },
+          "earnedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -2017,6 +2334,41 @@
           }
         }
       },
+      "FeedItemResponse": {
+        "required": [
+          "id",
+          "type",
+          "message",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/FeedItemType"
+          },
+          "message": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FeedItemType": {
+        "enum": [
+          "PromptCompleted",
+          "BadgeEarned",
+          "MilestoneAchieved",
+          "LevelUp",
+          "GoalCreated",
+          "Followed"
+        ]
+      },
       "FitnessBaseline": {
         "enum": [
           "Unspecified",
@@ -2025,6 +2377,40 @@
           "Moderate",
           "Active"
         ]
+      },
+      "FollowerResponse": {
+        "required": [
+          "followerId",
+          "followedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "followerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "followedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FollowResponse": {
+        "required": [
+          "followeeId",
+          "followedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "followeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "followedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
       },
       "GapResponse": {
         "required": [
@@ -2171,6 +2557,144 @@
           "Medium",
           "High"
         ]
+      },
+      "LeaderboardEntry": {
+        "required": [
+          "userId",
+          "displayName",
+          "totalXp",
+          "level",
+          "rankTier"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "totalXp": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rankTier": {
+            "$ref": "#/components/schemas/RankTier"
+          }
+        }
+      },
+      "MilestoneResponse": {
+        "required": [
+          "key",
+          "name",
+          "description",
+          "isHidden",
+          "achieved",
+          "achievedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isHidden": {
+            "type": "boolean"
+          },
+          "achieved": {
+            "type": "boolean"
+          },
+          "achievedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "PlayerStateResponse": {
+        "required": [
+          "level",
+          "totalXp",
+          "xpIntoLevel",
+          "xpForNextLevel",
+          "currentStreak",
+          "longestStreak",
+          "rankTier"
+        ],
+        "type": "object",
+        "properties": {
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalXp": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "xpIntoLevel": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "xpForNextLevel": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "currentStreak": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "longestStreak": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rankTier": {
+            "$ref": "#/components/schemas/RankTier"
+          }
+        }
       },
       "ProblemDetails": {
         "type": "object",
@@ -2436,6 +2960,16 @@
           }
         }
       },
+      "RankTier": {
+        "enum": [
+          "Bronze",
+          "Silver",
+          "Gold",
+          "Platinum",
+          "Diamond",
+          "Legend"
+        ]
+      },
       "ScheduleEventResponse": {
         "required": [
           "id",
@@ -2570,6 +3104,33 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "SocialProfileResponse": {
+        "required": [
+          "userId",
+          "displayName",
+          "bio",
+          "isPublic"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "bio": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPublic": {
+            "type": "boolean"
           }
         }
       },
@@ -2717,6 +3278,30 @@
             ]
           }
         }
+      },
+      "UpsertSocialProfileRequest": {
+        "required": [
+          "displayName"
+        ],
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "bio": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isPublic": {
+            "type": "boolean"
+          }
+        }
       }
     }
   },
@@ -2756,6 +3341,12 @@
     },
     {
       "name": "Prompts"
+    },
+    {
+      "name": "Gamification"
+    },
+    {
+      "name": "Social"
     }
   ]
 }

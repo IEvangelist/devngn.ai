@@ -9,14 +9,17 @@ using Devngn.Wellness.Api.Consent;
 using Devngn.Wellness.Api.Crypto;
 using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.EquipmentApi;
+using Devngn.Wellness.Api.Gamification;
 using Devngn.Wellness.Api.Goals;
 using Devngn.Wellness.Api.Identity;
+using Devngn.Wellness.Api.Moderation;
 using Devngn.Wellness.Api.Profiles;
 using Devngn.Wellness.Api.Prompts;
 using Devngn.Wellness.Api.Schedule;
 using Devngn.Wellness.Api.Schedule.Gaps;
 using Devngn.Wellness.Api.Schedule.Google;
 using Devngn.Wellness.Api.Schedule.Microsoft;
+using Devngn.Wellness.Api.Social;
 using Microsoft.AspNetCore.OpenApi;
 using Scalar.AspNetCore;
 
@@ -62,6 +65,16 @@ builder.Services.AddWellnessActivityCatalog();
 // active gap into a persisted, delivered prompt. Backs POST /v1/prompts/next and the
 // SSE / WebSocket streams.
 builder.Services.AddWellnessPrompts(builder.Configuration);
+
+// Gamification: XP, levels, streaks, badges, milestones. Scoped service + badge/milestone
+// seeder hosted service.
+builder.Services.AddWellnessGamification();
+
+// Profanity filter: typed HttpClient targeting the profanity-filter Aspire resource.
+// Service discovery resolves the base address at runtime; falls back gracefully if
+// the container is unreachable (returns original text / assumes clean).
+builder.Services.AddHttpClient<IProfanityService, ProfanityService>(static c =>
+    c.BaseAddress = new Uri("https+http://profanity-filter"));
 
 // IHttpContextAccessor + scoped ICurrentUserContext for endpoints that need the
 // authenticated user id without re-parsing the JWT.
@@ -123,6 +136,8 @@ app.MapScheduleConnectEndpoints();
 app.MapGapEndpoints();
 app.MapActivityEndpoints();
 app.MapPromptEndpoints();
+app.MapGamificationEndpoints();
+app.MapSocialEndpoints();
 
 app.Run();
 

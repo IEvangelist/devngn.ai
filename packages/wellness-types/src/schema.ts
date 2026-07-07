@@ -487,6 +487,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/gamification/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetPlayerState"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gamification/badges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListBadges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gamification/milestones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListMilestones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/gamification/leaderboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetLeaderboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/social/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetSocialProfile"];
+        put: operations["UpsertSocialProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/social/follow/{followeeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["Follow"];
+        delete: operations["Unfollow"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/social/followers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListFollowers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/social/following": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListFollowing"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/social/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["GetFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -528,6 +672,17 @@ export interface components {
         AuthErrorResponse: {
             error: string;
             description?: null | string;
+        };
+        BadgeResponse: {
+            key: string;
+            name: string;
+            description: string;
+            icon: string;
+            category: string;
+            isHidden: boolean;
+            earned: boolean;
+            /** Format: date-time */
+            earnedAt: null | string;
         };
         /** @enum {unknown} */
         BodyArea: "Full" | "Upper" | "Lower" | "Core" | "Neck" | "Back" | "Wrists" | "Hips" | "Ankles" | "Breath" | "Posture";
@@ -591,8 +746,30 @@ export interface components {
             /** Format: int16 */
             rating?: number | string;
         };
+        FeedItemResponse: {
+            /** Format: uuid */
+            id: string;
+            type: components["schemas"]["FeedItemType"];
+            message: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        /** @enum {unknown} */
+        FeedItemType: "PromptCompleted" | "BadgeEarned" | "MilestoneAchieved" | "LevelUp" | "GoalCreated" | "Followed";
         /** @enum {unknown} */
         FitnessBaseline: "Unspecified" | "Sedentary" | "Light" | "Moderate" | "Active";
+        FollowerResponse: {
+            /** Format: uuid */
+            followerId: string;
+            /** Format: date-time */
+            followedAt: string;
+        };
+        FollowResponse: {
+            /** Format: uuid */
+            followeeId: string;
+            /** Format: date-time */
+            followedAt: string;
+        };
         GapResponse: {
             /** Format: date-time */
             startUtc: string;
@@ -632,6 +809,40 @@ export interface components {
         };
         /** @enum {unknown} */
         IntensityLevel: "Low" | "Medium" | "High";
+        LeaderboardEntry: {
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            /** Format: int32 */
+            totalXp: number | string;
+            /** Format: int32 */
+            level: number | string;
+            rankTier: components["schemas"]["RankTier"];
+        };
+        MilestoneResponse: {
+            key: string;
+            name: string;
+            description: string;
+            isHidden: boolean;
+            achieved: boolean;
+            /** Format: date-time */
+            achievedAt: null | string;
+        };
+        PlayerStateResponse: {
+            /** Format: int32 */
+            level: number | string;
+            /** Format: int32 */
+            totalXp: number | string;
+            /** Format: int32 */
+            xpIntoLevel: number | string;
+            /** Format: int32 */
+            xpForNextLevel: number | string;
+            /** Format: int32 */
+            currentStreak: number | string;
+            /** Format: int32 */
+            longestStreak: number | string;
+            rankTier: components["schemas"]["RankTier"];
+        };
         ProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -698,6 +909,8 @@ export interface components {
             sourceId: string;
             items: components["schemas"]["PushScheduleEventItem"][];
         };
+        /** @enum {unknown} */
+        RankTier: "Bronze" | "Silver" | "Gold" | "Platinum" | "Diamond" | "Legend";
         ScheduleEventResponse: {
             /** Format: uuid */
             id: string;
@@ -735,6 +948,13 @@ export interface components {
             /** Format: int32 */
             synced: number | string;
         };
+        SocialProfileResponse: {
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            bio: null | string;
+            isPublic: boolean;
+        };
         UpdateEquipmentRequest: {
             displayName: string;
             notes?: null | string;
@@ -763,6 +983,11 @@ export interface components {
             preferredIntensity?: components["schemas"]["IntensityLevel"];
             limitations?: null | string;
             timeOfDayPreference?: null | string;
+        };
+        UpsertSocialProfileRequest: {
+            displayName: string;
+            bio?: null | string;
+            isPublic?: boolean;
         };
     };
     responses: never;
@@ -2069,6 +2294,267 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    GetPlayerState: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayerStateResponse"];
+                };
+            };
+        };
+    };
+    ListBadges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BadgeResponse"][];
+                };
+            };
+        };
+    };
+    ListMilestones: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MilestoneResponse"][];
+                };
+            };
+        };
+    };
+    GetLeaderboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaderboardEntry"][];
+                };
+            };
+        };
+    };
+    GetSocialProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SocialProfileResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UpsertSocialProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpsertSocialProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SocialProfileResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+        };
+    };
+    Follow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                followeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    Unfollow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                followeeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ListFollowers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowerResponse"][];
+                };
+            };
+        };
+    };
+    ListFollowing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowResponse"][];
+                };
+            };
+        };
+    };
+    GetFeed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedItemResponse"][];
+                };
             };
         };
     };

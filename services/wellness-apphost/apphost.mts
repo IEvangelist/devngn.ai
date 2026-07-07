@@ -16,6 +16,16 @@ const builder = await createBuilder();
 const postgres = builder.addPostgres("postgres").withDataVolume();
 const wellnessDb = postgres.addDatabase("wellnessdb");
 
+// Profanity filter: all user-generated text (social display names, bios, and
+// activity-feed posts) is sanitized through this service. ProfanityFilter.Hosting
+// 13.4.0 exposes a native `addProfanityFilter()` binding in the generated Aspire
+// TypeScript SDK (verified in .aspire/modules/aspire.mts →
+// 'ProfanityFilter.Hosting/addProfanityFilter'), so it's modeled as a first-class
+// Aspire resource — no manual container plumbing needed. The API references it by
+// its service-discovery name ("profanity-filter"). NOTE: the binding is absent in
+// the 9.0.7-alpha.* builds; 13.4.0 (the current stable release) is required.
+const profanity = builder.addProfanityFilter("profanity-filter");
+
 // Local-dev placeholder configuration so the API host passes its strict
 // options validation and boots on a fresh checkout. Real OAuth/JWT secrets
 // belong in dotnet user-secrets (or the deployment environment); these
@@ -36,6 +46,8 @@ const wellnessApi = builder
     { launchProfileOrOptions: "https" },
   )
   .withReference(wellnessDb)
+  .withReference(profanity)
+  .waitFor(profanity)
   .waitForCompletion(wellnessMigrator);
 
 // Surface Scalar (and the raw OpenAPI document) as one-click links on the

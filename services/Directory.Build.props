@@ -7,6 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- Audit only direct dependencies; transitive package vulnerability advisories
+         are the responsibility of upstream maintainers, not this repo. -->
+    <NuGetAuditMode>direct</NuGetAuditMode>
 
     <Authors>David Pine</Authors>
     <Company>David Pine</Company>

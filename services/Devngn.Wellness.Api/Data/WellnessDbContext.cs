@@ -35,6 +35,26 @@ public sealed class WellnessDbContext(DbContextOptions<WellnessDbContext> option
 
     public DbSet<ScheduleOAuthState> ScheduleOAuthStates => Set<ScheduleOAuthState>();
 
+    // Gamification
+    public DbSet<XpEvent> XpEvents => Set<XpEvent>();
+
+    public DbSet<PlayerState> PlayerStates => Set<PlayerState>();
+
+    public DbSet<BadgeDefinition> BadgeDefinitions => Set<BadgeDefinition>();
+
+    public DbSet<UserBadge> UserBadges => Set<UserBadge>();
+
+    public DbSet<MilestoneDefinition> MilestoneDefinitions => Set<MilestoneDefinition>();
+
+    public DbSet<UserMilestone> UserMilestones => Set<UserMilestone>();
+
+    // Social
+    public DbSet<SocialProfile> SocialProfiles => Set<SocialProfile>();
+
+    public DbSet<Follow> Follows => Set<Follow>();
+
+    public DbSet<ActivityFeedItem> ActivityFeedItems => Set<ActivityFeedItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
