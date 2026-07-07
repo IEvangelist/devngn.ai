@@ -1,0 +1,23 @@
+{
+  "universe_usage_history": [
+    {
+      "universe": "The Matrix",
+      "assignment_id": "devngn-app-2026-07-06",
+      "assigned_at": "2026-07-06T21:30:48-05:00",
+      "names": ["Neo", "Trinity", "Morpheus", "Dozer", "Tank"]
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "devngn-app-2026-07-06": {
+      "universe": "The Matrix",
+      "shape": "cross-platform desktop + PWA product build (Tauri/Nuxt frontend, .NET Aspire backend, gamification/social)",
+      "cast": {
+        "Lead": "Neo",
+        "Frontend Dev": "Trinity",
+        "Backend Dev": "Morpheus",
+        "DevOps / Release": "Dozer",
+        "Tester": "Tank"
+      }
+    }
+  }
+}
