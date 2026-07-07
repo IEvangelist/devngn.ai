@@ -3,6 +3,11 @@
 
 import type { AuthenticatedUserResponse, DeviceFlowStartResponse } from "@devngn/wellness-types";
 import { WellnessClient } from "@devngn/wellness-client";
+import {
+  AUTH_CALLBACK_NONCE_KEY,
+  buildAuthCallbackReturnPath,
+  createAuthCallbackNonce,
+} from "~/utils/authCallback";
 
 const TOKEN_KEY = "devngn_token";
 
@@ -173,8 +178,10 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function _startWebFlow(): void {
-    const redirectUrl = encodeURIComponent(window.location.origin + "/auth/callback");
-    window.location.href = `${baseUrl.replace(/\/$/, "")}/v1/auth/github/web/start?redirect_uri=${redirectUrl}`;
+    const nonce = createAuthCallbackNonce();
+    window.sessionStorage.setItem(AUTH_CALLBACK_NONCE_KEY, nonce);
+    const returnPath = encodeURIComponent(buildAuthCallbackReturnPath(nonce));
+    window.location.href = `${baseUrl.replace(/\/$/, "")}/v1/auth/github/web/start?returnPath=${returnPath}`;
   }
 
   /** Handle the OAuth callback (web flow) — called from the callback route or deep-link handler. */

@@ -41,7 +41,18 @@
     "githubButton": "Continue with GitHub",
     "deviceInstruction": "Enter this code at {url}:",
     "waiting": "Waiting for you to authorize on GitHub…",
-    "signedInAs": "Signed in as {login}"
+    "signedInAs": "Signed in as {login}",
+    "callback": {
+      "title": "Finishing GitHub sign-in",
+      "processing": "Checking your GitHub sign-in…",
+      "redirecting": "You're signed in. Taking you home…",
+      "errorTitle": "Sign-in could not be completed",
+      "errorDescription": "The callback was invalid or expired. Try signing in again.",
+      "missingToken": "The sign-in response did not include an access token.",
+      "securityMismatch": "The sign-in session did not match this browser tab. Please start again.",
+      "providerError": "GitHub returned an error: {description}",
+      "retry": "Back to sign-in"
+    }
   },
   "today": {
     "title": "Today",
