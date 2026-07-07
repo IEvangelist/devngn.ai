@@ -18,13 +18,28 @@ const wellnessDb = postgres.addDatabase("wellnessdb");
 
 // Profanity filter: all user-generated text (social display names, bios, and
 // activity-feed posts) is sanitized through this service. ProfanityFilter.Hosting
-// 13.4.0 exposes a native `addProfanityFilter()` binding in the generated Aspire
+// exposes a native `addProfanityFilter()` binding in the generated Aspire
 // TypeScript SDK (verified in .aspire/modules/aspire.mts →
 // 'ProfanityFilter.Hosting/addProfanityFilter'), so it's modeled as a first-class
 // Aspire resource — no manual container plumbing needed. The API references it by
-// its service-discovery name ("profanity-filter"). NOTE: the binding is absent in
-// the 9.0.7-alpha.* builds; 13.4.0 (the current stable release) is required.
-const profanity = builder.addProfanityFilter("profanity-filter");
+// its service-discovery name ("profanity-filter").
+//
+// UPSTREAM BUG (we're the first to run this in an Aspire TS apphost, as predicted):
+// the ProfanityFilter.Hosting assembly hard-codes the container image tag
+// `ghcr.io/ievangelist/profanity-filter-api:13.4.0`, and that tag was NEVER
+// published to GHCR (published tags: 13.3.0, 13.4.6.1, 13.5.0, latest). The tag is
+// a string literal baked into the DLL, decoupled from the NuGet package version —
+// so BOTH package 13.4.0 and 13.5.0 request the missing `:13.4.0` image and the
+// resource FailsToStart out of the box. The `addProfanityFilter` options only
+// expose `devCertPassword`, so we override the tag on the returned container
+// resource builder via `.withImageTag(...)`, pointing at a published image. This
+// is prod-safe (no local `docker tag` hack required) and survives clean checkouts.
+// Track the upstream fix in IEvangelist/profanity-filter (publish :13.4.0 or bump
+// the hard-coded tag); remove this override once the package ships a valid tag.
+const PROFANITY_IMAGE_TAG = "13.5.0";
+const profanity = builder
+  .addProfanityFilter("profanity-filter")
+  .withImageTag(PROFANITY_IMAGE_TAG);
 
 // Local-dev placeholder configuration so the API host passes its strict
 // options validation and boots on a fresh checkout. Real OAuth/JWT secrets
