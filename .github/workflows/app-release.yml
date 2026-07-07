@@ -113,6 +113,11 @@ jobs:
   # updater .sig files + latest.json — are left untouched.)
   alias-assets:
     needs: publish-tauri
+    # Only alias when every platform bundle built successfully and the run
+    # wasn't cancelled — publishing a partial set would leave dead download
+    # links on the marketing page. This makes the implicit success() gate
+    # explicit and hardens it against the cancelled() edge case.
+    if: ${{ !cancelled() && needs.publish-tauri.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

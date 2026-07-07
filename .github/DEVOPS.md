@@ -82,49 +82,44 @@ Add these under **Settings → Secrets and variables → Actions → Repository 
 
 ---
 
-## 3. Generating the Tauri Signing Keypair
+## 3. The Tauri Signing Keypair
 
-The Tauri updater requires an Ed25519 keypair.  **Generate it once** and store
-it securely.  Never commit the private key.
+The Tauri updater requires an Ed25519 (minisign) keypair. **A keypair has already
+been generated and its public key is committed** to
+`apps/app/src-tauri/tauri.conf.json` (`plugins.updater.pubkey`). The public key is
+safe to commit; the private key and its password are **not** in the repo.
+
+**Remaining one-time step (maintainer):** add the two signing secrets to the repo
+(§2) so CI can sign updates:
+
+| Secret                              | Value                                             |
+| ----------------------------------- | ------------------------------------------------- |
+| `TAURI_SIGNING_PRIVATE_KEY`         | Contents of the generated `*.key` private-key file. |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`| The password chosen when the key was generated.     |
+
+Until those secrets are set, the release workflow builds installers but the
+updater `latest.json` will be unsigned and clients will refuse the update.
+
+### Rotating / regenerating the keypair
+
+If you ever need a fresh key (lost private key, suspected compromise):
 
 ```bash
 # From the monorepo root (or any directory with @tauri-apps/cli installed):
 pnpm --filter @devngn/app exec tauri signer generate -w ~/.tauri/devngn.key
 ```
 
-The command prints output similar to:
+The command writes the private key to the given path, a `<path>.pub` public-key
+file next to it, and prints the env-var names to store. **After regenerating:**
 
-```
-Please set the following environment variables in your GitHub Secrets:
-  TAURI_SIGNING_PRIVATE_KEY=<base64-encoded private key>
-  TAURI_SIGNING_PRIVATE_KEY_PASSWORD=<your chosen password>
+1. Update `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` in the
+   repository secrets (§2).
+2. Replace `plugins.updater.pubkey` in `apps/app/src-tauri/tauri.conf.json` with the
+   **contents of `<path>.pub`**, then commit & push. The public key is safe to commit.
 
-Your public key was written to: ~/.tauri/devngn.key.pub
-```
-
-**After generating:**
-
-1. Copy `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` into
-   the repository secrets (§2).
-2. Open `apps/app/src-tauri/tauri.conf.json` and replace the `plugins.updater.pubkey`
-   placeholder with the **public key** from `~/.tauri/devngn.key.pub`:
-
-   ```json
-   "plugins": {
-     "updater": {
-       "pubkey": "<paste the public key string here>",
-       "endpoints": [
-         "https://github.com/IEvangelist/devngn.ai/releases/latest/download/latest.json"
-       ]
-     }
-   }
-   ```
-
-3. Commit and push the `tauri.conf.json` change.  The public key is safe to commit.
-
-> **Note:** `tauri.conf.json` currently contains a descriptive TODO placeholder.
-> No CI edit was made to that file — the maintainer performs this one-time manual
-> step after generating the keypair.
+> **Important:** clients that installed a build signed with the *old* key will not
+> accept updates signed with the *new* key. Rotate only when necessary and ship a
+> release soon after so users converge on the new key.
 
 ---
 
