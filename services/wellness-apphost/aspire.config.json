@@ -19,6 +19,8 @@
   "packages": {
     "Aspire.Hosting.PostgreSQL": "13.4.0",
     "Aspire.Hosting.JavaScript": "13.4.0",
-    "ProfanityFilter.Hosting": "13.5.0"
+    "ProfanityFilter.Hosting": "13.5.0",
+    "Aspire.Hosting.Azure.AppContainers": "13.4.6",
+    "Aspire.Hosting.Azure.PostgreSQL": "13.4.6"
   }
 }

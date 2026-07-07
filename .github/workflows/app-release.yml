@@ -83,6 +83,10 @@ jobs:
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Point released desktop builds at the hosted Wellness API. The
+          # beforeBuildCommand (`pnpm --filter @devngn/app generate`) reads this
+          # env var in nuxt.config.ts; local dev keeps the localhost default.
+          NUXT_PUBLIC_API_BASE_URL: https://api.devngn.ai
           # Updater signing — see DEVOPS.md for key generation instructions.
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
