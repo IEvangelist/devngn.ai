@@ -1,0 +1,156 @@
+name: App Release
+
+# Builds and publishes the Tauri desktop app for all three platforms on every
+# `app-v*` tag push.  The tauri-action creates a draft GitHub Release, uploads
+# platform bundles (NSIS/MSI on Windows, .dmg on macOS, AppImage/.deb on Linux),
+# and publishes the updater feed (latest.json) to the same release.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   TAURI_SIGNING_PRIVATE_KEY          – Ed25519 private key (base64), see DEVOPS.md
+#   TAURI_SIGNING_PRIVATE_KEY_PASSWORD – passphrase for the private key
+#
+# GITHUB_TOKEN is provided automatically; the job is granted `contents: write`
+# so the action can create/update the GitHub Release.
+
+on:
+  push:
+    tags:
+      - 'app-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-latest
+            args: ''
+          - platform: windows-latest
+            args: ''
+          # Build a native ARM binary on the M-series runner.
+          - platform: macos-latest
+            args: '--target aarch64-apple-darwin'
+          # Cross-compile an Intel binary from the same macOS runner.
+          - platform: macos-latest
+            args: '--target x86_64-apple-darwin'
+
+    runs-on: ${{ matrix.platform }}
+    name: Build (${{ matrix.platform }} ${{ matrix.args }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm reads the `packageManager` field from the root package.json.
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      # Pre-register the macOS cross-compilation targets so Rust can use them.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: 'apps/app/src-tauri -> target'
+
+      - name: Install Linux system dependencies
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            build-essential \
+            libssl-dev \
+            xdg-utils
+
+      - name: Install pnpm dependencies
+        run: pnpm install
+
+      - name: Build and publish Tauri app
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Updater signing — see DEVOPS.md for key generation instructions.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          # `apps/app` contains src-tauri/ and the beforeBuildCommand runs
+          # `pnpm --filter @devngn/app generate` (Nuxt SPA → .output/public).
+          projectPath: apps/app
+          # Use the pushed tag as-is (e.g. app-v1.2.3).
+          tagName: ${{ github.ref_name }}
+          releaseName: 'devngn ${{ github.ref_name }}'
+          releaseBody: |
+            See the assets below to download and install devngn for your platform.
+            The updater feed (`latest.json`) is attached and consumed by the in-app
+            auto-updater endpoint configured in tauri.conf.json.
+          releaseDraft: true
+          prerelease: false
+          # Generates and uploads latest.json for the Tauri updater plugin.
+          uploadUpdaterJson: true
+          args: ${{ matrix.args }}
+
+  # tauri-action publishes version-embedded bundle names (e.g.
+  # devngn_1.2.3_aarch64.dmg).  Those are correct for the updater feed, but a
+  # marketing "Download" page wants durable URLs.  This job runs once after all
+  # platforms finish, downloads the draft release's assets, and re-uploads
+  # stable-named alias copies so links like
+  # https://github.com/IEvangelist/devngn.ai/releases/latest/download/devngn-macos-aarch64.dmg
+  # keep working across every release.  (The original versioned assets — and the
+  # updater .sig files + latest.json — are left untouched.)
+  alias-assets:
+    needs: publish-tauri
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish stable-named alias assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist stable
+          # Draft releases are reachable with the workflow token.
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir dist --clobber
+
+          shopt -s nullglob
+          copy_first() {
+            local pattern="$1" dest="$2" match
+            for match in dist/$pattern; do
+              if [ -f "$match" ]; then
+                cp "$match" "stable/$dest"
+                echo "aliased $(basename "$match") -> $dest"
+                return 0
+              fi
+            done
+            echo "::warning::no release asset matched '$pattern' (alias '$dest' skipped)"
+          }
+
+          copy_first '*_x64-setup.exe' 'devngn-windows-x64-setup.exe'
+          copy_first '*_en-US.msi'     'devngn-windows-x64.msi'
+          copy_first '*_aarch64.dmg'   'devngn-macos-aarch64.dmg'
+          copy_first '*_x64.dmg'       'devngn-macos-x64.dmg'
+          copy_first '*.AppImage'      'devngn-linux-x86_64.AppImage'
+          copy_first '*_amd64.deb'     'devngn-linux-amd64.deb'
+
+          if [ -n "$(ls -A stable 2>/dev/null)" ]; then
+            gh release upload "$TAG" stable/* --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            echo "::error::no alias assets were produced"
+            exit 1
+          fi

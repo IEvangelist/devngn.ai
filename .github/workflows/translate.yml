@@ -1,0 +1,89 @@
+name: Translate Locale Catalogs
+
+# Calls IEvangelist/resource-translator (Azure AI Translator) to machine-translate
+# `apps/app/i18n/locales/en.json` into es, fr, de, pt, ja, zh-Hans, then opens a
+# PR with the updated catalogs.
+#
+# ─── NAMING-BRIDGE NOTE ───────────────────────────────────────────────────────
+# resource-translator discovers JSON source files via the glob `**/*.{locale}.json`
+# (e.g., **/*.en.json), which expects the `{basename}.{locale}.json` convention
+# (e.g., messages.en.json).  Our catalogs use the `{locale}.json` convention
+# (e.g., en.json) — the same layout .po files use.  The JSON parser does NOT
+# receive the same special-case handling the .po parser does for this layout.
+#
+# Closest working configuration: we copy `en.json` → `catalog.en.json` before
+# the action runs.  The action finds `catalog.en.json`, translates it, and writes
+# `catalog.es.json`, `catalog.fr.json`, … (3-segment rule in getLocaleName).
+# A post-step renames them back to `es.json`, `fr.json`, … and removes the temp
+# source file so only the canonical locale files are committed.
+#
+# GITHUB_TOKEN is intentionally cleared on the translator step.  The action uses
+# GITHUB_TOKEN to fetch the commit's changed-file list and filter which globbed
+# files it processes.  Since the changed file is `en.json` but the globbed file is
+# `catalog.en.json`, the internal filter would exclude it.  Clearing the token
+# causes the action to skip the filter and process all files matched by `include`.
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   AZURE_TRANSLATOR_SUBSCRIPTION_KEY – Azure AI Translator resource key
+#   AZURE_TRANSLATOR_ENDPOINT         – e.g. https://api.cognitive.microsofttranslator.com/
+#   AZURE_TRANSLATOR_REGION           – e.g. eastus (omit for global resources)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/app/i18n/locales/en.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Bridge the naming convention gap: resource-translator expects *.en.json.
+      - name: Create naming bridge (catalog.en.json)
+        run: cp apps/app/i18n/locales/en.json apps/app/i18n/locales/catalog.en.json
+
+      - id: translator
+        name: Translate locale catalogs
+        uses: IEvangelist/resource-translator@v3
+        env:
+          # Clear GITHUB_TOKEN to bypass the commit-diff file filter (see note above).
+          GITHUB_TOKEN: ''
+        with:
+          sourceLocale: en
+          subscriptionKey: ${{ secrets.AZURE_TRANSLATOR_SUBSCRIPTION_KEY }}
+          endpoint: ${{ secrets.AZURE_TRANSLATOR_ENDPOINT }}
+          region: ${{ secrets.AZURE_TRANSLATOR_REGION }}
+          # Restrict to only the bridge file so no other *.en.json in the repo is touched.
+          include: apps/app/i18n/locales/catalog.en.json
+          toLocales: '["es","fr","de","pt","ja","zh-Hans"]'
+
+      # Rename catalog.{locale}.json → {locale}.json and remove the temp source.
+      - name: Rename translated outputs to locale-only filenames
+        run: |
+          cd apps/app/i18n/locales
+          rm -f catalog.en.json
+          for lang in es fr de pt ja zh-Hans; do
+            if [ -f "catalog.${lang}.json" ]; then
+              mv "catalog.${lang}.json" "${lang}.json"
+            fi
+          done
+
+      - name: Open translation pull request
+        if: steps.translator.outputs.has-new-translations == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: machine-translation/locales
+          commit-message: 'feat(i18n): machine-translate locale catalogs'
+          title: ${{ steps.translator.outputs.summary-title }}
+          body: ${{ steps.translator.outputs.summary-details }}
+          labels: localization
