@@ -38,7 +38,7 @@ internal static class GapEndpoints
         WellnessDbContext db,
         IGapDetector detector,
         IOptions<GapDetectionOptions> options,
-        TimeProvider clock,
+        [FromKeyedServices(WellnessGapsExtensions.GapClockKey)] TimeProvider clock,
         [FromQuery] DateTimeOffset? from,
         [FromQuery] DateTimeOffset? to,
         [FromQuery] string? tz,

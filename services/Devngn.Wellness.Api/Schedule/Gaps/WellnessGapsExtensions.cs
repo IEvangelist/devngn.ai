@@ -8,6 +8,14 @@ namespace Devngn.Wellness.Api.Schedule.Gaps;
 
 public static class WellnessGapsExtensions
 {
+    /// <summary>
+    /// DI key for the <see cref="TimeProvider"/> used exclusively by gap detection.
+    /// Tests can override this keyed registration to pin the clock to a deterministic
+    /// date without affecting JWT bearer validation, which uses the unkeyed singleton
+    /// registered by <c>AddWellnessAuth</c>.
+    /// </summary>
+    public const string GapClockKey = "gap-clock";
+
     public static IServiceCollection AddWellnessGaps(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<GapDetectionOptions>()
@@ -16,6 +24,9 @@ public static class WellnessGapsExtensions
             .ValidateOnStart();
 
         services.AddSingleton<IValidateOptions<GapDetectionOptions>, GapDetectionOptionsValidator>();
+        // Forward the keyed clock to the unkeyed TimeProvider.System in production.
+        // Tests override this key independently to keep JWT bearer validation unaffected.
+        services.AddKeyedSingleton<TimeProvider>(GapClockKey, static (sp, _) => sp.GetRequiredService<TimeProvider>());
         services.AddSingleton<IGapDetector, GapDetector>();
         return services;
     }

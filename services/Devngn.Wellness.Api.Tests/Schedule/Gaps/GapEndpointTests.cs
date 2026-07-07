@@ -17,18 +17,34 @@ namespace Devngn.Wellness.Api.Tests.Schedule.Gaps;
 
 /// <summary>
 /// Integration tests for <c>GET /v1/gaps</c>. The test window is anchored to
-/// 2026-06-15 — a date guaranteed to be in the future relative to the real wall
-/// clock at the time these tests were authored — so the engine's <c>ClipByNow</c>
-/// stage is a no-op without having to override <see cref="TimeProvider"/> in DI
-/// (overriding it globally would also reject JWT bearer tokens as expired).
-/// The pure engine is unit-tested separately in <c>GapDetectorTests</c>.
+/// 2026-06-15. The gap-detection <see cref="TimeProvider"/> is pinned to
+/// 2026-06-14 via a keyed DI override (<see cref="WellnessGapsExtensions.GapClockKey"/>)
+/// so the engine's <c>ClipByNow</c> stage is always a no-op regardless of the real
+/// wall clock. JWT bearer validation uses the unkeyed <see cref="TimeProvider"/> and
+/// remains unaffected. The pure engine is unit-tested separately in
+/// <c>GapDetectorTests</c>.
 /// </summary>
 [Collection(nameof(PostgresCollection))]
 [Trait("Category", "Integration")]
 public sealed class GapEndpointTests(PostgresContainerFixture postgres)
 {
+    /// <summary>
+    /// Frozen "now" — one day before every test query window — so ClipByNow never
+    /// removes any test interval. Injected as the keyed gap-clock only; JWT bearer
+    /// validation continues to use the real system clock.
+    /// </summary>
+    private static readonly DateTimeOffset TestNow = new(2026, 6, 14, 0, 0, 0, TimeSpan.Zero);
+
     private AuthWebAppFactory Factory(Action<IDictionary<string, string?>>? extraConfig = null) =>
-        new(postgres.ConnectionString, configureConfig: extraConfig);
+        new(postgres.ConnectionString,
+            configureConfig: extraConfig,
+            configureServices: services =>
+            {
+                // Pin the gap-only clock; the unkeyed TimeProvider (JWT bearer) is untouched.
+                services.AddKeyedSingleton<TimeProvider>(
+                    WellnessGapsExtensions.GapClockKey,
+                    new FixedTimeProvider(TestNow));
+            });
 
     [Fact]
     public async Task Get_with_no_busy_events_returns_full_business_day_capped_at_max()
