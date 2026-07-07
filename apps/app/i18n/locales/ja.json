@@ -1,0 +1,131 @@
+{
+  "app": {
+    "name": "devngn",
+    "tagline": "Gamified wellness interruptions for developers"
+  },
+  "nav": {
+    "today": "Today",
+    "interruptions": "Interruptions",
+    "goals": "Goals",
+    "badges": "Badges",
+    "milestones": "Milestones",
+    "leaderboard": "Leaderboard",
+    "social": "Social",
+    "settings": "Settings",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "toggleMenu": "Toggle menu"
+  },
+  "common": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "loading": "Loading…",
+    "ready": "Ready",
+    "connecting": "Connecting…",
+    "reconnecting": "Reconnecting…",
+    "offline": "Offline",
+    "save": "Save",
+    "saved": "Saved!",
+    "cancel": "Cancel",
+    "dismiss": "Dismiss",
+    "snooze": "Snooze",
+    "complete": "Complete",
+    "skipToContent": "Skip to content",
+    "loadError": "Failed to load data.",
+    "saveError": "Failed to save."
+  },
+  "auth": {
+    "title": "Sign in as yourself",
+    "subtitle": "Use your GitHub account to bring your wellness engine into the app.",
+    "githubButton": "Continue with GitHub",
+    "deviceInstruction": "Enter this code at {url}:",
+    "waiting": "Waiting for you to authorize on GitHub…",
+    "signedInAs": "Signed in as {login}"
+  },
+  "today": {
+    "title": "Today",
+    "empty": "No interruptions right now. We'll nudge you when it's time.",
+    "nextIn": "Next nudge in {time}"
+  },
+  "interruptions": {
+    "title": "Interruptions",
+    "completeCta": "Done",
+    "snoozeCta": "Snooze",
+    "dismissCta": "Not now",
+    "feedback": "How was that?"
+  },
+  "goals": {
+    "title": "Goal title",
+    "pageTitle": "Goals",
+    "empty": "No goals yet. Add one to get started.",
+    "addGoal": "Add Goal",
+    "description": "Description",
+    "category": "Category",
+    "target": "Target",
+    "progress": "Progress",
+    "created": "Goal created!"
+  },
+  "gamification": {
+    "level": "Level {level}",
+    "xp": "{xp} XP",
+    "xpToNext": "{remaining} XP to level {level}",
+    "streak": "{days}-day streak",
+    "rank": "{rank}"
+  },
+  "badges": {
+    "title": "Badges",
+    "earned": "Earned",
+    "locked": "Locked",
+    "hidden": "Hidden milestone"
+  },
+  "milestones": {
+    "title": "Milestones",
+    "hidden": "Mystery Milestone",
+    "unlockHint": "Keep going to unlock this hidden milestone."
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "you": "You",
+    "rankColumn": "Rank",
+    "playerColumn": "Developer",
+    "xpColumn": "XP"
+  },
+  "social": {
+    "title": "Social",
+    "feed": "Activity Feed",
+    "following": "Following",
+    "followers": "Followers",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "like": "Like",
+    "unlike": "Unlike"
+  },
+  "pwa": {
+    "updateAvailable": "New version available!",
+    "reload": "Reload"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "language": "Language",
+    "notifications": "Notifications",
+    "notificationsEnable": "Enable notifications",
+    "notificationsDenied": "Notification permission denied.",
+    "sound": "Sound",
+    "quietHours": "Quiet hours",
+    "quietHoursFrom": "From",
+    "quietHoursTo": "To",
+    "updates": "Updates",
+    "checkForUpdates": "Check for updates",
+    "upToDate": "You're up to date",
+    "updateAvailable": "Update available",
+    "installUpdate": "Install and restart",
+    "updateError": "Update failed. Please try again.",
+    "pwaAutoUpdate": "PWA updates automatically in the background."
+  }
+}
+

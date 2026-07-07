@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.tauri.app/config/2/capability.json",
+  "identifier": "default",
+  "description": "Default capabilities granted to the main devngn window.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "opener:allow-open-url",
+    "notification:default",
+    "notification:allow-is-permission-granted",
+    "notification:allow-request-permission",
+    "notification:allow-notify",
+    "store:default",
+    "store:allow-load",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-delete",
+    "store:allow-save",
+    "updater:default",
+    "updater:allow-check",
+    "updater:allow-download-and-install",
+    "deep-link:default",
+    "deep-link:allow-register",
+    "deep-link:allow-get-current",
+    "process:default",
+    "process:allow-restart",
+    "process:allow-exit",
+    "os:default"
+  ]
+}

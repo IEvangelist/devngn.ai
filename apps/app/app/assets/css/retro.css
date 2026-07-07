@@ -1,0 +1,344 @@
+/*
+ * devngn app — neo-brutalist design system.
+ * Tokens mirror apps/site/src/styles/retro.css so the app and marketing site
+ * stay visually identical, with app-specific component classes layered on top.
+ * Copyright (c) 2026-Present David Pine. Licensed under the MIT License.
+ */
+
+:root {
+  /* Retro palette */
+  --paper: #fdf3df;
+  --paper-2: #fffaee;
+  --surface: #ffffff;
+  --ink: #16130d;
+  --ink-soft: #574f3c;
+  --accent: #ff5a1f; /* orange */
+  --accent-ink: #16130d;
+  --accent-2: #11b3a3; /* teal */
+  --accent-3: #ffcf2e; /* yellow */
+  --accent-4: #6c4cf1; /* purple */
+  --accent-5: #ff4d8d; /* pink */
+  --accent-6: #2f6bff; /* blue */
+  --danger: #e5484d;
+  --success: #30a46c;
+
+  /* Block geometry */
+  --border-w: 3px;
+  --border: var(--border-w) solid var(--ink);
+  --shadow-color: var(--ink);
+  --shadow-sm: 4px 4px 0 var(--shadow-color);
+  --shadow: 6px 6px 0 var(--shadow-color);
+  --shadow-lg: 10px 10px 0 var(--shadow-color);
+  --radius: 0px;
+
+  /* Typography */
+  --font-display:
+    "Arial Black", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-body:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif;
+  --font-mono:
+    ui-monospace, "Cascadia Code", "Cascadia Mono", "Segoe UI Mono", Consolas,
+    Menlo, monospace;
+
+  /* Theme-flippable surfaces (light defaults) */
+  --bg: var(--paper);
+  --surface-bg: var(--surface);
+  --text: #221d12;
+  --muted: var(--ink-soft);
+
+  --space: 1rem;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: var(--paper);
+  --surface-bg: var(--surface);
+  --text: #221d12;
+  --muted: #574f3c;
+  --ink: #16130d;
+  --shadow-color: #16130d;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #17130c;
+  --surface-bg: #221c12;
+  --text: #fdf3df;
+  --muted: #cdbf9f;
+  --ink: #fdf3df;
+  --shadow-color: #0b0905;
+  --paper-2: #1f1910;
+  --surface: #221c12;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+    --bg: #17130c;
+    --surface-bg: #221c12;
+    --text: #fdf3df;
+    --muted: #cdbf9f;
+    --ink: #fdf3df;
+    --shadow-color: #0b0905;
+    --paper-2: #1f1910;
+    --surface: #221c12;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#__nuxt {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+.display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  margin: 0 0 0.5em;
+}
+
+a {
+  color: var(--accent);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+code,
+kbd,
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Accessible focus ring shared by all interactive elements. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Respect reduced-motion for all the playful transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Blocks
+ * ------------------------------------------------------------------------- */
+
+.brut-card,
+.brut-panel {
+  background: var(--surface-bg);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.brut-card {
+  padding: 1.15rem;
+}
+
+.brut-panel {
+  padding: 1.5rem;
+}
+
+.brut-card--flat {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Buttons */
+.brut-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: var(--surface-bg);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    background 0.08s ease;
+}
+
+.brut-btn:hover {
+  background: var(--accent-3);
+  color: var(--accent-ink);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--shadow-color);
+}
+
+.brut-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--shadow-color);
+}
+
+.brut-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.brut-btn--accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.brut-btn--accent:hover {
+  background: var(--accent-3);
+}
+.brut-btn--ghost {
+  box-shadow: none;
+  background: transparent;
+}
+.brut-btn--sm {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+}
+.brut-btn--block {
+  width: 100%;
+}
+
+/* Inputs */
+.brut-input,
+.brut-select,
+.brut-textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--surface-bg);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Chips / tags / badges */
+.brut-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent-3);
+  color: var(--accent-ink);
+  border: 2px solid var(--ink);
+}
+
+.brut-chip--teal { background: var(--accent-2); color: #05201c; }
+.brut-chip--purple { background: var(--accent-4); color: #fff; }
+.brut-chip--pink { background: var(--accent-5); color: #2a0313; }
+.brut-chip--blue { background: var(--accent-6); color: #fff; }
+
+/* Toggle switch */
+.brut-toggle {
+  position: relative;
+  display: inline-flex;
+  width: 3.25rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  border: var(--border);
+  background: var(--surface-bg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  padding: 0;
+}
+.brut-toggle__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.75rem - 8px);
+  height: calc(1.75rem - 8px);
+  background: var(--ink);
+  transition: transform 0.12s ease;
+}
+.brut-toggle[aria-checked="true"] {
+  background: var(--accent-2);
+}
+.brut-toggle[aria-checked="true"] .brut-toggle__knob {
+  transform: translateX(1.5rem);
+  background: var(--accent-ink);
+}
+
+/* Progress bar */
+.brut-progress {
+  position: relative;
+  height: 1.1rem;
+  border: var(--border);
+  background: var(--surface-bg);
+  overflow: hidden;
+}
+.brut-progress__fill {
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--accent),
+    var(--accent) 8px,
+    var(--accent-3) 8px,
+    var(--accent-3) 16px
+  );
+  transition: width 0.4s ease;
+}
+
+/* Section label */
+.brut-eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--muted);
+}

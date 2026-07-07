@@ -1,0 +1,15 @@
+# Nuxt
+.nuxt
+.output
+.data
+dist
+.env
+
+# Tauri
+src-tauri/target
+src-tauri/gen
+
+# Playwright
+test-results
+playwright-report
+.playwright
