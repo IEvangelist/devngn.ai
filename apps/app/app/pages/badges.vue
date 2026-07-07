@@ -1,68 +1,82 @@
 <!--
   Copyright (c) 2026-Present David Pine. All rights reserved.
   Licensed under the MIT License. SPDX-License-Identifier: MIT
-  TODO(wave2): bind badge grid to /v1/gamification/badges
+  Wave 2: bound to /v1/gamification/badges via gamification store.
 -->
 <template>
   <section>
     <p class="brut-eyebrow">{{ $t("app.name") }}</p>
     <h1>{{ $t("badges.title") }}</h1>
 
-    <!-- Earned badges -->
-    <h2 class="section-heading">{{ $t("badges.earned") }} ({{ earnedBadges.length }})</h2>
-    <div class="badge-grid">
-      <div
-        v-for="badge in earnedBadges"
-        :key="badge.id"
-        class="badge-tile badge-tile--earned"
-        :style="{ '--badge-color': badge.color }"
-        :title="badge.name"
-        tabindex="0"
-        role="img"
-        :aria-label="`${badge.name}: ${badge.description}`"
-      >
-        <span class="badge-tile__icon" aria-hidden="true">{{ badge.icon }}</span>
-        <span class="badge-tile__name">{{ badge.name }}</span>
-        <BrutChip color="teal" class="badge-tile__earned-chip">
-          ✓ {{ badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : $t("badges.earned") }}
-        </BrutChip>
-      </div>
+    <!-- Loading -->
+    <div v-if="loadingBadges" class="state-msg" role="status" aria-live="polite">
+      <span aria-hidden="true">⏳</span> {{ $t("badges.loading") }}
     </div>
 
-    <!-- Locked / in-progress badges -->
-    <h2 class="section-heading">{{ $t("badges.locked") }} ({{ lockedBadges.length }})</h2>
-    <div class="badge-grid">
-      <div
-        v-for="badge in lockedBadges"
-        :key="badge.id"
-        class="badge-tile"
-        :class="badge.hidden ? 'badge-tile--hidden' : 'badge-tile--locked'"
-        :title="badge.hidden ? $t('badges.hidden') : badge.name"
-        tabindex="0"
-        role="img"
-        :aria-label="badge.hidden ? $t('badges.hidden') : `${badge.name}: ${badge.description}`"
-      >
-        <span class="badge-tile__icon" aria-hidden="true">
-          {{ badge.hidden ? "❓" : badge.icon }}
-        </span>
-        <span class="badge-tile__name">{{ badge.hidden ? $t("badges.hidden") : badge.name }}</span>
+    <!-- Error -->
+    <div v-else-if="errorBadges" class="state-msg state-msg--error" role="alert">
+      <span aria-hidden="true">⚠</span> {{ errorBadges }}
+      <BrutButton size="sm" variant="ghost" @click="store.fetchBadges()">{{ $t("common.retry") }}</BrutButton>
+    </div>
 
-        <div v-if="!badge.hidden && badge.maxProgress" class="badge-tile__progress">
-          <BrutProgress
-            :value="badge.progress ?? 0"
-            :max="badge.maxProgress"
-            :label="`${badge.name} progress`"
-          />
-          <span class="brut-eyebrow">{{ badge.progress ?? 0 }} / {{ badge.maxProgress }}</span>
+    <template v-else>
+      <!-- Earned badges -->
+      <h2 class="section-heading">{{ $t("badges.earned") }} ({{ earnedBadges.length }})</h2>
+
+      <p v-if="earnedBadges.length === 0" class="state-msg">{{ $t("badges.empty") }}</p>
+
+      <div v-else class="badge-grid" role="list">
+        <div
+          v-for="badge in earnedBadges"
+          :key="badge.key"
+          class="badge-tile badge-tile--earned badge-tile--reveal"
+          :data-category="badge.category"
+          role="listitem"
+          tabindex="0"
+          :aria-label="`${badge.name}: ${badge.description}. ${$t('badges.earnedOn', { date: badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : '' })}`"
+        >
+          <span class="badge-tile__icon" aria-hidden="true">{{ badge.icon }}</span>
+          <span class="badge-tile__name">{{ badge.name }}</span>
+          <BrutChip color="teal" class="badge-tile__earned-chip">
+            ✓ {{ badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : $t("badges.earned") }}
+          </BrutChip>
+          <span class="badge-tile__category brut-eyebrow">{{ badge.category }}</span>
         </div>
       </div>
-    </div>
+
+      <!-- Locked / hidden badges -->
+      <h2 class="section-heading">{{ $t("badges.locked") }} ({{ lockedBadges.length }})</h2>
+
+      <div v-if="lockedBadges.length > 0" class="badge-grid" role="list">
+        <div
+          v-for="badge in lockedBadges"
+          :key="badge.key"
+          class="badge-tile"
+          :class="badge.isHidden ? 'badge-tile--hidden' : 'badge-tile--locked'"
+          role="listitem"
+          tabindex="0"
+          :aria-label="badge.isHidden ? $t('badges.hiddenBadge') : `${badge.name}: ${badge.description}`"
+        >
+          <span class="badge-tile__icon" aria-hidden="true">
+            {{ badge.isHidden ? "❓" : badge.icon }}
+          </span>
+          <span class="badge-tile__name">
+            {{ badge.isHidden ? $t("badges.hiddenBadge") : badge.name }}
+          </span>
+          <span v-if="!badge.isHidden" class="badge-tile__category brut-eyebrow">
+            {{ badge.category }}
+          </span>
+        </div>
+      </div>
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
-// TODO(wave2): Replace gamification store mock with real API calls to /v1/gamification/badges
-const { earnedBadges, lockedBadges } = storeToRefs(useGamificationStore());
+const store = useGamificationStore();
+const { earnedBadges, lockedBadges, loadingBadges, errorBadges } = storeToRefs(store);
+
+onMounted(() => store.fetchBadges());
 </script>
 
 <style scoped>
@@ -74,6 +88,17 @@ const { earnedBadges, lockedBadges } = storeToRefs(useGamificationStore());
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+.state-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+.state-msg--error { color: var(--danger); }
+
 .badge-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -97,10 +122,12 @@ const { earnedBadges, lockedBadges } = storeToRefs(useGamificationStore());
   transform: translate(-2px, -2px);
   box-shadow: var(--shadow);
 }
-.badge-tile--earned {
-  background: color-mix(in srgb, var(--badge-color, var(--accent)) 12%, var(--surface-bg));
-  border-color: var(--badge-color, var(--accent));
-}
+/* Category-tinted borders for earned badges */
+.badge-tile--earned[data-category="streak"]    { border-color: var(--accent);   background: color-mix(in srgb, var(--accent) 10%, var(--surface-bg)); }
+.badge-tile--earned[data-category="wellness"]  { border-color: var(--success);  background: color-mix(in srgb, var(--success) 10%, var(--surface-bg)); }
+.badge-tile--earned[data-category="social"]    { border-color: var(--accent-5); background: color-mix(in srgb, var(--accent-5) 10%, var(--surface-bg)); }
+.badge-tile--earned[data-category="milestone"] { border-color: var(--accent-3); background: color-mix(in srgb, var(--accent-3) 10%, var(--surface-bg)); }
+.badge-tile--earned[data-category="special"]   { border-color: var(--accent-4); background: color-mix(in srgb, var(--accent-4) 10%, var(--surface-bg)); }
 .badge-tile--locked { opacity: 0.65; }
 .badge-tile--hidden {
   background: var(--paper-2);
@@ -121,11 +148,20 @@ const { earnedBadges, lockedBadges } = storeToRefs(useGamificationStore());
   color: var(--text);
 }
 .badge-tile__earned-chip { font-size: 0.65rem; }
-.badge-tile__progress {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin-top: 0.25rem;
+.badge-tile__category {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+/* Animated reveal on earned badges */
+@media (prefers-reduced-motion: no-preference) {
+  .badge-tile--reveal {
+    animation: badge-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+}
+@keyframes badge-pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
 }
 </style>

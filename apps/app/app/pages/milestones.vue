@@ -1,52 +1,56 @@
 <!--
   Copyright (c) 2026-Present David Pine. All rights reserved.
   Licensed under the MIT License. SPDX-License-Identifier: MIT
-  TODO(wave2): bind milestone list to /v1/gamification/milestones
+  Wave 2: bound to /v1/gamification/milestones via gamification store.
 -->
 <template>
   <section>
     <p class="brut-eyebrow">{{ $t("app.name") }}</p>
     <h1>{{ $t("milestones.title") }}</h1>
 
-    <div class="milestones__list">
+    <!-- Loading -->
+    <div v-if="loadingMilestones" class="state-msg" role="status" aria-live="polite">
+      <span aria-hidden="true">⏳</span> {{ $t("milestones.loading") }}
+    </div>
+
+    <!-- Error -->
+    <div v-else-if="errorMilestones" class="state-msg state-msg--error" role="alert">
+      <span aria-hidden="true">⚠</span> {{ errorMilestones }}
+      <BrutButton size="sm" variant="ghost" @click="store.fetchMilestones()">{{ $t("common.retry") }}</BrutButton>
+    </div>
+
+    <!-- Empty -->
+    <p v-else-if="milestones.length === 0" class="state-msg">{{ $t("milestones.empty") }}</p>
+
+    <div v-else class="milestones__list">
       <div
         v-for="milestone in milestones"
-        :key="milestone.id"
+        :key="milestone.key"
         class="milestone-card brut-card"
         :class="{
-          'milestone-card--done': !!milestone.completedAt,
-          'milestone-card--hidden': !milestone.revealed,
+          'milestone-card--done': milestone.achieved,
+          'milestone-card--hidden': milestone.isHidden && !milestone.achieved,
         }"
-        :aria-label="milestone.revealed ? milestone.title : $t('milestones.hidden')"
+        :aria-label="milestone.isHidden && !milestone.achieved ? $t('milestones.hidden') : milestone.name"
       >
         <div class="milestone-card__icon" aria-hidden="true">
-          {{ milestone.revealed ? milestone.icon : "🔮" }}
+          {{ milestone.isHidden && !milestone.achieved ? "🔮" : "◈" }}
         </div>
         <div class="milestone-card__body">
           <div class="milestone-card__header">
             <h3 class="milestone-card__title">
-              {{ milestone.revealed ? milestone.title : $t("milestones.hidden") }}
+              {{ milestone.isHidden && !milestone.achieved ? $t("milestones.hidden") : milestone.name }}
             </h3>
-            <BrutBadge color="accent">
-              +{{ milestone.xpReward }} XP
-            </BrutBadge>
+            <BrutChip v-if="milestone.achieved" color="teal">✓</BrutChip>
           </div>
-          <p v-if="milestone.revealed" class="milestone-card__desc">
+
+          <p v-if="!(milestone.isHidden && !milestone.achieved)" class="milestone-card__desc">
             {{ milestone.description }}
           </p>
           <p v-else class="milestone-card__hint">{{ $t("milestones.unlockHint") }}</p>
 
-          <div v-if="milestone.revealed && milestone.requiredCount" class="milestone-card__progress">
-            <BrutProgress
-              :value="milestone.currentCount ?? 0"
-              :max="milestone.requiredCount"
-              :label="`${milestone.title} progress`"
-              show-label
-            />
-          </div>
-
-          <BrutBadge v-if="milestone.completedAt" color="success" icon="✓">
-            {{ new Date(milestone.completedAt).toLocaleDateString() }}
+          <BrutBadge v-if="milestone.achieved && milestone.achievedAt" color="success" icon="✓">
+            {{ $t("milestones.achievedOn", { date: new Date(milestone.achievedAt).toLocaleDateString() }) }}
           </BrutBadge>
         </div>
       </div>
@@ -55,11 +59,24 @@
 </template>
 
 <script setup lang="ts">
-// TODO(wave2): Replace gamification store mock with real API calls to /v1/gamification/milestones
-const { milestones } = storeToRefs(useGamificationStore());
+const store = useGamificationStore();
+const { milestones, loadingMilestones, errorMilestones } = storeToRefs(store);
+
+onMounted(() => store.fetchMilestones());
 </script>
 
 <style scoped>
+.state-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+.state-msg--error { color: var(--danger); }
+
 .milestones__list {
   display: flex;
   flex-direction: column;
@@ -105,5 +122,4 @@ const { milestones } = storeToRefs(useGamificationStore());
   color: var(--muted);
   font-size: 0.9rem;
 }
-.milestone-card__progress { max-width: 320px; }
 </style>

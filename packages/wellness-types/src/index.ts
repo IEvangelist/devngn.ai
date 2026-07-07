@@ -94,6 +94,22 @@ export type ActivityResponse = WellnessSchemas["ActivityResponse"];
 export type FeedbackRequest = WellnessSchemas["FeedbackRequest"];
 export type PromptResponse = WellnessSchemas["PromptResponse"];
 
+// --- Gamification -----------------------------------------------------------
+export type RankTier = WellnessSchemas["RankTier"];
+export type PlayerStateResponse = WellnessSchemas["PlayerStateResponse"];
+export type BadgeResponse = WellnessSchemas["BadgeResponse"];
+export type MilestoneResponse = WellnessSchemas["MilestoneResponse"];
+export type LeaderboardEntry = WellnessSchemas["LeaderboardEntry"];
+
+// --- Social -----------------------------------------------------------------
+export type FeedItemType = WellnessSchemas["FeedItemType"];
+export type FeedItemResponse = WellnessSchemas["FeedItemResponse"];
+export type SocialProfileResponse = WellnessSchemas["SocialProfileResponse"];
+export type UpsertSocialProfileRequest =
+  WellnessSchemas["UpsertSocialProfileRequest"];
+export type FollowerResponse = WellnessSchemas["FollowerResponse"];
+export type FollowResponse = WellnessSchemas["FollowResponse"];
+
 // --- Errors -----------------------------------------------------------------
 export type ProblemDetails = WellnessSchemas["ProblemDetails"];
 export type HttpValidationProblemDetails =

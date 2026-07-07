@@ -2,82 +2,35 @@
 // Licensed under the MIT License. SPDX-License-Identifier: MIT
 
 /**
- * Local gamification types used by the mock Pinia store.
- * TODO(wave2): bind to /v1/gamification/* and /v1/social/* when the backend
- *              ships its generated @devngn/wellness-types exports.
+ * Ergonomic aliases for the gamification and social API schemas that are NOT
+ * individually exported by @devngn/wellness-types/index.ts but exist in the
+ * generated `components["schemas"]` map. Accessing them via WellnessSchemas
+ * is the correct pattern for types Wave 1 index.ts missed.
+ *
+ * UI-only view-model types (not in the API schema) are defined at the bottom.
  */
 
-export interface UserLevel {
-  level: number;
-  xp: number;
-  xpToNext: number;
-  title: string;
-  /** days of continuous interruption completions */
-  streak: number;
-}
+import type { WellnessSchemas } from "@devngn/wellness-types";
 
-export interface Badge {
-  id: string;
-  slug: string;
-  name: string;
-  description: string;
-  /** emoji or icon identifier */
-  icon: string;
-  /** CSS color token, e.g. "var(--accent)" */
-  color: string;
-  earned: boolean;
-  earnedAt?: string;
-  /** When true the badge art and name are hidden until earned */
-  hidden: boolean;
-  /** Current progress toward the badge (0–maxProgress) */
-  progress?: number;
-  maxProgress?: number;
-  category: "wellness" | "social" | "streak" | "milestone" | "special";
-}
+// ── Gamification ──────────────────────────────────────────────────────────────
+export type BadgeResponse        = WellnessSchemas["BadgeResponse"];
+export type MilestoneResponse    = WellnessSchemas["MilestoneResponse"];
+export type LeaderboardEntry     = WellnessSchemas["LeaderboardEntry"];
+export type PlayerStateResponse  = WellnessSchemas["PlayerStateResponse"];
+export type RankTier             = WellnessSchemas["RankTier"];
 
-export interface Milestone {
-  id: string;
-  title: string;
-  description: string;
-  /** Hidden milestones show a mystery reveal UI */
-  revealed: boolean;
-  completedAt?: string;
-  icon: string;
-  xpReward: number;
-  requiredCount?: number;
-  currentCount?: number;
-}
+// ── Social ────────────────────────────────────────────────────────────────────
+export type SocialProfileResponse      = WellnessSchemas["SocialProfileResponse"];
+export type UpsertSocialProfileRequest = WellnessSchemas["UpsertSocialProfileRequest"];
+export type FollowerResponse           = WellnessSchemas["FollowerResponse"];
+export type FollowResponse             = WellnessSchemas["FollowResponse"];
+export type FeedItemResponse           = WellnessSchemas["FeedItemResponse"];
+export type FeedItemType               = WellnessSchemas["FeedItemType"];
 
-export interface LeaderboardEntry {
+// ── UI-only view models (not in the API schema) ───────────────────────────────
+
+/** LeaderboardEntry enriched with display-only rank (array index+1) and current-user flag. */
+export interface LeaderboardEntryView extends LeaderboardEntry {
   rank: number;
-  userId: string;
-  login: string;
-  displayName: string;
-  avatarUrl: string;
-  xp: number;
-  level: number;
-  streak: number;
-  isCurrentUser?: boolean;
-}
-
-export interface SocialPost {
-  id: string;
-  userId: string;
-  login: string;
-  displayName: string;
-  avatarUrl: string;
-  content: string;
-  type: "badge" | "milestone" | "streak" | "goal" | "general";
-  badgeIcon?: string;
-  likeCount: number;
-  liked: boolean;
-  createdAt: string;
-}
-
-export interface FollowRelation {
-  userId: string;
-  login: string;
-  displayName: string;
-  avatarUrl: string;
-  following: boolean;
+  isCurrentUser: boolean;
 }

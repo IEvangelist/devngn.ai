@@ -68,16 +68,25 @@
 
         <div class="statusbar__spacer" />
 
-        <!-- XP / level slot (wave2: binds to gamificationStore) -->
+        <!-- XP / level widget — bound to GET /v1/gamification/me -->
         <div v-if="isAuthenticated" class="statusbar__xp" aria-label="Your level and XP">
-          <span class="xp-badge">
-            <span aria-hidden="true">⚡</span>
-            {{ $t("gamification.level", { level: gamification.userLevel.level }) }}
-          </span>
-          <span class="xp-badge xp-badge--streak" aria-label="Streak">
-            <span aria-hidden="true">🔥</span>
-            {{ gamification.userLevel.streak }}d
-          </span>
+          <template v-if="playerState">
+            <span class="xp-badge">
+              <span aria-hidden="true">⚡</span>
+              {{ $t("gamification.level", { level: Number(playerState.level) }) }}
+            </span>
+            <BrutProgress
+              class="xp-progress"
+              :value="Number(playerState.xpIntoLevel)"
+              :max="Number(playerState.xpForNextLevel)"
+              :label="$t('gamification.xpProgress', { into: Number(playerState.xpIntoLevel), forNext: Number(playerState.xpForNextLevel) })"
+            />
+            <span class="xp-badge xp-badge--streak" aria-label="Streak">
+              <span aria-hidden="true">🔥</span>
+              {{ Number(playerState.currentStreak) }}d
+            </span>
+            <span class="xp-badge xp-badge--tier">{{ playerState.rankTier }}</span>
+          </template>
         </div>
 
         <!-- Auth avatar / sign-in -->
@@ -139,6 +148,7 @@ const { isAuthenticated, user } = storeToRefs(auth);
 const interruptions = useInterruptionsStore();
 const { streamStatus } = storeToRefs(interruptions);
 const gamification = useGamificationStore();
+const { playerState } = storeToRefs(gamification);
 
 const { t } = useI18n();
 
@@ -171,13 +181,18 @@ onMounted(async () => {
   await useNotificationsStore().init();
   if (auth.isAuthenticated) {
     interruptions.startStream();
+    gamification.fetchPlayerState();
   }
 });
 
 // Re-connect stream when user signs in
 watch(isAuthenticated, (val) => {
-  if (val) interruptions.startStream();
-  else interruptions.stopStream();
+  if (val) {
+    interruptions.startStream();
+    gamification.fetchPlayerState();
+  } else {
+    interruptions.stopStream();
+  }
 });
 </script>
 
@@ -278,6 +293,16 @@ watch(isAuthenticated, (val) => {
   color: var(--accent-ink);
 }
 .xp-badge--streak { background: var(--accent); color: var(--accent-ink); }
+.xp-badge--tier {
+  background: var(--paper-2);
+  font-size: 0.65rem;
+  opacity: 0.85;
+}
+.xp-progress {
+  width: 5rem;
+  height: 0.6rem;
+  flex: 0 0 auto;
+}
 
 /* Stream status indicator */
 .status-indicator {

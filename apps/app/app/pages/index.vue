@@ -34,14 +34,14 @@
       <!-- XP progress strip -->
       <div class="today__xp-strip">
         <BrutProgress
-          :value="gamification.userLevel.xp"
-          :max="gamification.userLevel.xpToNext"
-          :label="$t('gamification.xpToNext', { remaining: gamification.userLevel.xpToNext - gamification.userLevel.xp, level: gamification.userLevel.level + 1 })"
+          :value="Number(gamification.playerState?.xpIntoLevel ?? 0)"
+          :max="Number(gamification.playerState?.xpForNextLevel ?? 100)"
+          :label="$t('gamification.xpToNext', { remaining: Number(gamification.playerState?.xpForNextLevel ?? 0) - Number(gamification.playerState?.xpIntoLevel ?? 0), level: Number(gamification.playerState?.level ?? 1) + 1 })"
           show-label
           class="today__xp-bar"
         />
         <BrutBadge color="accent" icon="⚡">
-          {{ $t("gamification.level", { level: gamification.userLevel.level }) }}
+          {{ $t("gamification.level", { level: Number(gamification.playerState?.level ?? 1) }) }}
         </BrutBadge>
       </div>
 

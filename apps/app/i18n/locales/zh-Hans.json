@@ -19,10 +19,10 @@
   "common": {
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "loading": "Loading…",
+    "loading": "Loading\u2026",
     "ready": "Ready",
-    "connecting": "Connecting…",
-    "reconnecting": "Reconnecting…",
+    "connecting": "Connecting\u2026",
+    "reconnecting": "Reconnecting\u2026",
     "offline": "Offline",
     "save": "Save",
     "saved": "Saved!",
@@ -32,14 +32,15 @@
     "complete": "Complete",
     "skipToContent": "Skip to content",
     "loadError": "Failed to load data.",
-    "saveError": "Failed to save."
+    "saveError": "Failed to save.",
+    "retry": "Retry"
   },
   "auth": {
     "title": "Sign in as yourself",
     "subtitle": "Use your GitHub account to bring your wellness engine into the app.",
     "githubButton": "Continue with GitHub",
     "deviceInstruction": "Enter this code at {url}:",
-    "waiting": "Waiting for you to authorize on GitHub…",
+    "waiting": "Waiting for you to authorize on GitHub\u2026",
     "signedInAs": "Signed in as {login}"
   },
   "today": {
@@ -67,28 +68,45 @@
   },
   "gamification": {
     "level": "Level {level}",
+    "levelShort": "Lvl",
     "xp": "{xp} XP",
     "xpToNext": "{remaining} XP to level {level}",
+    "xpProgress": "{into} / {forNext} XP",
     "streak": "{days}-day streak",
-    "rank": "{rank}"
+    "rank": "{rank}",
+    "rankTier": "{tier}"
   },
   "badges": {
     "title": "Badges",
     "earned": "Earned",
     "locked": "Locked",
-    "hidden": "Hidden milestone"
+    "hidden": "Hidden milestone",
+    "hiddenBadge": "???",
+    "loading": "Loading badges\u2026",
+    "error": "Failed to load badges.",
+    "empty": "No badges yet. Keep completing wellness interruptions!",
+    "earnedOn": "Earned {date}"
   },
   "milestones": {
     "title": "Milestones",
     "hidden": "Mystery Milestone",
-    "unlockHint": "Keep going to unlock this hidden milestone."
+    "unlockHint": "Keep going to unlock this hidden milestone.",
+    "loading": "Loading milestones\u2026",
+    "error": "Failed to load milestones.",
+    "empty": "No milestones yet.",
+    "achievedOn": "Achieved {date}"
   },
   "leaderboard": {
     "title": "Leaderboard",
     "you": "You",
     "rankColumn": "Rank",
     "playerColumn": "Developer",
-    "xpColumn": "XP"
+    "xpColumn": "XP",
+    "tierColumn": "Tier",
+    "loading": "Loading leaderboard\u2026",
+    "error": "Failed to load leaderboard.",
+    "empty": "No entries yet.",
+    "signIn": "Sign in to see the leaderboard."
   },
   "social": {
     "title": "Social",
@@ -98,7 +116,18 @@
     "follow": "Follow",
     "unfollow": "Unfollow",
     "like": "Like",
-    "unlike": "Unlike"
+    "unlike": "Unlike",
+    "profile": "My Profile",
+    "displayName": "Display Name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell the community about yourself\u2026",
+    "bioSanitized": "Content is reviewed and sanitized server-side.",
+    "publicProfile": "Public Profile",
+    "saveProfile": "Save Profile",
+    "profileSaved": "Profile saved!",
+    "profileError": "Failed to save profile.",
+    "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
+    "feedLoading": "Loading feed\u2026"
   },
   "pwa": {
     "updateAvailable": "New version available!",
@@ -128,4 +157,3 @@
     "pwaAutoUpdate": "PWA updates automatically in the background."
   }
 }
-

@@ -32,7 +32,8 @@
     "complete": "Complete",
     "skipToContent": "Skip to content",
     "loadError": "Failed to load data.",
-    "saveError": "Failed to save."
+    "saveError": "Failed to save.",
+    "retry": "Retry"
   },
   "auth": {
     "title": "Sign in as yourself",
@@ -67,28 +68,45 @@
   },
   "gamification": {
     "level": "Level {level}",
+    "levelShort": "Lvl",
     "xp": "{xp} XP",
     "xpToNext": "{remaining} XP to level {level}",
+    "xpProgress": "{into} / {forNext} XP",
     "streak": "{days}-day streak",
-    "rank": "{rank}"
+    "rank": "{rank}",
+    "rankTier": "{tier}"
   },
   "badges": {
     "title": "Badges",
     "earned": "Earned",
     "locked": "Locked",
-    "hidden": "Hidden milestone"
+    "hidden": "Hidden milestone",
+    "hiddenBadge": "???",
+    "loading": "Loading badges…",
+    "error": "Failed to load badges.",
+    "empty": "No badges yet. Keep completing wellness interruptions!",
+    "earnedOn": "Earned {date}"
   },
   "milestones": {
     "title": "Milestones",
     "hidden": "Mystery Milestone",
-    "unlockHint": "Keep going to unlock this hidden milestone."
+    "unlockHint": "Keep going to unlock this hidden milestone.",
+    "loading": "Loading milestones…",
+    "error": "Failed to load milestones.",
+    "empty": "No milestones yet.",
+    "achievedOn": "Achieved {date}"
   },
   "leaderboard": {
     "title": "Leaderboard",
     "you": "You",
     "rankColumn": "Rank",
     "playerColumn": "Developer",
-    "xpColumn": "XP"
+    "xpColumn": "XP",
+    "tierColumn": "Tier",
+    "loading": "Loading leaderboard…",
+    "error": "Failed to load leaderboard.",
+    "empty": "No entries yet.",
+    "signIn": "Sign in to see the leaderboard."
   },
   "social": {
     "title": "Social",
@@ -98,7 +116,18 @@
     "follow": "Follow",
     "unfollow": "Unfollow",
     "like": "Like",
-    "unlike": "Unlike"
+    "unlike": "Unlike",
+    "profile": "My Profile",
+    "displayName": "Display Name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell the community about yourself…",
+    "bioSanitized": "Content is reviewed and sanitized server-side.",
+    "publicProfile": "Public Profile",
+    "saveProfile": "Save Profile",
+    "profileSaved": "Profile saved!",
+    "profileError": "Failed to save profile.",
+    "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
+    "feedLoading": "Loading feed…"
   },
   "pwa": {
     "updateAvailable": "New version available!",

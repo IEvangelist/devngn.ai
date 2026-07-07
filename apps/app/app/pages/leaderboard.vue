@@ -1,74 +1,122 @@
 <!--
   Copyright (c) 2026-Present David Pine. All rights reserved.
   Licensed under the MIT License. SPDX-License-Identifier: MIT
-  TODO(wave2): bind leaderboard to /v1/gamification/leaderboard
+  Wave 2: bound to /v1/gamification/leaderboard via gamification store.
+  Schema notes:
+    - rank is derived from array position (server returns sorted by XP desc)
+    - LeaderboardEntry has no avatarUrl / login / streak fields
+    - isCurrentUser is determined by comparing userId to auth.user.id
 -->
 <template>
   <section>
     <p class="brut-eyebrow">{{ $t("app.name") }}</p>
     <h1>{{ $t("leaderboard.title") }}</h1>
 
-    <div class="leaderboard__table-wrap">
-      <table class="leaderboard__table" aria-label="Developer leaderboard">
-        <thead>
-          <tr>
-            <th scope="col" class="col-rank">{{ $t("leaderboard.rankColumn") }}</th>
-            <th scope="col" class="col-player">{{ $t("leaderboard.playerColumn") }}</th>
-            <th scope="col" class="col-level">Lvl</th>
-            <th scope="col" class="col-streak">🔥</th>
-            <th scope="col" class="col-xp">{{ $t("leaderboard.xpColumn") }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="entry in leaderboard"
-            :key="entry.userId"
-            class="lb-row"
-            :class="{
-              'lb-row--you': entry.isCurrentUser,
-              'lb-row--top3': entry.rank <= 3,
-            }"
-          >
-            <td class="col-rank">
-              <span class="rank-badge" :class="`rank-badge--${entry.rank}`">
-                {{ entry.rank <= 3 ? ["🥇", "🥈", "🥉"][entry.rank - 1] : `#${entry.rank}` }}
-              </span>
-            </td>
-            <td class="col-player">
-              <div class="player-cell">
-                <BrutAvatar :src="entry.avatarUrl" :alt="entry.displayName" size="1.8rem" />
-                <span class="player-name">
-                  {{ entry.login }}
-                  <BrutBadge v-if="entry.isCurrentUser" color="accent" size="sm">
-                    {{ $t("leaderboard.you") }}
-                  </BrutBadge>
-                </span>
-              </div>
-            </td>
-            <td class="col-level">
-              <BrutChip>{{ $t("gamification.level", { level: entry.level }) }}</BrutChip>
-            </td>
-            <td class="col-streak">{{ entry.streak }}d</td>
-            <td class="col-xp">
-              <strong>{{ entry.xp.toLocaleString() }}</strong>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Loading -->
+    <div v-if="loadingLeaderboard" class="state-msg" role="status" aria-live="polite">
+      <span aria-hidden="true">⏳</span> {{ $t("leaderboard.loading") }}
     </div>
-    <p class="brut-eyebrow leaderboard__note">
-      <!-- TODO(wave2): bind to /v1/gamification/leaderboard -->
-      Preview data — live rankings available in Wave 2
+
+    <!-- Error -->
+    <div v-else-if="errorLeaderboard" class="state-msg state-msg--error" role="alert">
+      <span aria-hidden="true">⚠</span> {{ errorLeaderboard }}
+      <BrutButton size="sm" variant="ghost" @click="store.fetchLeaderboard()">{{ $t("common.retry") }}</BrutButton>
+    </div>
+
+    <!-- Sign-in prompt -->
+    <p v-else-if="!isAuthenticated" class="state-msg">
+      {{ $t("leaderboard.signIn") }}
     </p>
+
+    <!-- Empty -->
+    <p v-else-if="entries.length === 0" class="state-msg">{{ $t("leaderboard.empty") }}</p>
+
+    <template v-else>
+      <div class="leaderboard__table-wrap">
+        <table class="leaderboard__table" aria-label="Developer leaderboard">
+          <thead>
+            <tr>
+              <th scope="col" class="col-rank">{{ $t("leaderboard.rankColumn") }}</th>
+              <th scope="col" class="col-player">{{ $t("leaderboard.playerColumn") }}</th>
+              <th scope="col" class="col-level">{{ $t("gamification.levelShort") }}</th>
+              <th scope="col" class="col-tier">{{ $t("leaderboard.tierColumn") }}</th>
+              <th scope="col" class="col-xp">{{ $t("leaderboard.xpColumn") }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(entry, idx) in entries"
+              :key="entry.userId"
+              class="lb-row"
+              :class="{
+                'lb-row--you': entry.userId === authUserId,
+                'lb-row--top3': idx < 3,
+              }"
+              :aria-current="entry.userId === authUserId ? 'true' : undefined"
+            >
+              <td class="col-rank">
+                <span class="rank-badge">
+                  {{ idx < 3 ? ["🥇", "🥈", "🥉"][idx] : `#${idx + 1}` }}
+                </span>
+              </td>
+              <td class="col-player">
+                <div class="player-cell">
+                  <span class="player-initial" aria-hidden="true">
+                    {{ entry.displayName?.charAt(0)?.toUpperCase() ?? "?" }}
+                  </span>
+                  <span class="player-name">
+                    {{ entry.displayName }}
+                    <BrutBadge v-if="entry.userId === authUserId" color="accent" size="sm">
+                      {{ $t("leaderboard.you") }}
+                    </BrutBadge>
+                  </span>
+                </div>
+              </td>
+              <td class="col-level">
+                <BrutChip>{{ $t("gamification.level", { level: Number(entry.level) }) }}</BrutChip>
+              </td>
+              <td class="col-tier">
+                <BrutChip :class="`tier-chip--${entry.rankTier.toLowerCase()}`">
+                  {{ entry.rankTier }}
+                </BrutChip>
+              </td>
+              <td class="col-xp">
+                <strong>{{ Number(entry.totalXp).toLocaleString() }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
-// TODO(wave2): Replace mock data with real API call to /v1/gamification/leaderboard
-const { leaderboard } = storeToRefs(useGamificationStore());
+import type { LeaderboardEntry } from "~/types/gamification";
+
+const store = useGamificationStore();
+const { leaderboard, loadingLeaderboard, errorLeaderboard } = storeToRefs(store);
+const auth = useAuthStore();
+const { isAuthenticated } = storeToRefs(auth);
+
+const authUserId = computed(() => auth.user?.id ?? "");
+const entries = computed<LeaderboardEntry[]>(() => leaderboard.value);
+
+onMounted(() => store.fetchLeaderboard());
 </script>
 
 <style scoped>
+.state-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+.state-msg--error { color: var(--danger); }
+
 .leaderboard__table-wrap {
   overflow-x: auto;
   margin-top: 1rem;
@@ -103,16 +151,33 @@ const { leaderboard } = storeToRefs(useGamificationStore());
   align-items: center;
   gap: 0.6rem;
 }
+/* Avatar initial fallback */
+.player-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: var(--border);
+  background: var(--paper-2);
+  font-weight: 900;
+  font-size: 0.8rem;
+  flex: 0 0 auto;
+}
 .player-name {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-weight: 700;
 }
-.col-rank { width: 3.5rem; }
-.col-xp { text-align: right; }
-.leaderboard__note {
-  margin-top: 0.75rem;
-  color: var(--muted);
-}
+.col-rank  { width: 3.5rem; }
+.col-xp    { text-align: right; }
+
+/* Rank tier colour chips */
+.tier-chip--bronze   { background: color-mix(in srgb, #cd7f32 20%, var(--surface-bg)); }
+.tier-chip--silver   { background: color-mix(in srgb, #c0c0c0 20%, var(--surface-bg)); }
+.tier-chip--gold     { background: color-mix(in srgb, #ffd700 20%, var(--surface-bg)); }
+.tier-chip--platinum { background: color-mix(in srgb, #e5e4e2 20%, var(--surface-bg)); }
+.tier-chip--diamond  { background: color-mix(in srgb, #b9f2ff 20%, var(--surface-bg)); }
+.tier-chip--legend   { background: color-mix(in srgb, var(--accent-5) 20%, var(--surface-bg)); }
 </style>
