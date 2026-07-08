@@ -37,7 +37,8 @@
     "edit": "Bearbeiten",
     "remove": "Entfernen",
     "confirm": "Bestätigen",
-    "account": "Konto"
+    "account": "Konto",
+    "sessionExpired": "Sitzung abgelaufen. Bitte melde dich erneut an."
   },
   "auth": {
     "title": "Sign in as yourself",
@@ -78,7 +79,9 @@
     "target": "Target",
     "progress": "Progress",
     "created": "Goal created!",
-    "intro": "Gib die Richtung vor. Kleine Erfolge, die sich summieren."
+    "intro": "Gib die Richtung vor. Kleine Erfolge, die sich summieren.",
+    "started": "Begonnen",
+    "due": "Fällig"
   },
   "gamification": {
     "level": "Level {level}",

@@ -37,7 +37,8 @@
     "edit": "編集",
     "remove": "削除",
     "confirm": "確認",
-    "account": "アカウント"
+    "account": "アカウント",
+    "sessionExpired": "セッションが期限切れです。もう一度サインインしてください。"
   },
   "auth": {
     "title": "Sign in as yourself",
@@ -78,7 +79,9 @@
     "target": "Target",
     "progress": "Progress",
     "created": "Goal created!",
-    "intro": "方向を決めよう。小さな達成が積み重なっていきます。"
+    "intro": "方向を決めよう。小さな達成が積み重なっていきます。",
+    "started": "開始",
+    "due": "期限"
   },
   "gamification": {
     "level": "Level {level}",

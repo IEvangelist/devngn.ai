@@ -20,12 +20,21 @@
           </BrutChip>
           <h3 class="goal-card__title">{{ goal.title }}</h3>
         </div>
-        <BrutProgress
-          :value="0"
-          :max="100"
-          :label="`${goal.title} progress`"
-        />
         <p v-if="goal.description" class="goal-card__desc">{{ goal.description }}</p>
+        <div class="goal-card__meta">
+          <div v-if="goal.targetMetric" class="goal-meta">
+            <span class="goal-meta__label">{{ $t("goals.target") }}</span>
+            <span class="goal-meta__value">{{ goal.targetMetric }}</span>
+          </div>
+          <div class="goal-meta">
+            <span class="goal-meta__label">{{ $t("goals.started") }}</span>
+            <span class="goal-meta__value">{{ formatDate(goal.startDate) }}</span>
+          </div>
+          <div v-if="goal.endDate" class="goal-meta">
+            <span class="goal-meta__label">{{ $t("goals.due") }}</span>
+            <span class="goal-meta__value">{{ formatDate(goal.endDate) }}</span>
+          </div>
+        </div>
       </BrutCard>
     </div>
     <BrutPanel v-else-if="!loading" class="goals__empty reveal reveal--1">
@@ -114,6 +123,14 @@ function categoryColor(cat: GoalCategory | undefined): "teal" | "purple" | "pink
   return map[cat ?? ""] ?? "teal";
 }
 
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? ""
+    : d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
 onMounted(fetchGoals);
 watch(isAuthenticated, (v) => { if (v) fetchGoals(); });
 </script>
@@ -124,5 +141,21 @@ watch(isAuthenticated, (v) => { if (v) fetchGoals(); });
 .goal-card__header { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.65rem; }
 .goal-card__title { margin: 0; font-size: 1rem; }
 .goal-card__desc { margin: 0.5rem 0 0; color: var(--muted); font-size: 0.9rem; }
+.goal-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: var(--border);
+}
+.goal-meta { display: flex; flex-direction: column; gap: 0.15rem; }
+.goal-meta__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.goal-meta__value { font-size: 0.85rem; color: var(--ink); }
 .form-field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; }
 </style>

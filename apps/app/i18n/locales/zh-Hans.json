@@ -37,7 +37,8 @@
     "edit": "编辑",
     "remove": "移除",
     "confirm": "确认",
-    "account": "账户"
+    "account": "账户",
+    "sessionExpired": "会话已过期。请重新登录。"
   },
   "auth": {
     "title": "Sign in as yourself",
@@ -78,7 +79,9 @@
     "target": "Target",
     "progress": "Progress",
     "created": "Goal created!",
-    "intro": "定好方向。小小的坚持，日积月累。"
+    "intro": "定好方向。小小的坚持，日积月累。",
+    "started": "开始于",
+    "due": "截止"
   },
   "gamification": {
     "level": "Level {level}",

@@ -37,7 +37,8 @@
     "edit": "Modifier",
     "remove": "Retirer",
     "confirm": "Confirmer",
-    "account": "Compte"
+    "account": "Compte",
+    "sessionExpired": "Session expirée. Veuillez vous reconnecter."
   },
   "auth": {
     "title": "Sign in as yourself",
@@ -78,7 +79,9 @@
     "target": "Target",
     "progress": "Progress",
     "created": "Goal created!",
-    "intro": "Donnez le cap. De petites victoires qui s'accumulent."
+    "intro": "Donnez le cap. De petites victoires qui s'accumulent.",
+    "started": "Commencé",
+    "due": "Échéance"
   },
   "gamification": {
     "level": "Level {level}",

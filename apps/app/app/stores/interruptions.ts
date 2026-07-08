@@ -12,6 +12,7 @@ export const useInterruptionsStore = defineStore("interruptions", () => {
   const baseUrl = config.public.apiBaseUrl as string;
   const auth = useAuthStore();
   const toast = useToast();
+  const { $i18n } = useNuxtApp();
 
   const prompts = ref<PromptResponse[]>([]);
   const streamStatus = ref<StreamStatus>("stopped");
@@ -45,7 +46,7 @@ export const useInterruptionsStore = defineStore("interruptions", () => {
       onStop(reason) {
         streamStatus.value = "stopped";
         if (reason === "unauthorized") {
-          toast.warning("Session expired — please sign in again.");
+          toast.warning($i18n.t("common.sessionExpired"));
           void auth.signOut();
         }
       },

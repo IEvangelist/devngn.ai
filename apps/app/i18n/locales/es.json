@@ -37,7 +37,8 @@
     "edit": "Editar",
     "remove": "Quitar",
     "confirm": "Confirmar",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "sessionExpired": "La sesión ha expirado. Inicia sesión de nuevo."
   },
   "auth": {
     "title": "Sign in as yourself",
@@ -78,7 +79,9 @@
     "target": "Target",
     "progress": "Progress",
     "created": "Goal created!",
-    "intro": "Marca el rumbo. Pequeñas victorias que se van sumando."
+    "intro": "Marca el rumbo. Pequeñas victorias que se van sumando.",
+    "started": "Iniciado",
+    "due": "Fecha límite"
   },
   "gamification": {
     "level": "Level {level}",
