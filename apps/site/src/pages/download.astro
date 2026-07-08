@@ -1,44 +1,55 @@
 ---
 import MarketingLayout from "../layouts/MarketingLayout.astro";
 import Icon from "../components/Icon.astro";
+import {
+  anyDownloadAvailable,
+  fetchReleaseAvailability,
+  resolvePlatforms,
+  type DesktopPlatform,
+} from "../lib/release-info";
 
 export const prerender = true;
 
-const repo = "https://github.com/IEvangelist/devngn.ai";
-const releases = `${repo}/releases/latest`;
+const repo = "IEvangelist/devngn.ai";
+const repoUrl = `https://github.com/${repo}`;
+// Index of every release (never 404s, even before the first release). The
+// stable per-asset "latest/download/…" URLs are built inside release-info.
+const releasesUrl = `${repoUrl}/releases`;
 
-// Desktop installer URLs point at the "latest" GitHub release. Asset names are
-// confirmed final and match the desktop app's release workflow
-// (.github/workflows/app-release.yml): Tauri v2 bundles for each platform.
-const platforms = [
+// Desktop installers are stable-named assets on the latest *published* GitHub
+// release, produced by the desktop app's workflow (app-release.yml). Those
+// `releases/latest/download/…` URLs 404 until a release is published, so we
+// only render a button once release-info confirms the asset actually exists —
+// the page self-heals on the next build after a release ships.
+const platforms: DesktopPlatform[] = [
   {
     icon: "apple",
     os: "macOS",
     note: "Apple Silicon & Intel · macOS 13+",
-    primary: { label: "Download for Apple Silicon", href: `${releases}/download/devngn-macos-aarch64.dmg` },
-    secondary: [
-      { label: "Intel (x64)", href: `${releases}/download/devngn-macos-x64.dmg` },
-    ],
+    primary: { label: "Download for Apple Silicon", asset: "devngn-macos-aarch64.dmg" },
+    secondary: [{ label: "Intel (x64)", asset: "devngn-macos-x64.dmg" }],
   },
   {
     icon: "windows",
     os: "Windows",
     note: "Windows 10 & 11 · x64",
-    primary: { label: "Download installer", href: `${releases}/download/devngn-windows-x64-setup.exe` },
-    secondary: [
-      { label: "MSI package", href: `${releases}/download/devngn-windows-x64.msi` },
-    ],
+    primary: { label: "Download installer", asset: "devngn-windows-x64-setup.exe" },
+    secondary: [{ label: "MSI package", asset: "devngn-windows-x64.msi" }],
   },
   {
     icon: "linux",
     os: "Linux",
     note: "AppImage · Debian & Ubuntu",
-    primary: { label: "Download AppImage", href: `${releases}/download/devngn-linux-x86_64.AppImage` },
-    secondary: [
-      { label: ".deb (Debian/Ubuntu)", href: `${releases}/download/devngn-linux-amd64.deb` },
-    ],
+    primary: { label: "Download AppImage", asset: "devngn-linux-x86_64.AppImage" },
+    secondary: [{ label: ".deb (Debian/Ubuntu)", asset: "devngn-linux-amd64.deb" }],
   },
 ];
+
+const availability = await fetchReleaseAvailability(repo, {
+  token: process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN,
+});
+const resolvedPlatforms = resolvePlatforms(repo, platforms, availability);
+const hasDesktopDownloads = anyDownloadAvailable(resolvedPlatforms);
 ---
 
 <MarketingLayout
@@ -65,36 +76,81 @@ const platforms = [
       Free and open source under the MIT license. Nothing personal is stored until you opt in, and
       you can delete all of it whenever you want.
     </p>
+    {
+      !hasDesktopDownloads && (
+        <div class="dev-banner" role="status">
+          <span class="dev-banner-icon">
+            <Icon name="rocket" size={22} stroke={2.6} />
+          </span>
+          <div class="dev-banner-body">
+            <strong>Desktop builds are still on the workbench.</strong>
+            <p>
+              The native app is being built in the open and there's no public installer yet. Rather
+              than hand you a download that 404s, we'll light these buttons up the moment the first
+              release ships. Want the ping? Watch the repo's releases.
+            </p>
+            <div class="actions">
+              <a class="btn primary" href={releasesUrl} rel="noopener" target="_blank">
+                <Icon name="bell" size={18} stroke={2.6} />
+                Watch releases
+              </a>
+              <a class="btn" href="/getting-started/">
+                <Icon name="braces" size={18} stroke={2.6} />
+                Build from source
+              </a>
+            </div>
+          </div>
+        </div>
+      )
+    }
     <div class="grid">
       {
-        platforms.map((p) => (
-          <article class="card platform" data-os={p.os.toLowerCase()}>
+        resolvedPlatforms.map((p) => (
+          <article
+            class:list={["card platform", { "is-pending": !p.available }]}
+            data-os={p.os.toLowerCase()}
+          >
             <div class="card-head">
               <span class="card-icon">
                 <Icon name={p.icon} size={26} stroke={2.4} />
               </span>
               <h3>{p.os}</h3>
-              <span class="platform-badge">Your platform</span>
+              {p.available ? (
+                <span class="platform-badge">Your platform</span>
+              ) : (
+                <span class="platform-badge soon">Coming soon</span>
+              )}
             </div>
             <p class="platform-note">{p.note}</p>
-            <a class="btn primary platform-btn" href={p.primary.href}>
-              <Icon name="download" size={18} stroke={2.6} />
-              {p.primary.label}
-            </a>
-            <ul class="platform-alt">
-              {p.secondary.map((s) => (
-                <li>
-                  <a href={s.href}>{s.label}</a>
-                </li>
-              ))}
-            </ul>
+            {p.available ? (
+              <a class="btn primary platform-btn" href={p.primary.href}>
+                <Icon name="download" size={18} stroke={2.6} />
+                {p.primary.label}
+              </a>
+            ) : (
+              <span class="btn platform-btn is-disabled" aria-disabled="true">
+                <Icon name="clock" size={18} stroke={2.6} />
+                Not yet available
+              </span>
+            )}
+            {p.secondary.some((s) => s.available) && (
+              <ul class="platform-alt">
+                {p.secondary
+                  .filter((s) => s.available)
+                  .map((s) => (
+                    <li>
+                      <a href={s.href}>{s.label}</a>
+                    </li>
+                  ))}
+              </ul>
+            )}
           </article>
         ))
       }
     </div>
     <p class="release-note">
       Looking for a specific build, checksums, or release notes? Browse
-      <a href={releases} rel="noopener" target="_blank">all releases on GitHub</a>.
+      <a href={releasesUrl} rel="noopener" target="_blank">all releases on GitHub</a>.
     </p>
   </section>
 
@@ -130,7 +186,7 @@ devngn patterns recognize</code></pre>
         <Icon name="braces" size={18} stroke={2.6} />
         Getting started
       </a>
-      <a class="btn" href={repo} rel="noopener" target="_blank">
+      <a class="btn" href={repoUrl} rel="noopener" target="_blank">
         <Icon name="github" size={18} stroke={2.6} />
         View source
       </a>
@@ -181,6 +237,63 @@ devngn patterns recognize</code></pre>
   }
   .platform.is-detected .platform-badge {
     display: inline-block;
+  }
+  .platform-badge.soon {
+    display: inline-block;
+    color: var(--ink);
+    background: var(--accent-3);
+  }
+  .platform.is-pending {
+    border-top-color: var(--muted);
+    opacity: 0.92;
+  }
+  .platform-btn.is-disabled {
+    cursor: not-allowed;
+    background: transparent;
+    color: var(--muted);
+    border-style: dashed;
+    box-shadow: none;
+  }
+  .platform-btn.is-disabled:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .dev-banner {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    border: var(--border);
+    border-left-width: 8px;
+    border-left-color: var(--accent);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow-sm);
+    padding: 1.15rem 1.35rem;
+    margin: 0 0 2rem;
+  }
+  .dev-banner-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px solid var(--ink);
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-sm);
+  }
+  .dev-banner-body strong {
+    display: block;
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+  }
+  .dev-banner-body p {
+    margin: 0 0 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .dev-banner .actions {
+    margin: 0;
   }
   .platform-note {
     font-family: var(--font-mono);

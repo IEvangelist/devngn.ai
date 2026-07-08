@@ -56,6 +56,13 @@ each installer to the same release. The marketing site links to these durable UR
 > `releases/latest/download/…` resolves only against the newest **published** (non-draft,
 > non-prerelease) release — so remember to publish the draft. No macOS *universal* dmg,
 > Windows `.zip`, or Linux `.rpm` is produced; use the six assets above.
+>
+> **The marketing Download page fails safe.** At build time it asks the GitHub API which
+> assets the latest *published* release actually exposes (see `apps/site/src/lib/release-info.ts`).
+> Until a release is published it renders a "Coming soon / in development" state instead of
+> dead download buttons, and it self-heals on the next build once a release ships. So after
+> you publish the draft, **rebuild/redeploy the site** (or trigger a Netlify deploy) so the
+> buttons light up.
 
 ---
 
