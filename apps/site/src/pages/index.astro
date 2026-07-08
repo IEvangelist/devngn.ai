@@ -3,644 +3,1003 @@ import { listProviderManifests } from "@devngn/ai";
 import { listImportantDevngnFlows } from "@devngn/analytics";
 import { summarizePatternTrends } from "@devngn/patterns";
 import { getBundledRegistry, getResearchFreshnessSummary } from "@devngn/vendors";
-import ThemeInit from "../components/ThemeInit.astro";
-import SiteHeader from "../components/SiteHeader.astro";
-import SiteFooter from "../components/SiteFooter.astro";
+import MarketingLayout from "../layouts/MarketingLayout.astro";
 import Icon from "../components/Icon.astro";
-import "../styles/retro.css";
 
+// Live product data. Real proof, not mock numbers.
 const vendors = getBundledRegistry();
 const freshness = getResearchFreshnessSummary();
 const providers = listProviderManifests();
 const patternTrends = summarizePatternTrends();
 const telemetryFlows = listImportantDevngnFlows();
 
-const values = [
+const providerNames = providers.map((p) => p.name);
+
+// Recognizable agents/runtimes devngn grounds. Real integrations, shown as a
+// quick compatibility scan under the hero.
+const worksWith = ["GitHub Copilot", "Claude", "Cursor", "OpenAI", "Gemini", "Ollama"];
+
+// The visceral "why": what an ungrounded agent does when it can't see the machine.
+const guesses = [
+  "Calls an MCP server you removed weeks ago",
+  "Writes to a config path that never existed",
+  "Assumes a model you never set up",
+  "Skips the rules sitting right there in your repo",
+];
+
+// Left column of the split: the dev engine.
+const enginePoints = [
   {
-    tag: "Aware",
     icon: "eye",
-    body: "Opt in and build a wellness profile. devngn already knows your machine — now, with consent, it can respect the human at the keyboard.",
+    title: "Discovers your AI-bits",
+    body: "Finds the instructions, rules, MCP servers, model prefs, and provider config scattered across every workspace on your machine.",
   },
   {
-    tag: "Right-timed",
-    icon: "clock",
-    body: "Gap detection watches your real calendar and todos. Prompts arrive when a genuine opening appears, not when you're heads-down.",
-  },
-  {
-    tag: "Effortless",
-    icon: "bolt",
-    body: "Five-second animated movement breaks, matched to your body and the equipment you actually have. No gym, no context switch.",
-  },
-  {
-    tag: "Tracked",
-    icon: "pulse",
-    body: "Every break, streak, and goal is recorded. Progress is real and reviewable — not a vague intention to 'move more later'.",
-  },
-  {
-    tag: "Goalified",
     icon: "target",
-    body: "Turn wellbeing into concrete, measurable goals across mobility, strength, breathing, and posture, with progress events.",
+    title: "Keeps agents grounded",
+    body: "Grounds coding agents in what is actually installed and configured, so they stop guessing and start working from the truth.",
   },
   {
-    tag: "Gamified",
-    icon: "trophy",
-    body: "Streaks, milestones, and momentum turn healthy habits into something that actually sticks day after day.",
-  },
-  {
-    tag: "Social",
-    icon: "people",
-    body: "Wellness is better together. Share goals and streaks with your team, cheer each other on, and stay honest.",
-  },
-  {
-    tag: "Human-first",
-    icon: "heart",
-    body: "Consent-gated and private by design. Calendars are read free/busy only, nothing is stored until you say so, and you can delete it all.",
+    icon: "pulse",
+    title: "Flags drift and gaps",
+    body: "Tracks provider readiness and token budgets across OpenAI, Copilot, Claude, Gemini, and local models, and surfaces what is stale.",
   },
 ];
 
-const steps = [
-  { n: "01", icon: "check", title: "Opt in", body: "Accept consent and sketch a profile: baseline, preferred intensity, and the gear within reach." },
-  { n: "02", icon: "calendar", title: "We watch for real gaps", body: "Connect Google or Microsoft calendars (free/busy only) or push your own events. The engine finds true openings." },
-  { n: "03", icon: "bell", title: "A 5-second nudge appears", body: "When a gap opens, a short movement-break prompt lands in VS Code or as an OS notification from the CLI daemon." },
-  { n: "04", icon: "flame", title: "Track, share, and level up", body: "Complete it, build a streak, hit goals, and bring your team along. Small breaks, compounded." },
+// Right column of the split: human-first wellness.
+const humanPoints = [
+  {
+    icon: "calendar",
+    title: "Watches for real openings",
+    body: "Consent-gated free/busy detection finds genuine gaps in your day. Prompts arrive when you are free, never mid-focus.",
+  },
+  {
+    icon: "bolt",
+    title: "Five-second movement breaks",
+    body: "Short, guided resets tuned to your profile and the equipment you actually have. No gym, no context switch.",
+  },
+  {
+    icon: "trophy",
+    title: "Tracked, shared, yours",
+    body: "Streaks, goals, and team sharing make healthy habits stick. Private by design, and deletable whenever you want.",
+  },
+];
+
+// Live proof figures for the dark band.
+const proof = [
+  { value: String(freshness.total), label: "Vendors and tools tracked" },
+  { value: String(providers.length), label: "AI runtime providers wired" },
+  { value: String(patternTrends.total), label: "Ecosystem patterns watched" },
+  { value: String(telemetryFlows.length), label: "Flows with full telemetry" },
+];
+
+// The wellness loop.
+const loop = [
+  { n: "01", icon: "check", title: "Opt in", body: "Accept consent and sketch a profile: baseline, intensity, and the gear within reach." },
+  { n: "02", icon: "calendar", title: "Find the gap", body: "Connect Google or Microsoft calendars (free/busy only), or push your own events." },
+  { n: "03", icon: "bell", title: "Take the break", body: "A five-second prompt lands in VS Code or as an OS notification from the CLI daemon." },
+  { n: "04", icon: "flame", title: "Build the streak", body: "Complete it, keep the streak, hit goals, and bring your team along. Small breaks compound." },
 ];
 
 const description =
-  "devngn.ai is human-first developer wellness. The moment a real gap opens in your schedule, get a five-second movement break tuned to your profile, goals, and equipment — tracked, shared, and social.";
-const canonical = new URL(Astro.url.pathname, Astro.site).toString();
-const ogImage = new URL("/og.png", Astro.site).toString();
+  "devngn.ai grounds your AI coding agents in the truth of your machine, then protects the developer running them. One engine: AI-bit discovery and grounding, plus consent-gated developer wellness. Open source, MIT.";
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <ThemeInit />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>devngn.ai — Put the human first</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#ff5a1f" />
+<MarketingLayout
+  title="devngn.ai · Ground your AI, protect the human"
+  description={description}
+  sidebar={false}
+  toc={false}
+>
+  <div class="lp">
+    <!-- Hero: asymmetric split, dual hook + live proof aside -->
+    <section class="lp-hero">
+      <div class="lp-hero-copy">
+        <span class="eyebrow">Open source · desktop app + CLI</span>
+        <h1>
+          Ground your <span class="nb"><span class="hl a">AI</span>.</span><br />
+          Protect the <span class="nb"><span class="hl b">human</span>.</span>
+        </h1>
+        <p class="lp-lede">
+          Your AI agents guess at your setup. devngn grounds them in what is really installed, then
+          guards the developer running them.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="/download/"><Icon name="download" size={18} stroke={2.6} />Get the app</a>
+          <a class="btn" href="#how">See how it works</a>
+        </div>
+      </div>
 
-    <meta property="og:site_name" content="devngn.ai" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="devngn.ai — Put the human first" />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
+      <aside class="lp-proof-card" aria-label="What devngn knows right now">
+        <p class="lp-proof-title">Live on your machine</p>
+        <dl>
+          <div>
+            <dt>Vendors and tools</dt>
+            <dd>{freshness.total}</dd>
+          </div>
+          <div>
+            <dt>AI providers</dt>
+            <dd>{providers.length}</dd>
+          </div>
+          <div>
+            <dt>Stored from calendar</dt>
+            <dd class="sm">free / busy</dd>
+          </div>
+        </dl>
+        <p class="lp-proof-foot">
+          MIT licensed. Nothing personal is stored until you opt in, and you can delete all of it.
+        </p>
+      </aside>
+    </section>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="devngn.ai — Put the human first" />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImage} />
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background:
-          repeating-linear-gradient(
-            45deg,
-            transparent 0 28px,
-            rgba(127, 110, 70, 0.05) 28px 29px
-          ),
-          var(--bg);
-        color: var(--text);
-        font-family: var(--font-body);
-        -webkit-font-smoothing: antialiased;
-      }
-      a {
-        color: inherit;
-      }
-      main {
-        margin: 0 auto;
-        max-width: 1140px;
-        padding: 0 1.5rem 5rem;
-      }
+    <!-- Compatibility strip: what devngn grounds. Concrete + real. -->
+    <section class="lp-works" aria-label="Works with the agents you already run">
+      <p class="lp-works-label">Grounds the agents you already run</p>
+      <ul class="lp-works-list">
+        {worksWith.map((name) => <li>{name}</li>)}
+        <li class="more">+ local models</li>
+      </ul>
+    </section>
 
-      .eyebrow {
-        display: inline-block;
-        font-family: var(--font-mono);
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        font-size: 0.78rem;
-        background: var(--ink);
-        color: var(--bg);
-        padding: 0.35rem 0.7rem;
-      }
+    <!-- The problem, made visceral: distinct mono "error" treatment. -->
+    <section class="lp-blind" aria-label="Why grounding matters">
+      <div class="lp-blind-copy">
+        <h2>Agents guess. You clean up <span class="nb"><span class="hl a">the mess.</span></span></h2>
+        <p>
+          An agent that cannot see what is installed fills the gaps with assumptions. That is where
+          the wrong turns start:
+        </p>
+      </div>
+      <ul class="lp-blind-list">
+        {
+          guesses.map((g) => (
+            <li>
+              <span class="lp-blind-x"><Icon name="x" size={15} stroke={3} /></span>
+              {g}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
 
-      /* Hero */
-      .hero {
-        display: grid;
-        gap: 2.5rem;
-        grid-template-columns: minmax(0, 1.5fr) minmax(17rem, 0.8fr);
-        align-items: end;
-        padding-top: 0.5rem;
-      }
-      h1 {
-        font-family: var(--font-display);
-        font-size: clamp(2.8rem, 8vw, 6rem);
-        line-height: 1.12;
-        letter-spacing: -0.03em;
-        margin: 0.5rem 0 1rem;
-        text-wrap: balance;
-      }
-      /* Solid retro block behind "human". The display font has a tall ascent,
-         so a plain inline background leaves too much room above the caps and
-         clips tight to the baseline. Draw the block as a pseudo-element on an
-         inline-block instead, so its top/bottom hug the glyphs evenly. */
-      h1 .hl {
-        position: relative;
-        display: inline-block;
-        line-height: 1;
-        color: var(--accent-ink);
-        padding: 0 0.24em;
-        isolation: isolate;
-      }
-      h1 .hl::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0.04em;
-        bottom: -0.08em;
-        background: var(--accent);
-        z-index: -1;
-      }
-      .lede {
-        font-size: 1.2rem;
-        line-height: 1.65;
-        max-width: 42rem;
-        margin: 0 0 1rem;
-      }
-      .lede.small {
-        font-size: 1.02rem;
-        color: var(--muted);
-      }
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-top: 1.75rem;
-      }
-      .btn {
-        display: inline-block;
-        font-family: var(--font-mono);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        font-size: 0.92rem;
-        text-decoration: none;
-        padding: 0.85rem 1.3rem;
-        border: var(--border);
-        background: var(--surface-bg);
-        color: var(--ink);
-        box-shadow: var(--shadow-sm);
-        transition:
-          transform 0.08s ease,
-          box-shadow 0.08s ease;
-      }
-      .btn:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: 7px 7px 0 var(--shadow-color);
-      }
-      .btn:active {
-        transform: translate(2px, 2px);
-        box-shadow: 1px 1px 0 var(--shadow-color);
-      }
-      .btn.primary {
-        background: var(--accent);
-        color: var(--accent-ink);
-      }
-      .btn.alt {
-        background: var(--accent-2);
-        color: var(--accent-ink);
-      }
+    <!-- Dual positioning: two-column split, equal billing -->
+    <section class="lp-duo" aria-label="One tool, two jobs">
+      <header class="lp-duo-head">
+        <h2>One tool. Two jobs it refuses to compromise.</h2>
+        <p>
+          Most tools help your agents or help you. devngn does both, because the code and the coder
+          are the same system.
+        </p>
+      </header>
+      <div class="lp-duo-cols">
+        <div class="lp-col engine">
+          <p class="lp-col-tag">The dev engine</p>
+          <h3>Know your AI tooling, end to end.</h3>
+          <ul class="lp-col-list">
+            {
+              enginePoints.map((p) => (
+                <li>
+                  <span class="lp-col-icon"><Icon name={p.icon} size={18} stroke={2.6} /></span>
+                  <div>
+                    <strong>{p.title}</strong>
+                    <span>{p.body}</span>
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+          <a class="lp-col-link" href="/features/">Explore the engine <Icon name="arrow" size={15} stroke={2.8} /></a>
+        </div>
+        <div class="lp-col human">
+          <p class="lp-col-tag alt">Human-first wellness</p>
+          <h3>Protect the person at the keyboard.</h3>
+          <ul class="lp-col-list">
+            {
+              humanPoints.map((p) => (
+                <li>
+                  <span class="lp-col-icon alt"><Icon name={p.icon} size={18} stroke={2.6} /></span>
+                  <div>
+                    <strong>{p.title}</strong>
+                    <span>{p.body}</span>
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+          <a class="lp-col-link" href="/wellness/">Explore wellness <Icon name="arrow" size={15} stroke={2.8} /></a>
+        </div>
+      </div>
+    </section>
 
-      .stat-card {
-        border: var(--border);
-        background: var(--surface-bg);
-        box-shadow: var(--shadow);
-        padding: 1.5rem;
-      }
-      .stat {
-        display: grid;
-        gap: 0.1rem;
-        padding: 0.75rem 0;
-        border-bottom: 2px dashed var(--ink);
-      }
-      .stat:last-of-type {
-        border-bottom: 0;
-      }
-      .stat span {
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--muted);
-      }
-      .stat strong {
-        font-family: var(--font-display);
-        font-size: 2.2rem;
-        line-height: 1;
-      }
-      .stat-card p {
-        font-size: 0.9rem;
-        color: var(--muted);
-        margin: 0.75rem 0 0;
-        line-height: 1.55;
-      }
+    <!-- Live proof band: real data, full-width dark, inline figures -->
+    <section class="lp-band" aria-label="Running live right now">
+      <div class="lp-band-lead">
+        <h2>Not a demo. This is running right now.</h2>
+        <p>
+          Every figure below comes straight from the bundled registry and runtime, rendered on each
+          request. Providers online: {providerNames.join(", ")}.
+        </p>
+      </div>
+      <div class="lp-band-figs">
+        {
+          proof.map((s) => (
+            <div class="lp-fig">
+              <strong>{s.value}</strong>
+              <span>{s.label}</span>
+            </div>
+          ))
+        }
+      </div>
+    </section>
 
-      /* Section heading */
-      .section {
-        margin-top: 5rem;
-      }
-      .section-kicker {
-        font-family: var(--font-mono);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        font-size: 0.78rem;
-        color: var(--accent-ink);
-        background: var(--accent-3);
-        border: 2px solid var(--ink);
-        display: inline-block;
-        padding: 0.25rem 0.6rem;
-      }
-      h2.section-title {
-        font-family: var(--font-display);
-        font-size: clamp(1.8rem, 4vw, 2.8rem);
-        letter-spacing: -0.02em;
-        margin: 0.9rem 0 0.5rem;
-        line-height: 1;
-      }
-      .section-sub {
-        font-size: 1.05rem;
-        color: var(--muted);
-        max-width: 44rem;
-        margin: 0;
-        line-height: 1.6;
-      }
+    <!-- Engine deep-cut: two alternating rows (zigzag, capped at 2) -->
+    <section class="lp-rows" aria-label="Inside the engine">
+      <article class="lp-row">
+        <div class="lp-row-copy">
+          <p class="lp-row-kicker">Grounding</p>
+          <h3>Your agents stop guessing.</h3>
+          <p>
+            devngn reads the real instructions, rules, and MCP config on disk and hands agents a
+            grounded picture of the machine. Fewer hallucinated paths, fewer wrong assumptions, less
+            cleanup after the fact.
+          </p>
+        </div>
+        <div class="lp-row-art art-grounding" aria-hidden="true">
+          <ul class="lp-chiplist">
+            {vendors.slice(0, 6).map((v) => (
+              <li><span class="dot"></span>{v.name}<em>{v.research.status}</em></li>
+            ))}
+          </ul>
+        </div>
+      </article>
 
-      /* Mission band */
-      .mission {
-        margin-top: 4rem;
-        border: var(--border);
-        background: #16130d;
-        color: var(--paper);
-        box-shadow: var(--shadow-lg);
-        padding: 2.5rem 2rem;
-      }
-      .mission p {
-        font-family: var(--font-display);
-        font-size: clamp(1.5rem, 3.5vw, 2.4rem);
-        line-height: 1.12;
-        letter-spacing: -0.02em;
-        margin: 0;
-      }
-      .mission p .pop {
-        color: var(--accent-3);
-      }
-      .mission .by {
-        font-family: var(--font-mono);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-size: 0.78rem;
-        color: var(--accent-3);
-        margin-top: 1.25rem;
-      }
+      <article class="lp-row reverse">
+        <div class="lp-row-copy">
+          <p class="lp-row-kicker">Readiness</p>
+          <h3>Every provider, one honest view.</h3>
+          <p>
+            Track auth and SDK readiness, token budgets, and model preferences across every provider
+            you use, local models included. Know what is ready before an agent run, not after it
+            fails halfway through.
+          </p>
+        </div>
+        <div class="lp-row-art art-readiness" aria-hidden="true">
+          <ul class="lp-provlist">
+            {providers.map((p) => (
+              <li><strong>{p.name}</strong><span>{p.capabilities.join(" · ")}</span></li>
+            ))}
+          </ul>
+        </div>
+      </article>
+    </section>
 
-      /* Value grid */
-      .grid {
-        display: grid;
-        gap: 1.25rem;
-        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-        margin-top: 2rem;
-      }
-      .card {
-        border: var(--border);
-        background: var(--surface-bg);
-        box-shadow: var(--shadow-sm);
-        padding: 1.25rem;
-        transition:
-          transform 0.08s ease,
-          box-shadow 0.08s ease;
-      }
-      .card:hover {
-        transform: translate(-2px, -2px);
-        box-shadow: var(--shadow);
-      }
-      .card-head {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        margin-bottom: 0.75rem;
-      }
-      .card-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.1rem;
-        height: 2.1rem;
-        flex: none;
-        border: 2px solid var(--ink);
-        background: var(--surface-bg);
-        color: var(--ink);
-        box-shadow: var(--shadow-sm);
-      }
-      .card-icon :global(svg) {
-        display: block;
-      }
-      .card .tag {
-        display: inline-block;
-        font-family: var(--font-display);
-        font-weight: 900;
-        font-size: 1.05rem;
-        text-transform: uppercase;
-        letter-spacing: 0.01em;
-        color: var(--accent-ink);
-        border: 2px solid var(--ink);
-        padding: 0.2rem 0.55rem;
-        margin-bottom: 0;
-      }
-      .card:nth-child(8n + 1) .tag {
-        background: var(--accent);
-      }
-      .card:nth-child(8n + 2) .tag {
-        background: var(--accent-2);
-      }
-      .card:nth-child(8n + 3) .tag {
-        background: var(--accent-3);
-      }
-      .card:nth-child(8n + 4) .tag {
-        background: var(--accent-5);
-      }
-      .card:nth-child(8n + 5) .tag {
-        background: var(--accent-6);
-        color: var(--paper);
-      }
-      .card:nth-child(8n + 6) .tag {
-        background: var(--accent-4);
-        color: var(--paper);
-      }
-      .card:nth-child(8n + 7) .tag {
-        background: var(--accent-2);
-      }
-      .card:nth-child(8n + 8) .tag {
-        background: var(--accent-3);
-      }
-      .card p {
-        margin: 0;
-        line-height: 1.55;
-        color: var(--text);
-      }
+    <!-- Wellness loop: numbered horizontal flow -->
+    <section id="how" class="lp-flow" aria-label="How the wellness loop works">
+      <header class="lp-flow-head">
+        <h2>How the wellness loop works.</h2>
+        <p>Opt in once. The engine already knows your machine, so it can respect the body running it.</p>
+      </header>
+      <ol class="lp-flow-steps">
+        {
+          loop.map((s) => (
+            <li>
+              <span class="lp-flow-n">{s.n}</span>
+              <span class="lp-flow-icon"><Icon name={s.icon} size={20} stroke={2.6} /></span>
+              <strong>{s.title}</strong>
+              <span class="lp-flow-body">{s.body}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
 
-      /* Steps */
-      .steps {
-        display: grid;
-        gap: 1.25rem;
-        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-        margin-top: 2rem;
-      }
-      .step {
-        border: var(--border);
-        background: var(--surface-bg);
-        box-shadow: var(--shadow-sm);
-        padding: 1.25rem;
-      }
-      .step-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-      }
-      .step-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.4rem;
-        height: 2.4rem;
-        flex: none;
-        border: 2px solid var(--ink);
-        background: var(--accent);
-        color: var(--accent-ink);
-        box-shadow: var(--shadow-sm);
-      }
-      .step-icon :global(svg) {
-        display: block;
-      }
-      .step .n {
-        font-family: var(--font-display);
-        font-weight: 900;
-        font-size: 2.4rem;
-        line-height: 1;
-        color: var(--accent);
-        -webkit-text-stroke: 1.5px var(--ink);
-      }
-      .step h3 {
-        font-family: var(--font-display);
-        font-size: 1.15rem;
-        margin: 0.5rem 0 0.4rem;
-        letter-spacing: -0.01em;
-      }
-      .step p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.5;
-        font-size: 0.95rem;
-      }
+    <!-- Final CTA band (shared marketing component) -->
+    <section class="cta-band">
+      <h2>Ready to ground your agents and <span class="pop">protect your team?</span></h2>
+      <div class="actions">
+        <a class="btn primary" href="/download/"><Icon name="download" size={18} stroke={2.6} />Get the app</a>
+        <a class="btn alt" href="/getting-started/">Read the docs</a>
+      </div>
+    </section>
+  </div>
+</MarketingLayout>
 
-      /* Platform panels */
-      .panels {
-        display: grid;
-        gap: 1.25rem;
-        grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-        margin-top: 2rem;
-      }
-      .panel {
-        border: var(--border);
-        background: var(--surface-bg);
-        box-shadow: var(--shadow-sm);
-        padding: 1.25rem 1.4rem;
-      }
-      .panel h3 {
-        font-family: var(--font-display);
-        font-size: 1.05rem;
-        margin: 0 0 0.75rem;
-        padding-bottom: 0.4rem;
-        border-bottom: 2px solid var(--ink);
-        letter-spacing: -0.01em;
-      }
-      .panel p {
-        margin: 0;
-        line-height: 1.55;
-        color: var(--text);
-      }
-      .panel ul {
-        margin: 0;
-        padding-left: 1.1rem;
-        line-height: 1.7;
-        color: var(--text);
-        font-size: 0.94rem;
-      }
-      .panel ul li::marker {
-        color: var(--accent);
-      }
+<style>
+  .lp {
+    display: block;
+  }
 
-      @media (max-width: 820px) {
-        .hero {
-          grid-template-columns: 1fr;
-          align-items: start;
+  /* Shared inline highlight blocks for the hero headline.
+   * The highlight is painted as a fixed-height band (background-size) centered on
+   * the text rather than filling the full display-font line box, so a highlighted
+   * word on one line never overlaps the line above or below it. */
+  .nb {
+    white-space: nowrap;
+  }
+  .hl {
+    color: var(--accent-ink);
+    padding: 0 0.16em;
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 100% 0.92em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  .hl.a {
+    background-image: linear-gradient(var(--accent), var(--accent));
+  }
+  .hl.b {
+    background-image: linear-gradient(var(--accent-2), var(--accent-2));
+  }
+
+  /* ---- Hero: asymmetric split ------------------------------------------- */
+  .lp-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(14rem, 0.7fr);
+    gap: 2rem;
+    align-items: end;
+    padding: 1.5rem 0 3rem;
+    border-bottom: 3px solid var(--ink);
+  }
+  .lp-hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5.6vw, 4.25rem);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    margin: 1rem 0 1rem;
+  }
+  .lp-lede {
+    font-size: 1.25rem;
+    line-height: 1.55;
+    max-width: 34rem;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .lp-proof-card {
+    border: var(--border);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow);
+    padding: 1.4rem 1.5rem;
+  }
+  .lp-proof-title {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+  .lp-proof-card dl {
+    margin: 0;
+  }
+  .lp-proof-card dl > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-bottom: 2px dashed var(--ink);
+  }
+  .lp-proof-card dt {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+  .lp-proof-card dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .lp-proof-card dd.sm {
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+  .lp-proof-foot {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0.9rem 0 0;
+  }
+
+  /* ---- Compatibility strip --------------------------------------------- */
+  .lp-works {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.1rem;
+    padding: 1.25rem 0 0;
+  }
+  .lp-works-label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 0;
+  }
+  .lp-works-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+  }
+  .lp-works-list li {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    background: var(--surface-bg);
+    border: 2px solid var(--ink);
+    box-shadow: var(--shadow-sm);
+    padding: 0.28rem 0.6rem;
+  }
+  .lp-works-list li.more {
+    background: transparent;
+    border-style: dashed;
+    color: var(--muted);
+    box-shadow: none;
+  }
+
+  /* ---- The problem: distinct mono "error board" ------------------------- */
+  .lp-blind {
+    margin-top: 4.5rem;
+  }
+  .lp-blind-copy {
+    max-width: 40rem;
+  }
+  .lp-blind-copy h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    margin: 0 0 0.6rem;
+  }
+  .lp-blind-copy p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .lp-blind-list {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: var(--border);
+    border-left-width: 8px;
+    border-left-color: var(--accent);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow);
+  }
+  .lp-blind-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 1.05rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--text);
+    border-bottom: 2px dashed var(--ink);
+  }
+  .lp-blind-list li:nth-child(odd) {
+    border-right: 2px dashed var(--ink);
+  }
+  .lp-blind-list li:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+  .lp-blind-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-top: 0.05rem;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 2px solid var(--ink);
+  }
+
+  /* ---- Dual positioning: two-column split ------------------------------- */
+  .lp-duo {
+    margin-top: 4.5rem;
+  }
+  .lp-duo-head {
+    max-width: 44rem;
+  }
+  .lp-duo-head h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    margin: 0 0 0.6rem;
+  }
+  .lp-duo-head p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .lp-duo-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .lp-col {
+    border: var(--border);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow);
+    padding: 1.6rem 1.6rem 1.4rem;
+    border-top-width: 8px;
+  }
+  .lp-col.engine {
+    border-top-color: var(--accent);
+  }
+  .lp-col.human {
+    border-top-color: var(--accent-2);
+  }
+  .lp-col-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 2px solid var(--ink);
+    padding: 0.25rem 0.55rem;
+    margin: 0 0 0.75rem;
+  }
+  .lp-col-tag.alt {
+    background: var(--accent-2);
+  }
+  .lp-col h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin: 0 0 1.1rem;
+  }
+  .lp-col-list {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .lp-col-list li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .lp-col-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    flex: none;
+    border: 2px solid var(--ink);
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-sm);
+  }
+  .lp-col-icon.alt {
+    background: var(--accent-2);
+  }
+  .lp-col-list strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.15rem;
+  }
+  .lp-col-list span {
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+  .lp-col-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.82rem;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 2px;
+  }
+  .lp-col.human .lp-col-link {
+    border-bottom-color: var(--accent-2);
+  }
+  .lp-col-link svg {
+    display: block;
+  }
+
+  /* ---- Live proof band: full-width dark --------------------------------- */
+  .lp-band {
+    margin-top: 4.5rem;
+    border: var(--border);
+    background: #16130d;
+    color: var(--paper);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 2rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 2rem;
+    align-items: center;
+  }
+  .lp-band-lead h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.6rem;
+  }
+  .lp-band-lead p {
+    margin: 0;
+    line-height: 1.55;
+    color: #d9cfb4;
+    font-size: 0.98rem;
+  }
+  .lp-band-figs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+  .lp-fig {
+    border: 2px solid var(--paper);
+    padding: 1rem 1.1rem;
+    background: #221c12;
+  }
+  .lp-fig strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--accent-3);
+  }
+  .lp-fig span {
+    display: block;
+    margin-top: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #d9cfb4;
+  }
+
+  /* ---- Engine deep-cut: alternating rows -------------------------------- */
+  .lp-rows {
+    margin-top: 4.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+  .lp-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2rem;
+    align-items: center;
+  }
+  .lp-row.reverse .lp-row-copy {
+    order: 2;
+  }
+  .lp-row-copy .lp-row-kicker {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.76rem;
+    color: var(--accent-ink);
+    background: var(--accent-3);
+    border: 2px solid var(--ink);
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    margin: 0 0 0.75rem;
+  }
+  .lp-row-copy h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.03;
+    margin: 0 0 0.6rem;
+  }
+  .lp-row-copy p {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text);
+    max-width: 32rem;
+  }
+  .lp-row-art {
+    border: var(--border);
+    box-shadow: var(--shadow);
+    padding: 1.4rem;
+    background: var(--surface-bg);
+    min-height: 12rem;
+  }
+  .art-grounding {
+    background:
+      repeating-linear-gradient(45deg, transparent 0 22px, rgba(17, 179, 163, 0.08) 22px 23px),
+      var(--surface-bg);
+  }
+  .lp-chiplist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .lp-chiplist li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    border-bottom: 2px dashed var(--ink);
+    padding-bottom: 0.5rem;
+  }
+  .lp-chiplist li:last-child {
+    border-bottom: 0;
+  }
+  .lp-chiplist .dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    background: var(--accent-2);
+    border: 2px solid var(--ink);
+    flex: none;
+  }
+  .lp-chiplist em {
+    margin-left: auto;
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .art-readiness {
+    background:
+      repeating-linear-gradient(-45deg, transparent 0 22px, rgba(255, 90, 31, 0.08) 22px 23px),
+      var(--surface-bg);
+  }
+  .lp-provlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .lp-provlist li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    border-left: 4px solid var(--accent);
+    padding-left: 0.7rem;
+  }
+  .lp-provlist strong {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+  .lp-provlist span {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* ---- Wellness loop: numbered flow ------------------------------------- */
+  .lp-flow {
+    margin-top: 4.5rem;
+  }
+  .lp-flow-head {
+    max-width: 44rem;
+  }
+  .lp-flow-head h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    margin: 0 0 0.6rem;
+  }
+  .lp-flow-head p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .lp-flow-steps {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: var(--border);
+    box-shadow: var(--shadow);
+  }
+  .lp-flow-steps li {
+    padding: 1.4rem 1.3rem;
+    border-right: var(--border);
+    background: var(--surface-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .lp-flow-steps li:last-child {
+    border-right: 0;
+  }
+  .lp-flow-n {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--accent);
+    -webkit-text-stroke: 1.5px var(--ink);
+  }
+  .lp-flow-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 2px solid var(--ink);
+    background: var(--accent-3);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 0.25rem;
+  }
+  .lp-flow-icon svg {
+    display: block;
+  }
+  .lp-flow-steps strong {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+  }
+  .lp-flow-body {
+    color: var(--muted);
+    line-height: 1.5;
+    font-size: 0.92rem;
+  }
+
+  /* ---- Motion: gentle scroll reveal ------------------------------------- *
+   * Gated behind @supports so browsers without scroll-driven animations
+   * (Safari, older engines) always render content fully visible. Supporting
+   * browsers reveal each section as it scrolls into view. Reduced-motion off.  */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .lp-duo,
+      .lp-blind,
+      .lp-band,
+      .lp-row,
+      .lp-flow {
+        animation: lp-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 2% cover 24%;
+      }
+      @keyframes lp-rise {
+        from {
+          opacity: 0;
+          transform: translateY(26px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
       }
-    </style>
-  </head>
-  <body>
-    <SiteHeader />
+    }
 
-    <main>
-      <section class="hero">
-        <div>
-          <div class="eyebrow">Human-first dev wellness</div>
-          <h1>Put the <span class="hl">human</span> first.</h1>
-          <p class="lede">
-            devngn.ai honors the body behind the keyboard. The moment a real gap opens in your
-            schedule, we nudge you with a five-second movement break — tuned to your profile, your
-            goals, and the equipment you actually have.
-          </p>
-          <p class="lede small">
-            Aware. Responsible. Built so engineers can turn their focus toward their own health —
-            and the civilization they're building. Tracked, shared, goalified, and social.
-          </p>
-          <div class="actions">
-            <a class="btn primary" href="/download/">Get the app</a>
-            <a class="btn alt" href="/features/">Explore features</a>
-            <a class="btn" href="/getting-started/">Read the docs</a>
-          </div>
-        </div>
-        <aside class="stat-card">
-          <div class="stat">
-            <span>Known vendors / tools</span>
-            <strong>{freshness.total}</strong>
-          </div>
-          <div class="stat">
-            <span>Movement-break catalog</span>
-            <strong>5s</strong>
-          </div>
-          <div class="stat">
-            <span>Stored from your calendar</span>
-            <strong>free/busy</strong>
-          </div>
-          <p>
-            Open source, MIT licensed. Nothing personal is stored until you opt in — and you can
-            delete all of it whenever you want.
-          </p>
-        </aside>
-      </section>
-
-      <section class="mission">
-        <p>
-          Technology should serve the human — <span class="pop">not consume them.</span> We help
-          developers move, breathe, and reset, so the people building the future stay healthy
-          enough to enjoy it.
-        </p>
-        <div class="by">The devngn.ai promise · Copyright © 2026–Present David Pine · MIT</div>
-      </section>
-
-      <section class="section" aria-label="What we're about">
-        <div class="section-kicker">What we're about</div>
-        <h2 class="section-title">Wellness, woven into the workday.</h2>
-        <p class="section-sub">
-          Not another dashboard to check. A quiet, opt-in layer that turns the small gaps in a
-          developer's day into real, compounding movement.
-        </p>
-        <div class="grid">
-          {
-            values.map((v) => (
-              <article class="card">
-                <div class="card-head">
-                  <span class="card-icon">
-                    <Icon name={v.icon} size={22} stroke={2.4} />
-                  </span>
-                  <span class="tag">{v.tag}</span>
-                </div>
-                <p>{v.body}</p>
-              </article>
-            ))
-          }
-        </div>
-      </section>
-
-      <section class="section" aria-label="How it works">
-        <div class="section-kicker">How it works</div>
-        <h2 class="section-title">From sitting still to streaks.</h2>
-        <div class="steps">
-          {
-            steps.map((s) => (
-              <article class="step">
-                <div class="step-head">
-                  <div class="n">{s.n}</div>
-                  <span class="step-icon">
-                    <Icon name={s.icon} size={24} stroke={2.4} />
-                  </span>
-                </div>
-                <h3>{s.title}</h3>
-                <p>{s.body}</p>
-              </article>
-            ))
-          }
-        </div>
-      </section>
-
-      <section class="section" aria-label="The dev engine behind it">
-        <div class="section-kicker">Under the hood</div>
-        <h2 class="section-title">The dev engine behind it.</h2>
-        <p class="section-sub">
-          Wellness rides on devngn.ai — the engine that already understands your machine, tools, and
-          AI-bits. Here's it running live, right now.
-        </p>
-        <div class="panels">
-          <div class="panel">
-            <h3>Research matrix</h3>
-            <ul>
-              {vendors.map((vendor) => <li>{vendor.name}: {vendor.research.status}</li>)}
-            </ul>
-          </div>
-          <div class="panel">
-            <h3>AI runtime providers</h3>
-            <ul>
-              {
-                providers.map((provider) => (
-                  <li>
-                    {provider.name}: {provider.capabilities.join(", ")}
-                  </li>
-                ))
-              }
-            </ul>
-          </div>
-          <div class="panel">
-            <h3>Pattern trends</h3>
-            <p>
-              Tracking {patternTrends.total} known ecosystem patterns, with {
-                patternTrends.rising.length
-              } rising and {patternTrends.watch.length} on watch.
-            </p>
-          </div>
-          <div class="panel">
-            <h3>OpenTelemetry coverage</h3>
-            <p>
-              Measuring {telemetryFlows.length} important dev engine flows with logs, traces, and
-              metrics for Aspire dashboard visibility — including the {freshness.byStatus.planned ??
-                0} planned vendor research runs.
-            </p>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <SiteFooter />
-  </body>
-</html>
+    /* Hero entrance: staggered rise on load and on view-transition into home.
+     * Pure CSS so it also runs without scroll-driven support; collapses to
+     * static under reduced-motion (the whole block is skipped). */
+    .lp-hero-copy > *,
+    .lp-proof-card,
+    .lp-works {
+      animation: lp-hero-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .lp-hero-copy > *:nth-child(1) {
+      animation-delay: 0.02s;
+    }
+    .lp-hero-copy > *:nth-child(2) {
+      animation-delay: 0.08s;
+    }
+    .lp-hero-copy > *:nth-child(3) {
+      animation-delay: 0.14s;
+    }
+    .lp-hero-copy > *:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+    .lp-proof-card {
+      animation-delay: 0.22s;
+    }
+    .lp-works {
+      animation-delay: 0.3s;
+    }
+    @keyframes lp-hero-in {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+  @media (max-width: 1000px) {
+    .lp-band {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 860px) {
+    .lp-hero {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+    .lp-duo-cols {
+      grid-template-columns: 1fr;
+    }
+    .lp-blind-list {
+      grid-template-columns: 1fr;
+    }
+    .lp-blind-list li:nth-child(odd) {
+      border-right: none;
+    }
+    .lp-blind-list li:nth-last-child(2) {
+      border-bottom: 2px dashed var(--ink);
+    }
+    .lp-flow-steps {
+      grid-template-columns: 1fr 1fr;
+    }
+    .lp-flow-steps li:nth-child(2) {
+      border-right: 0;
+    }
+    .lp-flow-steps li:nth-child(1),
+    .lp-flow-steps li:nth-child(2) {
+      border-bottom: var(--border);
+    }
+  }
+  @media (max-width: 640px) {
+    .lp-row,
+    .lp-row.reverse .lp-row-copy {
+      grid-template-columns: 1fr;
+      order: 0;
+    }
+    .lp-row {
+      grid-template-columns: 1fr;
+    }
+    .lp-band-figs {
+      grid-template-columns: 1fr;
+    }
+    .lp-flow-steps {
+      grid-template-columns: 1fr;
+    }
+    .lp-flow-steps li {
+      border-right: 0;
+      border-bottom: var(--border);
+    }
+    .lp-flow-steps li:last-child {
+      border-bottom: 0;
+    }
+  }
+</style>

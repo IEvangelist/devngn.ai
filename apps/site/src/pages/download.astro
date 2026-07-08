@@ -12,7 +12,7 @@ const releases = `${repo}/releases/latest`;
 // (.github/workflows/app-release.yml): Tauri v2 bundles for each platform.
 const platforms = [
   {
-    icon: "bolt",
+    icon: "apple",
     os: "macOS",
     note: "Apple Silicon & Intel · macOS 13+",
     primary: { label: "Download for Apple Silicon", href: `${releases}/download/devngn-macos-aarch64.dmg` },
@@ -21,7 +21,7 @@ const platforms = [
     ],
   },
   {
-    icon: "code",
+    icon: "windows",
     os: "Windows",
     note: "Windows 10 & 11 · x64",
     primary: { label: "Download installer", href: `${releases}/download/devngn-windows-x64-setup.exe` },
@@ -30,7 +30,7 @@ const platforms = [
     ],
   },
   {
-    icon: "target",
+    icon: "linux",
     os: "Linux",
     note: "AppImage · Debian & Ubuntu",
     primary: { label: "Download AppImage", href: `${releases}/download/devngn-linux-x86_64.AppImage` },
@@ -43,14 +43,16 @@ const platforms = [
 
 <MarketingLayout
   title="Download"
-  description="Get devngn.ai on your machine — the desktop app for macOS, Windows, and Linux, plus the CLI and the VS Code extension. Open source, MIT licensed."
+  description="Get devngn.ai on your machine: the desktop app for macOS, Windows, and Linux, plus the CLI and the VS Code extension. Open source, MIT licensed."
   active="download"
+  sidebar={false}
+  toc={false}
 >
   <section class="page-hero">
     <div class="eyebrow">Download</div>
     <h1>Bring devngn to your <span class="hl">desktop</span>.</h1>
     <p class="lede">
-      The desktop app keeps your dev engine and your wellness one click away — streaks, goals, and
+      The desktop app keeps your dev engine and your wellness one click away, with streaks, goals, and
       right-timed movement breaks, right from the menu bar. Prefer the terminal or your editor?
       Those are here too.
     </p>
@@ -60,18 +62,19 @@ const platforms = [
     <div class="section-kicker">Desktop app</div>
     <h2 class="section-title">Pick your platform.</h2>
     <p class="section-sub">
-      Free and open source under the MIT license. Nothing personal is stored until you opt in — and
+      Free and open source under the MIT license. Nothing personal is stored until you opt in, and
       you can delete all of it whenever you want.
     </p>
     <div class="grid">
       {
         platforms.map((p) => (
-          <article class="card platform">
+          <article class="card platform" data-os={p.os.toLowerCase()}>
             <div class="card-head">
               <span class="card-icon">
-                <Icon name={p.icon} size={22} stroke={2.4} />
+                <Icon name={p.icon} size={26} stroke={2.4} />
               </span>
               <h3>{p.os}</h3>
+              <span class="platform-badge">Your platform</span>
             </div>
             <p class="platform-note">{p.note}</p>
             <a class="btn primary platform-btn" href={p.primary.href}>
@@ -120,7 +123,7 @@ devngn patterns recognize</code></pre>
     <h2 class="section-title">VS Code extension.</h2>
     <p class="section-sub">
       AI-bit inventory tree views, a token usage dashboard, provider readiness, and recognized
-      ecosystem patterns — without leaving your editor.
+      ecosystem patterns, without leaving your editor.
     </p>
     <div class="actions">
       <a class="btn primary" href="/getting-started/">
@@ -147,6 +150,37 @@ devngn patterns recognize</code></pre>
   .platform {
     display: flex;
     flex-direction: column;
+    border-top-width: 8px;
+    border-top-color: var(--accent-2);
+  }
+  .platform[data-os="windows"] {
+    border-top-color: var(--accent);
+  }
+  .platform[data-os="linux"] {
+    border-top-color: var(--accent-3);
+  }
+  .platform .card-head {
+    align-items: center;
+  }
+  .platform-badge {
+    display: none;
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-ink);
+    background: var(--accent-2);
+    border: 2px solid var(--ink);
+    padding: 0.15rem 0.4rem;
+    white-space: nowrap;
+  }
+  .platform.is-detected {
+    box-shadow: var(--shadow);
+  }
+  .platform.is-detected .platform-badge {
+    display: inline-block;
   }
   .platform-note {
     font-family: var(--font-mono);
@@ -210,3 +244,19 @@ devngn patterns recognize</code></pre>
     font-family: inherit;
   }
 </style>
+
+<script>
+  // Progressive enhancement: highlight the visitor's platform card.
+  // Re-runs after Astro view transitions via astro:page-load.
+  const detectPlatform = () => {
+    const ua = navigator.userAgent;
+    let os: string | null = null;
+    if (/Macintosh|Mac OS X/.test(ua)) os = "macos";
+    else if (/Windows/.test(ua)) os = "windows";
+    else if (/Linux|X11/.test(ua) && !/Android/.test(ua)) os = "linux";
+    document.querySelectorAll<HTMLElement>(".platform[data-os]").forEach((el) => {
+      el.classList.toggle("is-detected", el.dataset.os === os);
+    });
+  };
+  document.addEventListener("astro:page-load", detectPlatform);
+</script>

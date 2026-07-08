@@ -1,10 +1,7 @@
 ---
 import { wellnessOpenApiDocument } from "@devngn/wellness-types";
-import ThemeInit from "../../components/ThemeInit.astro";
-import SiteHeader from "../../components/SiteHeader.astro";
-import SiteFooter from "../../components/SiteFooter.astro";
+import MarketingLayout from "../../layouts/MarketingLayout.astro";
 import Icon from "../../components/Icon.astro";
-import "../../styles/retro.css";
 
 type Schema = {
   $ref?: string;
@@ -140,152 +137,245 @@ for (const [path, item] of Object.entries(doc.paths)) {
 }
 
 const description = doc.info.description;
-const totalEndpoints = [...groups.values()].reduce((n, a) => n + a.length, 0);
-const groupCount = tagOrder.length;
-const schemaCount = Object.keys(schemas).length;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <ThemeInit />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{doc.info.title} — API reference</title>
-    <meta name="description" content="OpenAPI reference for the devngn.ai Wellness API." />
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background:
-          repeating-linear-gradient(45deg, transparent 0 28px, rgba(127, 110, 70, 0.05) 28px 29px),
-          var(--bg);
-        color: var(--text);
-        font-family: var(--font-body);
-        line-height: 1.6;
-      }
+<MarketingLayout
+  title="API reference"
+  description="OpenAPI reference for the devngn.ai Wellness API."
+  active="api"
+>
+        <header class="page">
+          <h1>{doc.info.title}</h1>
+          <div>
+            <span class="badge-version">OpenAPI {doc.openapi ?? "3.1"} · {doc.info.version}</span>
+          </div>
+          {description && <p class="lede">{description}</p>}
+
+          <div class="overview">
+            <div class="note auth">
+              <span class="ic"><Icon name="github" size={18} stroke={2.4} /></span>
+              <div>
+                <h3>Authentication</h3>
+                <p>
+                  Every endpoint requires a GitHub OAuth bearer token. Obtain one via the device
+                  flow (<code>GET /v1/auth/github/device</code>) and send it as
+                  <code>Authorization: Bearer …</code>.
+                </p>
+              </div>
+            </div>
+            <div class="note consent">
+              <span class="ic"><Icon name="check" size={18} stroke={2.6} /></span>
+              <div>
+                <h3>Consent gate</h3>
+                <p>
+                  Data endpoints (profile, goals, equipment, schedule, prompts) require a recorded
+                  consent record first (<code>POST /v1/consent</code>) or they return
+                  <code>403</code>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div class="toolbar">
+          <a href="/wellness/openapi.json"><Icon name="download" size={15} stroke={2.6} /> openapi.json</a>
+          <a href="/wellness/"><Icon name="book" size={15} stroke={2.6} /> Read the guide</a>
+        </div>
+
+        {
+          tagOrder.map((tag) => (
+            <section class="tag" id={`tag-${tag}`}>
+              <h2>{tag}</h2>
+              {groups.get(tag)!.map(({ method, path, op, id }) => (
+                <article class="op" id={id}>
+                  <div class="op-head">
+                    <span
+                      class="method"
+                      style={`background:${methodColors[method] ?? "#94a3b8"}`}
+                    >
+                      {method}
+                    </span>
+                    <span class="op-path mono">{path}</span>
+                  </div>
+                  {(op.summary || op.description) && (
+                    <p class="op-summary">{op.summary ?? op.description}</p>
+                  )}
+
+                  {op.parameters && op.parameters.length > 0 && (
+                    <>
+                      <h4>Parameters</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>In</th>
+                            <th>Type</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {op.parameters.map((p) => {
+                            const t = describeType(p.schema);
+                            return (
+                              <tr>
+                                <td class="mono">
+                                  {p.name}
+                                  {p.required && <span class="req"> *</span>}
+                                </td>
+                                <td>{p.in}</td>
+                                <td class="mono">
+                                  {t.ref && schemaNames.has(t.ref) ? (
+                                    <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                  ) : (
+                                    t.label
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+
+                  {op.requestBody?.content && (
+                    <>
+                      <h4>Request body{op.requestBody.required ? " (required)" : ""}</h4>
+                      <table>
+                        <tbody>
+                          {Object.entries(op.requestBody.content).map(([ct, media]) => {
+                            const t = describeType(media.schema);
+                            return (
+                              <tr>
+                                <td class="mono">{ct}</td>
+                                <td class="mono">
+                                  {t.ref && schemaNames.has(t.ref) ? (
+                                    <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                  ) : (
+                                    t.label
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+
+                  {op.responses && (
+                    <>
+                      <h4>Responses</h4>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Body</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(op.responses).map(([status, res]) => {
+                            const entries = Object.entries(res.content ?? {});
+                            return (
+                              <tr>
+                                <td class="status">{status}</td>
+                                <td>{res.description ?? ""}</td>
+                                <td class="mono">
+                                  {entries.length === 0
+                                    ? "-"
+                                    : entries.map(([ct, media]) => {
+                                        const t = describeType(media.schema);
+                                        return (
+                                          <div>
+                                            {t.ref && schemaNames.has(t.ref) ? (
+                                              <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                            ) : (
+                                              t.label
+                                            )}
+                                            <span class="op-summary"> ({ct})</span>
+                                          </div>
+                                        );
+                                      })}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+                </article>
+              ))}
+            </section>
+          ))
+        }
+
+        <section class="tag" id="schemas">
+          <h2>Schemas</h2>
+          {
+            Object.entries(schemas).map(([name, schema]) => {
+              const props = schema.properties ?? {};
+              const required = new Set(schema.required ?? []);
+              return (
+                <section class="schema" id={`schema-${name}`}>
+                  <h3>{name}</h3>
+                  {schema.description && <p class="op-summary">{schema.description}</p>}
+                  {schema.enum ? (
+                    <div class="enum-values">
+                      {schema.enum.map((v) => (
+                        <code>{String(v)}</code>
+                      ))}
+                    </div>
+                  ) : Object.keys(props).length > 0 ? (
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Property</th>
+                          <th>Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(props).map(([prop, propSchema]) => {
+                          const t = describeType(propSchema);
+                          return (
+                            <tr>
+                              <td class="mono">
+                                {prop}
+                                {required.has(prop) && <span class="req"> *</span>}
+                              </td>
+                              <td class="mono">
+                                {t.ref && schemaNames.has(t.ref) ? (
+                                  <a href={`#schema-${t.ref}`}>{t.label}</a>
+                                ) : (
+                                  t.label
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p class="op-summary mono">{describeType(schema).label}</p>
+                  )}
+                </section>
+              );
+            })
+          }
+        </section>
+</MarketingLayout>
+
+<style>
       a {
-        color: var(--accent-ink);
+        color: var(--text);
         text-decoration-color: var(--accent);
         text-underline-offset: 3px;
         font-weight: 600;
-      }
-      :root[data-theme="dark"] a {
-        color: var(--text);
       }
       code,
       .mono {
         font-family: var(--font-mono);
       }
-
-      /* Layout --------------------------------------------------------- */
-      .layout {
-        display: grid;
-        grid-template-columns: 19rem minmax(0, 1fr);
-        max-width: 1280px;
-        margin: 0 auto;
-        gap: 2.5rem;
-        padding: 2rem 1.5rem 6rem;
-      }
-      nav {
-        position: sticky;
-        top: 1.5rem;
-        align-self: start;
-        max-height: calc(100vh - 6rem);
-        overflow: auto;
-        font-size: 0.85rem;
-        border: var(--border);
-        background: var(--surface-bg);
-        box-shadow: var(--shadow);
-        padding: 1rem 1rem 1.25rem;
-      }
-      .nav-meta {
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        margin: 0.5rem 0 0.75rem;
-      }
-      .nav-group {
-        border-top: 2px solid var(--ink);
-        padding-top: 0.5rem;
-        margin-top: 0.5rem;
-      }
-      .nav-group > summary {
-        cursor: pointer;
-        list-style: none;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        font-family: var(--font-mono);
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-size: 0.72rem;
-        color: var(--ink);
-        padding: 0.15rem 0;
-      }
-      .nav-group > summary::-webkit-details-marker {
-        display: none;
-      }
-      .nav-group > summary .count {
-        font-size: 0.66rem;
-        font-weight: 700;
-        color: var(--accent-ink);
-        background: var(--accent-3);
-        border: 2px solid var(--ink);
-        padding: 0 0.35rem;
-      }
-      .nav-op {
-        display: flex;
-        align-items: baseline;
-        gap: 0.45rem;
-        text-decoration: none;
-        color: var(--text);
-        font-family: var(--font-mono);
-        padding: 0.25rem 0.3rem;
-        margin-top: 0.15rem;
-        border: 2px solid transparent;
-        overflow-wrap: anywhere;
-      }
-      .nav-op:hover {
-        border-color: var(--ink);
-        background: var(--accent-3);
-        color: var(--accent-ink);
-      }
-      .nav-op .m {
-        flex: none;
-        font-size: 0.6rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        color: var(--accent-ink);
-        border: 2px solid var(--ink);
-        padding: 0 0.3rem;
-        line-height: 1.5;
-      }
-      .nav-op .p {
-        font-size: 0.78rem;
-        overflow-wrap: anywhere;
-      }
-      .nav-schema {
-        display: block;
-        text-decoration: none;
-        color: var(--muted);
-        font-family: var(--font-mono);
-        font-size: 0.78rem;
-        padding: 0.15rem 0.3rem;
-        overflow-wrap: anywhere;
-      }
-      .nav-schema:hover {
-        color: var(--accent-ink);
-        background: var(--accent-3);
-      }
-
       /* Header + overview ---------------------------------------------- */
       header.page h1 {
         margin: 0;
@@ -498,279 +588,4 @@ const schemaCount = Object.keys(schemas).length;
         color: var(--accent-ink);
         font-weight: 600;
       }
-
-      @media (max-width: 940px) {
-        .layout {
-          grid-template-columns: 1fr;
-          gap: 1.5rem;
-        }
-        nav {
-          position: static;
-          max-height: none;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <SiteHeader active="api" />
-
-    <div class="layout">
-      <nav aria-label="API navigation">
-        <div class="nav-meta">{totalEndpoints} endpoints · {groupCount} groups</div>
-        {
-          tagOrder.map((tag) => (
-            <details class="nav-group" open>
-              <summary>
-                <span>{tag}</span>
-                <span class="count">{groups.get(tag)!.length}</span>
-              </summary>
-              {groups.get(tag)!.map(({ method, path, id }) => (
-                <a class="nav-op" href={`#${id}`}>
-                  <span class="m" style={`background:${methodColors[method] ?? "#94a3b8"}`}>
-                    {method}
-                  </span>
-                  <span class="p">{path}</span>
-                </a>
-              ))}
-            </details>
-          ))
-        }
-        <details class="nav-group">
-          <summary>
-            <span>Schemas</span>
-            <span class="count">{schemaCount}</span>
-          </summary>
-          {Object.keys(schemas).map((name) => (
-            <a class="nav-schema" href={`#schema-${name}`}>
-              {name}
-            </a>
-          ))}
-        </details>
-      </nav>
-
-      <main>
-        <header class="page">
-          <h1>{doc.info.title}</h1>
-          <div>
-            <span class="badge-version">OpenAPI {doc.openapi ?? "3.1"} · {doc.info.version}</span>
-          </div>
-          {description && <p class="lede">{description}</p>}
-
-          <div class="overview">
-            <div class="note auth">
-              <span class="ic"><Icon name="github" size={18} stroke={2.4} /></span>
-              <div>
-                <h3>Authentication</h3>
-                <p>
-                  Every endpoint requires a GitHub OAuth bearer token. Obtain one via the device
-                  flow (<code>GET /v1/auth/github/device</code>) and send it as
-                  <code>Authorization: Bearer …</code>.
-                </p>
-              </div>
-            </div>
-            <div class="note consent">
-              <span class="ic"><Icon name="check" size={18} stroke={2.6} /></span>
-              <div>
-                <h3>Consent gate</h3>
-                <p>
-                  Data endpoints (profile, goals, equipment, schedule, prompts) require a recorded
-                  consent record first (<code>POST /v1/consent</code>) or they return
-                  <code>403</code>.
-                </p>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div class="toolbar">
-          <a href="/wellness/openapi.json"><Icon name="download" size={15} stroke={2.6} /> openapi.json</a>
-          <a href="/wellness/"><Icon name="book" size={15} stroke={2.6} /> Read the guide</a>
-        </div>
-
-        {
-          tagOrder.map((tag) => (
-            <section class="tag" id={`tag-${tag}`}>
-              <h2>{tag}</h2>
-              {groups.get(tag)!.map(({ method, path, op, id }) => (
-                <article class="op" id={id}>
-                  <div class="op-head">
-                    <span
-                      class="method"
-                      style={`background:${methodColors[method] ?? "#94a3b8"}`}
-                    >
-                      {method}
-                    </span>
-                    <span class="op-path mono">{path}</span>
-                  </div>
-                  {(op.summary || op.description) && (
-                    <p class="op-summary">{op.summary ?? op.description}</p>
-                  )}
-
-                  {op.parameters && op.parameters.length > 0 && (
-                    <>
-                      <h4>Parameters</h4>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Name</th>
-                            <th>In</th>
-                            <th>Type</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {op.parameters.map((p) => {
-                            const t = describeType(p.schema);
-                            return (
-                              <tr>
-                                <td class="mono">
-                                  {p.name}
-                                  {p.required && <span class="req"> *</span>}
-                                </td>
-                                <td>{p.in}</td>
-                                <td class="mono">
-                                  {t.ref && schemaNames.has(t.ref) ? (
-                                    <a href={`#schema-${t.ref}`}>{t.label}</a>
-                                  ) : (
-                                    t.label
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </>
-                  )}
-
-                  {op.requestBody?.content && (
-                    <>
-                      <h4>Request body{op.requestBody.required ? " (required)" : ""}</h4>
-                      <table>
-                        <tbody>
-                          {Object.entries(op.requestBody.content).map(([ct, media]) => {
-                            const t = describeType(media.schema);
-                            return (
-                              <tr>
-                                <td class="mono">{ct}</td>
-                                <td class="mono">
-                                  {t.ref && schemaNames.has(t.ref) ? (
-                                    <a href={`#schema-${t.ref}`}>{t.label}</a>
-                                  ) : (
-                                    t.label
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </>
-                  )}
-
-                  {op.responses && (
-                    <>
-                      <h4>Responses</h4>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Status</th>
-                            <th>Description</th>
-                            <th>Body</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(op.responses).map(([status, res]) => {
-                            const entries = Object.entries(res.content ?? {});
-                            return (
-                              <tr>
-                                <td class="status">{status}</td>
-                                <td>{res.description ?? ""}</td>
-                                <td class="mono">
-                                  {entries.length === 0
-                                    ? "—"
-                                    : entries.map(([ct, media]) => {
-                                        const t = describeType(media.schema);
-                                        return (
-                                          <div>
-                                            {t.ref && schemaNames.has(t.ref) ? (
-                                              <a href={`#schema-${t.ref}`}>{t.label}</a>
-                                            ) : (
-                                              t.label
-                                            )}
-                                            <span class="op-summary"> ({ct})</span>
-                                          </div>
-                                        );
-                                      })}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </>
-                  )}
-                </article>
-              ))}
-            </section>
-          ))
-        }
-
-        <section class="tag" id="schemas">
-          <h2>Schemas</h2>
-          {
-            Object.entries(schemas).map(([name, schema]) => {
-              const props = schema.properties ?? {};
-              const required = new Set(schema.required ?? []);
-              return (
-                <section class="schema" id={`schema-${name}`}>
-                  <h3>{name}</h3>
-                  {schema.description && <p class="op-summary">{schema.description}</p>}
-                  {schema.enum ? (
-                    <div class="enum-values">
-                      {schema.enum.map((v) => (
-                        <code>{String(v)}</code>
-                      ))}
-                    </div>
-                  ) : Object.keys(props).length > 0 ? (
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Property</th>
-                          <th>Type</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.entries(props).map(([prop, propSchema]) => {
-                          const t = describeType(propSchema);
-                          return (
-                            <tr>
-                              <td class="mono">
-                                {prop}
-                                {required.has(prop) && <span class="req"> *</span>}
-                              </td>
-                              <td class="mono">
-                                {t.ref && schemaNames.has(t.ref) ? (
-                                  <a href={`#schema-${t.ref}`}>{t.label}</a>
-                                ) : (
-                                  t.label
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  ) : (
-                    <p class="op-summary mono">{describeType(schema).label}</p>
-                  )}
-                </section>
-              );
-            })
-          }
-        </section>
-      </main>
-    </div>
-
-    <SiteFooter />
-  </body>
-</html>
+</style>

@@ -1,0 +1,90 @@
+---
+/*
+ * Shared right-hand "On this page" table of contents for the custom shell.
+ * Marketing/standalone pages are .astro (no markdown `headings`), so the list
+ * is built on the client from the section <h2>s inside <main>, with an
+ * IntersectionObserver scroll-spy. Re-runs on every view transition via
+ * `astro:page-load`. Mirrors the Starlight TOC so docs and marketing match.
+ */
+---
+
+<aside class="page-toc" aria-label="On this page" data-page-toc hidden>
+  <p class="page-toc-title">On this page</p>
+  <ul data-toc></ul>
+</aside>
+
+<script>
+  const SKIP = ".cta-band, .page-hero, .no-toc";
+
+  function slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  }
+
+  let observer: IntersectionObserver | null = null;
+
+  function buildToc() {
+    const toc = document.querySelector<HTMLElement>("[data-page-toc]");
+    const list = toc?.querySelector<HTMLUListElement>("[data-toc]");
+    const main = document.querySelector("main");
+    if (!toc || !list || !main) return;
+
+    observer?.disconnect();
+    list.replaceChildren();
+
+    const headings = Array.from(main.querySelectorAll<HTMLHeadingElement>("h2")).filter(
+      (h) => !h.closest(SKIP) && h.textContent?.trim(),
+    );
+
+    if (headings.length < 2) {
+      toc.hidden = true;
+      return;
+    }
+    toc.hidden = false;
+
+    const links = new Map<string, HTMLAnchorElement>();
+    for (const h of headings) {
+      if (!h.id) h.id = slugify(h.textContent || "");
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = `#${h.id}`;
+      a.textContent = h.textContent || "";
+      a.className = "page-toc-link";
+      li.appendChild(a);
+      list.appendChild(li);
+      links.set(h.id, a);
+    }
+
+    const visible = new Set<string>();
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        }
+        let activeId = "";
+        for (const h of headings) {
+          if (visible.has(h.id)) {
+            activeId = h.id;
+            break;
+          }
+        }
+        if (!activeId) {
+          // Nothing intersecting: keep the last heading scrolled past.
+          for (const h of headings) {
+            if (h.getBoundingClientRect().top < 120) activeId = h.id;
+          }
+        }
+        for (const [id, a] of links) a.classList.toggle("is-active", id === activeId);
+      },
+      { rootMargin: "-80px 0px -70% 0px", threshold: 0 },
+    );
+    for (const h of headings) observer.observe(h);
+  }
+
+  document.addEventListener("astro:page-load", buildToc);
+</script>

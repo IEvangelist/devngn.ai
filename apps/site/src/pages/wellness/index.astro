@@ -1,0 +1,26 @@
+---
+/*
+ * Wellness service guide. Renders the markdown in src/docs/wellness.md through
+ * the shared MarketingLayout shell so the docs wear the exact same chrome
+ * (header, sidebar, TOC, footer, hero) as every other subpage.
+ */
+import MarketingLayout from "../../layouts/MarketingLayout.astro";
+import { Content, frontmatter } from "../../docs/wellness.md";
+
+export const prerender = true;
+---
+
+<MarketingLayout
+  title={frontmatter.title}
+  description={frontmatter.description}
+  active="wellness"
+>
+  <section class="page-hero">
+    <div class="eyebrow">Wellness</div>
+    <h1>Wellness <span class="hl">service</span></h1>
+    <p class="lede">{frontmatter.description}</p>
+  </section>
+  <div class="sl-markdown-content">
+    <Content />
+  </div>
+</MarketingLayout>

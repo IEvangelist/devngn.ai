@@ -1,96 +1,126 @@
 ---
+/*
+ * Uniform sticky top navigation. Rendered identically across the custom shell;
+ * the Starlight docs header is themed in retro.css to match. Persisted across
+ * view transitions (see MarketingLayout), so the active link + mobile sidebar
+ * state are re-synced on `astro:page-load` by the inline script below.
+ * All styling lives in retro.css (under "Unified shell") so the header, sidebar
+ * and TOC stay coordinated.
+ */
 import ThemeToggle from "./ThemeToggle.astro";
 import Icon from "./Icon.astro";
 import { navLinks } from "./nav-links";
 
 interface Props {
   active?: string;
+  /** Retained for API compatibility; the mobile menu button now always renders
+   * so every page (including the full-width landing) has mobile navigation. */
+  sidebar?: boolean;
 }
 
 const { active } = Astro.props;
 ---
 
 <header class="site-topbar">
-  <a class="site-brand" href="/">devngn<span class="dot">.</span>ai</a>
-  <div class="site-topbar-right">
-    <nav class="site-topnav" aria-label="Primary">
-      {
-        navLinks.map((l) => (
-          <a
-            href={l.href}
-            class:list={["site-navlink", { "is-active": active === l.id }]}
-            aria-current={active === l.id ? "page" : undefined}
-            {...(l.external ? { rel: "noopener", target: "_blank" } : {})}
-          >
-            <Icon name={l.icon} size={14} stroke={2.6} />
-            <span>{l.label}</span>
-          </a>
-        ))
-      }
-    </nav>
-    <ThemeToggle />
+  <div class="site-topbar-inner">
+    <div class="site-topbar-lead">
+      <button
+        class="site-menu-btn"
+        type="button"
+        data-sidebar-toggle
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+      >
+        <span class="site-menu-bars" aria-hidden="true"></span>
+      </button>
+      <a class="site-brand" href="/" aria-label="devngn.ai home">
+        <svg class="site-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect x="1.5" y="1.5" width="29" height="29" fill="#ff5a1f" stroke="#16130d" stroke-width="3" />
+          <path d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z" fill="#16130d" stroke="#16130d" stroke-width="1.5" stroke-linejoin="miter" />
+        </svg>
+        <span class="site-brand-word">dev<span class="b-ngn">ngn</span><span class="dot">.</span><span class="b-ai">ai</span></span>
+      </a>
+    </div>
+    <div class="site-topbar-right">
+      <nav class="site-topnav" aria-label="Primary">
+        {
+          navLinks.map((l) => (
+            <a
+              href={l.href}
+              class:list={["site-navlink", { "is-active": active === l.id }]}
+              data-nav-id={l.id}
+              aria-current={active === l.id ? "page" : undefined}
+              {...(l.external ? { rel: "noopener", target: "_blank" } : {})}
+            >
+              <Icon name={l.icon} size={14} stroke={2.6} />
+              <span>{l.label}</span>
+            </a>
+          ))
+        }
+      </nav>
+      <ThemeToggle />
+    </div>
   </div>
 </header>
 
-<style>
-  .site-topbar {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .site-brand {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 1.4rem;
-    letter-spacing: -0.03em;
-    text-decoration: none;
-    color: var(--ink);
-  }
-  .site-brand .dot {
-    color: var(--accent);
-  }
-  .site-topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-  .site-topnav {
-    display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-  }
-  .site-navlink {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    text-decoration: none;
-    padding: 0.4rem 0.7rem;
-    border: 2px solid transparent;
-    font-weight: 700;
-    color: var(--ink);
-    line-height: 1;
-  }
-  .site-navlink :global(svg) {
-    display: block;
-  }
-  .site-navlink:hover {
-    border-color: var(--ink);
-    background: var(--accent-3);
-    color: var(--accent-ink);
-  }
-  .site-navlink.is-active {
-    border-color: var(--ink);
-    background: var(--accent);
-    color: var(--accent-ink);
-  }
-</style>
+<script is:inline>
+  (() => {
+    if (window.__siteHeaderBound) return;
+    window.__siteHeaderBound = true;
+
+    // Match the active nav link to the current path (header is persisted across
+    // view transitions, so the server-rendered active state can be stale).
+    const NAV_BY_PATH = {
+      "/features": "features",
+      "/wellness": "wellness",
+      "/pricing": "pricing",
+      "/download": "download",
+      "/getting-started": "docs",
+      "/registry": "docs",
+    };
+    const closeSidebar = () => {
+      document.body.classList.remove("sidebar-open");
+      document
+        .querySelector("[data-sidebar-toggle]")
+        ?.setAttribute("aria-expanded", "false");
+    };
+    const syncActive = () => {
+      const path = location.pathname.replace(/(.)\/$/, "$1");
+      let id = NAV_BY_PATH[path];
+      if (!id) {
+        for (const p in NAV_BY_PATH) {
+          if (path.startsWith(p)) id = NAV_BY_PATH[p];
+        }
+      }
+      document.querySelectorAll(".site-navlink[data-nav-id]").forEach((a) => {
+        const on = a.getAttribute("data-nav-id") === id;
+        a.classList.toggle("is-active", on);
+        if (on) a.setAttribute("aria-current", "page");
+        else a.removeAttribute("aria-current");
+      });
+      closeSidebar();
+    };
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-sidebar-toggle]");
+      if (btn) {
+        const open = document.body.classList.toggle("sidebar-open");
+        btn.setAttribute("aria-expanded", String(open));
+        return;
+      }
+      // Tapping outside the open sidebar closes it.
+      if (
+        document.body.classList.contains("sidebar-open") &&
+        !e.target.closest(".site-sidebar")
+      ) {
+        closeSidebar();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSidebar();
+    });
+
+    document.addEventListener("astro:page-load", syncActive);
+  })();
+</script>

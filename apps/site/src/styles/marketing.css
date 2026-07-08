@@ -47,22 +47,15 @@
   text-wrap: balance;
 }
 .page-hero .hl {
-  position: relative;
-  display: inline-block;
-  line-height: 1;
   color: var(--accent-ink);
-  padding: 0 0.22em;
-  isolation: isolate;
-}
-.page-hero .hl::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0.04em;
-  bottom: -0.08em;
-  background: var(--accent);
-  z-index: -1;
+  padding: 0 0.18em;
+  white-space: nowrap;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 100% 0.92em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 .page-hero .lede {
   font-size: 1.2rem;
@@ -99,6 +92,7 @@ h2.section-title {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
+  box-sizing: border-box;
   font-family: var(--font-mono);
   font-weight: 700;
   text-transform: uppercase;

@@ -1,4 +1,4 @@
-# devngn.ai — allow everything, point crawlers at the sitemap.
+# devngn.ai: allow everything, point crawlers at the sitemap.
 User-agent: *
 Allow: /
 

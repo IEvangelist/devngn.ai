@@ -13,7 +13,7 @@ const capabilities = [
   {
     icon: "target",
     title: "Self-updating grounding",
-    body: "Builds a live host profile — OS, CPU, GPU, memory, PATH tools, installed AI tools, and your stated preferences — so agents are grounded in reality.",
+    body: "Builds a live host profile (OS, CPU, GPU, memory, PATH tools, installed AI tools, and your stated preferences) so agents are grounded in reality.",
   },
   {
     icon: "bolt",
@@ -51,7 +51,7 @@ const wellness = [
   {
     icon: "people",
     title: "Social by design",
-    body: "Share goals and streaks with your team, follow teammates, cheer each other on, and stay honest — wellness is better together.",
+    body: "Share goals and streaks with your team, follow teammates, cheer each other on, and stay honest. Wellness is better together.",
   },
   {
     icon: "heart",
@@ -64,7 +64,7 @@ const surfaces = [
   {
     icon: "code",
     title: "devngn CLI",
-    body: "Scans, diagnostics, provider readiness, token budgeting, grounding profiles, pattern recognition, sync, and update checks — right in your terminal.",
+    body: "Scans, diagnostics, provider readiness, token budgeting, grounding profiles, pattern recognition, sync, and update checks, right in your terminal.",
     cta: { label: "Read the docs", href: "/getting-started/" },
   },
   {
@@ -76,7 +76,7 @@ const surfaces = [
   {
     icon: "download",
     title: "Desktop app",
-    body: "A dedicated desktop experience for your dev engine and wellness — streaks, goals, and social, always a click away from the menu bar.",
+    body: "A dedicated desktop experience for your dev engine and wellness, with streaks, goals, and social always a click away from the menu bar.",
     cta: { label: "Download", href: "/download/" },
   },
   {
@@ -90,40 +90,71 @@ const surfaces = [
 
 <MarketingLayout
   title="Features"
-  description="Everything devngn.ai does: AI-bit discovery, self-updating grounding, provider readiness, pattern intelligence, and human-first developer wellness — across CLI, VS Code, and desktop."
+  description="Everything devngn.ai does: AI-bit discovery, self-updating grounding, provider readiness, pattern intelligence, and human-first developer wellness, across CLI, VS Code, and desktop."
   active="features"
+  sidebar={false}
+  toc={false}
 >
   <section class="page-hero">
     <div class="eyebrow">Features</div>
     <h1>One engine for your <span class="hl">AI-bits</span> and your wellbeing.</h1>
     <p class="lede">
       devngn.ai understands your machine, your tools, and the AI configuration that piles up across
-      workspaces — then puts the human at the keyboard first. Here's the whole picture.
+      workspaces, then puts the human at the keyboard first. Here's the whole picture.
     </p>
     <div class="actions">
       <a class="btn primary" href="/download/"><Icon name="download" size={18} stroke={2.6} />Get the app</a>
-      <a class="btn alt" href="/pricing/">See pricing</a>
       <a class="btn" href="/getting-started/">Read the docs</a>
     </div>
   </section>
 
-  <section class="section" aria-label="The dev engine">
-    <div class="section-kicker">The dev engine</div>
-    <h2 class="section-title">Know your AI tooling, end to end.</h2>
-    <p class="section-sub">
-      OS-agnostic and vendor-aware from the start. devngn maps what you have, keeps it grounded, and
-      flags what's drifting — so your agents work from the truth.
-    </p>
-    <div class="grid">
+  <!-- Engine: editorial sticky rail + accent-bar rows (6 capabilities) -->
+  <section class="ft-engine" aria-label="The dev engine">
+    <div class="ft-rail">
+      <p class="ft-tag">The dev engine</p>
+      <h2>Know your AI tooling, end to end.</h2>
+      <p>
+        OS-agnostic and vendor-aware from the start. devngn maps what you have, keeps it grounded,
+        and flags what is drifting, so your agents work from the truth.
+      </p>
+      <a class="ft-rail-link" href="/getting-started/">Read the docs <Icon name="arrow" size={15} stroke={2.8} /></a>
+    </div>
+    <ol class="ft-rows">
       {
-        capabilities.map((c) => (
-          <article class="card">
-            <div class="card-head">
-              <span class="card-icon">
-                <Icon name={c.icon} size={22} stroke={2.4} />
-              </span>
+        capabilities.map((c, i) => (
+          <li class="ft-row">
+            <span class="ft-row-n">{String(i + 1).padStart(2, "0")}</span>
+            <span class="ft-row-icon">
+              <Icon name={c.icon} size={20} stroke={2.4} />
+            </span>
+            <div class="ft-row-copy">
               <h3>{c.title}</h3>
+              <p>{c.body}</p>
             </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <!-- Wellness: tinted bento tiles (4 items, exact cell count) -->
+  <section class="ft-wellness" aria-label="Human-first wellness">
+    <header class="ft-head">
+      <p class="ft-tag alt">Human-first wellness</p>
+      <h2>Move more, tracked and shared.</h2>
+      <p>
+        A quiet, opt-in layer that turns the small gaps in a developer's day into real, compounding
+        movement, never another dashboard to babysit.
+      </p>
+    </header>
+    <div class="ft-bento">
+      {
+        wellness.map((c, i) => (
+          <article class={`ft-tile v${i}`}>
+            <span class="ft-tile-icon">
+              <Icon name={c.icon} size={22} stroke={2.4} />
+            </span>
+            <h3>{c.title}</h3>
             <p>{c.body}</p>
           </article>
         ))
@@ -131,58 +162,28 @@ const surfaces = [
     </div>
   </section>
 
-  <section class="section" aria-label="Human-first wellness">
-    <div class="section-kicker">Human-first wellness</div>
-    <h2 class="section-title">Move more, tracked and shared.</h2>
-    <p class="section-sub">
-      A quiet, opt-in layer that turns the small gaps in a developer's day into real, compounding
-      movement — never another dashboard to babysit.
-    </p>
-    <div class="grid">
-      {
-        wellness.map((c) => (
-          <article class="card">
-            <div class="card-head">
-              <span class="card-icon">
-                <Icon name={c.icon} size={22} stroke={2.4} />
-              </span>
-              <h3>{c.title}</h3>
-            </div>
-            <p>{c.body}</p>
-          </article>
-        ))
-      }
-    </div>
-  </section>
-
-  <section class="section" aria-label="Where it runs">
-    <div class="section-kicker">Where it runs</div>
-    <h2 class="section-title">Meet you where you already work.</h2>
-    <p class="section-sub">
-      The same engine, four surfaces. Start in the terminal, live in your editor, keep the app in
-      your menu bar, and watch it all in Aspire.
-    </p>
-    <div class="grid">
+  <!-- Surfaces: dark band grid with CTA links (4 items) -->
+  <section class="ft-surfaces" aria-label="Where it runs">
+    <header class="ft-surfaces-head">
+      <p class="ft-tag ghost">Where it runs</p>
+      <h2>Meet you where you already work.</h2>
+      <p>
+        The same engine, four surfaces. Start in the terminal, live in your editor, keep the app in
+        your menu bar, and watch it all in Aspire.
+      </p>
+    </header>
+    <div class="ft-surface-grid">
       {
         surfaces.map((s) => (
-          <article class="card">
-            <div class="card-head">
-              <span class="card-icon">
-                <Icon name={s.icon} size={22} stroke={2.4} />
-              </span>
-              <h3>{s.title}</h3>
-            </div>
+          <article class="ft-surface">
+            <span class="ft-surface-icon">
+              <Icon name={s.icon} size={20} stroke={2.4} />
+            </span>
+            <h3>{s.title}</h3>
             <p>{s.body}</p>
-            <p style="margin-top:0.9rem">
-              <a
-                class="btn"
-                style="padding:0.5rem 0.9rem;font-size:0.82rem"
-                href={s.cta.href}
-              >
-                {s.cta.label}
-                <Icon name="arrow" size={15} stroke={2.6} />
-              </a>
-            </p>
+            <a class="ft-surface-link" href={s.cta.href}>
+              {s.cta.label} <Icon name="arrow" size={15} stroke={2.6} />
+            </a>
           </article>
         ))
       }
@@ -190,10 +191,370 @@ const surfaces = [
   </section>
 
   <section class="cta-band">
-    <h2>Put the <span class="pop">human</span> first — and know your engine cold.</h2>
+    <h2>Put the <span class="pop">human</span> first. Know your engine cold.</h2>
     <div class="actions" style="margin-top:0">
       <a class="btn primary" href="/download/"><Icon name="download" size={18} stroke={2.6} />Download</a>
       <a class="btn alt" href="/pricing/">Pricing</a>
     </div>
   </section>
 </MarketingLayout>
+
+<style>
+  /* Brand-signature mono tag, reused from the landing's lp-col-tag */
+  .ft-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--accent-ink);
+    background: var(--accent);
+    border: 2px solid var(--ink);
+    padding: 0.25rem 0.55rem;
+    margin: 0 0 0.9rem;
+  }
+  .ft-tag.alt {
+    background: var(--accent-2);
+  }
+  .ft-tag.ghost {
+    background: transparent;
+    color: var(--paper);
+    border-color: var(--paper);
+  }
+
+  /* ---- Engine: sticky editorial rail + accent-bar rows ------------------ */
+  .ft-engine {
+    margin-top: 4rem;
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+  .ft-rail {
+    position: sticky;
+    top: 6rem;
+  }
+  .ft-rail h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    margin: 0 0 0.6rem;
+  }
+  .ft-rail p:not(.ft-tag) {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0 0 1.25rem;
+    max-width: 30rem;
+  }
+  .ft-rail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.82rem;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 2px;
+  }
+  .ft-rail-link svg {
+    display: block;
+  }
+
+  .ft-rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: var(--border);
+  }
+  .ft-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 1rem;
+    align-items: start;
+    padding: 1.35rem 0.5rem 1.35rem 1rem;
+    border-bottom: var(--border);
+    border-left: 6px solid var(--accent);
+    background: var(--surface-bg);
+    transition: transform 0.08s ease;
+  }
+  .ft-row:nth-child(3n + 2) {
+    border-left-color: var(--accent-2);
+  }
+  .ft-row:nth-child(3n + 3) {
+    border-left-color: var(--accent-3);
+  }
+  .ft-row:hover {
+    transform: translateX(4px);
+  }
+  .ft-row-n {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding-top: 0.55rem;
+  }
+  .ft-row-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    flex: none;
+    border: 2px solid var(--ink);
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-sm);
+  }
+  .ft-row:nth-child(3n + 2) .ft-row-icon {
+    background: var(--accent-2);
+  }
+  .ft-row:nth-child(3n + 3) .ft-row-icon {
+    background: var(--accent-3);
+  }
+  .ft-row-icon svg {
+    display: block;
+  }
+  .ft-row-copy h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.25rem;
+  }
+  .ft-row-copy p {
+    margin: 0;
+    line-height: 1.55;
+    color: var(--text);
+    font-size: 0.96rem;
+  }
+
+  /* ---- Wellness: tinted bento tiles ------------------------------------- */
+  .ft-wellness {
+    margin-top: 4.5rem;
+  }
+  .ft-head {
+    max-width: 44rem;
+  }
+  .ft-head h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    margin: 0 0 0.5rem;
+  }
+  .ft-head p:not(.ft-tag) {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+  .ft-bento {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+  .ft-tile {
+    border: var(--border);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow);
+    padding: 1.6rem;
+    border-top-width: 8px;
+    transition:
+      transform 0.08s ease,
+      box-shadow 0.08s ease;
+  }
+  .ft-tile:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-lg);
+  }
+  .ft-tile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 2px solid var(--ink);
+    box-shadow: var(--shadow-sm);
+    color: var(--accent-ink);
+    background: var(--accent);
+  }
+  .ft-tile-icon svg {
+    display: block;
+  }
+  .ft-tile h3 {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    letter-spacing: -0.015em;
+    margin: 1rem 0 0.5rem;
+  }
+  .ft-tile p {
+    margin: 0;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  .ft-tile.v0 {
+    border-top-color: var(--accent);
+  }
+  .ft-tile.v1 {
+    border-top-color: var(--accent-2);
+  }
+  .ft-tile.v1 .ft-tile-icon {
+    background: var(--accent-2);
+  }
+  .ft-tile.v2 {
+    border-top-color: var(--accent-3);
+  }
+  .ft-tile.v2 .ft-tile-icon {
+    background: var(--accent-3);
+  }
+  /* Fourth tile is a dark feature tile for bento contrast */
+  .ft-tile.v3 {
+    border-top-color: var(--accent-5);
+    background: #16130d;
+  }
+  .ft-tile.v3 .ft-tile-icon {
+    background: var(--accent-5);
+    border-color: var(--paper);
+  }
+  .ft-tile.v3 h3 {
+    color: var(--paper);
+  }
+  .ft-tile.v3 p {
+    color: #d9cfb4;
+  }
+
+  /* ---- Surfaces: full-width dark band grid ------------------------------ */
+  .ft-surfaces {
+    margin-top: 4.5rem;
+    border: var(--border);
+    background: #16130d;
+    color: var(--paper);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem 2rem;
+  }
+  .ft-surfaces-head {
+    max-width: 44rem;
+  }
+  .ft-surfaces-head h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3.6vw, 2.4rem);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 0 0 0.5rem;
+    color: var(--paper);
+  }
+  .ft-surfaces-head p:not(.ft-tag) {
+    font-size: 1.02rem;
+    color: #d9cfb4;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .ft-surface-grid {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+  .ft-surface {
+    border: 2px solid var(--paper);
+    background: #221c12;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .ft-surface-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    flex: none;
+    border: 2px solid var(--paper);
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .ft-surface:nth-child(2) .ft-surface-icon {
+    background: var(--accent-2);
+  }
+  .ft-surface:nth-child(3) .ft-surface-icon {
+    background: var(--accent-3);
+  }
+  .ft-surface:nth-child(4) .ft-surface-icon {
+    background: var(--accent-5);
+  }
+  .ft-surface-icon svg {
+    display: block;
+  }
+  .ft-surface h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    margin: 0.9rem 0 0.5rem;
+    color: var(--paper);
+  }
+  .ft-surface p {
+    margin: 0 0 1.1rem;
+    line-height: 1.55;
+    color: #d9cfb4;
+    font-size: 0.95rem;
+  }
+  .ft-surface-link {
+    margin-top: auto;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.8rem;
+    text-decoration: none;
+    color: var(--paper);
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 2px;
+  }
+  .ft-surface-link svg {
+    display: block;
+  }
+
+  /* ---- Responsive collapse ---------------------------------------------- */
+  @media (max-width: 860px) {
+    .ft-engine {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+    .ft-rail {
+      position: static;
+    }
+    .ft-bento,
+    .ft-surface-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .ft-row {
+      grid-template-columns: auto 1fr;
+    }
+    .ft-row-n {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ft-row,
+    .ft-tile {
+      transition: none;
+    }
+    .ft-row:hover,
+    .ft-tile:hover {
+      transform: none;
+    }
+  }
+</style>

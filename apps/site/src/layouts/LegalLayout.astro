@@ -1,11 +1,10 @@
 ---
-// Shared shell for the standalone legal pages (Terms, Privacy) so they match
-// the marketing pages: retro paper background, shared header/footer, and a
-// readable prose column. Prerendered — these pages have no dynamic data.
-import ThemeInit from "../components/ThemeInit.astro";
-import SiteHeader from "../components/SiteHeader.astro";
-import SiteFooter from "../components/SiteFooter.astro";
-import "../styles/retro.css";
+// Legal pages (Terms, Privacy) render inside the unified MarketingLayout shell
+// so they wear the exact same chrome as every other subpage: sticky top nav,
+// left sidebar (with the Legal group highlighting the current page), right
+// "On this page" TOC built from the section headings, footer, and view
+// transitions. Only the legal-specific header + prose styling lives here.
+import MarketingLayout from "./MarketingLayout.astro";
 
 interface Props {
   title: string;
@@ -17,124 +16,90 @@ interface Props {
 const { title, description, kicker, updated } = Astro.props;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <ThemeInit />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} — devngn.ai</title>
-    <meta name="description" content={description} />
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background:
-          repeating-linear-gradient(
-            45deg,
-            transparent 0 28px,
-            rgba(127, 110, 70, 0.05) 28px 29px
-          ),
-          var(--bg);
-        color: var(--text);
-        font-family: var(--font-body);
-        -webkit-font-smoothing: antialiased;
-      }
-      main {
-        margin: 0 auto;
-        max-width: 50rem;
-        padding: 0 1.5rem 4rem;
-      }
-      .legal-head {
-        border: var(--border);
-        background: var(--surface-bg);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin-bottom: 2.5rem;
-      }
-      .legal-kicker {
-        display: inline-block;
-        font-family: var(--font-mono);
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        font-size: 0.74rem;
-        color: var(--accent-ink);
-        background: var(--accent);
-        padding: 0.3rem 0.6rem;
-      }
-      .legal-head h1 {
-        font-family: var(--font-display);
-        font-size: clamp(2.2rem, 6vw, 3.4rem);
-        line-height: 1.02;
-        letter-spacing: -0.03em;
-        margin: 1rem 0 0.5rem;
-      }
-      .legal-updated {
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        color: var(--muted);
-        margin: 0;
-      }
-      .prose {
-        font-size: 1.02rem;
-        line-height: 1.7;
-      }
-      .prose h2 {
-        font-family: var(--font-display);
-        font-size: clamp(1.4rem, 3.5vw, 1.9rem);
-        letter-spacing: -0.02em;
-        margin: 2.5rem 0 0.75rem;
-        padding-bottom: 0.4rem;
-        border-bottom: 3px solid var(--ink);
-      }
-      .prose p {
-        margin: 0 0 1rem;
-      }
-      .prose ul {
-        margin: 0 0 1.25rem;
-        padding-left: 1.25rem;
-      }
-      .prose li {
-        margin: 0 0 0.5rem;
-      }
-      .prose li::marker {
-        color: var(--accent);
-      }
-      .prose a {
-        color: var(--accent-ink);
-        background: var(--accent-3);
-        text-decoration: none;
-        padding: 0 0.15em;
-        border-bottom: 2px solid var(--accent);
-      }
-      .prose strong {
-        font-weight: 700;
-      }
-      .prose code {
-        font-family: var(--font-mono);
-        font-size: 0.9em;
-        background: var(--surface-bg);
-        border: 2px solid var(--ink);
-        padding: 0 0.3em;
-      }
-    </style>
-  </head>
-  <body>
-    <SiteHeader />
-    <main>
-      <header class="legal-head">
-        <span class="legal-kicker">{kicker}</span>
-        <h1>{title}</h1>
-        <p class="legal-updated">Last updated {updated}</p>
-      </header>
-      <div class="prose">
-        <slot />
-      </div>
-    </main>
-    <SiteFooter />
-  </body>
-</html>
+<MarketingLayout title={title} description={description} prose>
+  <header class="legal-head">
+    <span class="legal-kicker">{kicker}</span>
+    <h1>{title}</h1>
+    <p class="legal-updated">Last updated {updated}</p>
+  </header>
+  <div class="prose">
+    <slot />
+  </div>
+</MarketingLayout>
+
+<style>
+  .legal-head {
+    border: var(--border);
+    background: var(--surface-bg);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  .legal-kicker {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.74rem;
+    color: var(--accent-ink);
+    background: var(--accent);
+    padding: 0.3rem 0.6rem;
+  }
+  .legal-head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin: 1rem 0 0.5rem;
+  }
+  .legal-updated {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0;
+  }
+  .prose {
+    font-size: 1.02rem;
+    line-height: 1.7;
+  }
+  .prose :global(h2) {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+    letter-spacing: -0.02em;
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 3px solid var(--ink);
+    scroll-margin-top: 5rem;
+  }
+  .prose :global(p) {
+    margin: 0 0 1rem;
+  }
+  .prose :global(ul) {
+    margin: 0 0 1.25rem;
+    padding-left: 1.25rem;
+  }
+  .prose :global(li) {
+    margin: 0 0 0.5rem;
+  }
+  .prose :global(li)::marker {
+    color: var(--accent);
+  }
+  .prose :global(a) {
+    color: var(--accent-ink);
+    background: var(--accent-3);
+    text-decoration: none;
+    padding: 0 0.15em;
+    border-bottom: 2px solid var(--accent);
+  }
+  .prose :global(strong) {
+    font-weight: 700;
+  }
+  .prose :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--surface-bg);
+    border: 2px solid var(--ink);
+    padding: 0 0.3em;
+  }
+</style>

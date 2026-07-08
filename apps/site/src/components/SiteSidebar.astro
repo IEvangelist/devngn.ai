@@ -1,0 +1,86 @@
+---
+/*
+ * Shared left sidebar for the custom (non-Starlight) shell. Renders the same
+ * grouped navigation as the Starlight docs sidebar (both come from
+ * site-nav.ts), so the whole site shows one uniform sidebar. The active link is
+ * derived from the current path and re-evaluated after each view transition by
+ * a tiny inline script (aria-current is authoritative for styling).
+ */
+import Icon from "./Icon.astro";
+import { siteSidebar, normalizePath } from "./site-nav";
+import { navLinks } from "./nav-links";
+
+const current = normalizePath(Astro.url.pathname);
+const isActive = (href: string, external?: boolean) =>
+  !external && normalizePath(href) === current;
+---
+
+<nav class="site-sidebar" aria-label="Site">
+  <div class="site-sidebar-inner" data-site-sidebar>
+    {/* Primary nav only surfaces here on mobile, where the top bar collapses. */}
+    <div class="sidebar-group sidebar-primary">
+      <p class="sidebar-group-label">Menu</p>
+      <ul>
+        {navLinks.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="sidebar-link"
+              data-path={item.external ? undefined : normalizePath(item.href)}
+              aria-current={isActive(item.href, item.external) ? "page" : undefined}
+              {...(item.external ? { rel: "noopener", target: "_blank" } : {})}
+            >
+              <span class="sidebar-link-main">
+                <span>{item.label}</span>
+              </span>
+              {item.external && <Icon name="external" size={13} stroke={2.6} />}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+    {
+      siteSidebar.map((group) => (
+        <div class="sidebar-group">
+          <p class="sidebar-group-label">{group.label}</p>
+          <ul>
+            {group.items.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class="sidebar-link"
+                  data-path={item.external ? undefined : normalizePath(item.href)}
+                  aria-current={isActive(item.href, item.external) ? "page" : undefined}
+                  {...(item.external ? { rel: "noopener", target: "_blank" } : {})}
+                >
+                  <span class="sidebar-link-main">
+                    {item.icon && (
+                      <Icon name={item.icon} size={15} stroke={2.2} class="sidebar-link-icon" />
+                    )}
+                    <span>{item.label}</span>
+                  </span>
+                  {item.external && <Icon name="external" size={13} stroke={2.6} />}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</nav>
+
+<script is:inline>
+  // Keep the active sidebar link correct across view transitions (the server
+  // render reflects the *previous* page during a soft nav, so re-sync here).
+  (() => {
+    const sync = () => {
+      const path = location.pathname.replace(/(.)\/$/, "$1");
+      document.querySelectorAll("[data-site-sidebar] a[data-path]").forEach((a) => {
+        if (a.getAttribute("data-path") === path) a.setAttribute("aria-current", "page");
+        else a.removeAttribute("aria-current");
+      });
+    };
+    document.addEventListener("astro:page-load", sync);
+  })();
+</script>

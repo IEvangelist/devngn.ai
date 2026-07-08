@@ -20,7 +20,7 @@ const tiers = [
       "Public vendor registry (/registry/v1)",
       "Local wellness: gap detection & movement breaks",
       "Personal streaks, goals & badges",
-      "MIT licensed — self-host anything",
+      "MIT licensed, self-host anything",
     ],
   },
   {
@@ -94,13 +94,15 @@ const faqs = [
   title="Pricing"
   description="Simple, human-first pricing for devngn.ai. Start free with the open-source engine; upgrade for hosted sync, team wellness, and the vendor intelligence API."
   active="pricing"
+  sidebar={false}
+  toc={false}
 >
   <section class="page-hero">
     <div class="eyebrow">Pricing</div>
     <h1>Start free. <span class="hl">Grow</span> when it helps.</h1>
     <p class="lede">
       The engine is open source and free forever. Paid plans add hosted sync, team wellness, and
-      the subscriber vendor intelligence API — priced to stay out of your way.
+      the subscriber vendor intelligence API, priced to stay out of your way.
     </p>
   </section>
 
@@ -111,18 +113,11 @@ const faqs = [
           <article class:list={["tier", { featured: t.featured }]}>
             {t.featured && <span class="tier-flag">Most popular</span>}
             <h3 class="tier-name">{t.name}</h3>
-            <div class="tier-price">
+            <div class:list={["tier-price", { text: !t.price.startsWith("$") }]}>
               <strong>{t.price}</strong>
               <span>{t.cadence}</span>
             </div>
             <p class="tier-tagline">{t.tagline}</p>
-            <a
-              class:list={["btn", "tier-cta", { primary: t.featured, alt: !t.featured }]}
-              href={t.cta.href}
-              {...(t.ctaExternal ? { rel: "noopener", target: "_blank" } : {})}
-            >
-              {t.cta.label}
-            </a>
             <ul class="tier-features">
               {t.features.map((f) => (
                 <li>
@@ -131,6 +126,13 @@ const faqs = [
                 </li>
               ))}
             </ul>
+            <a
+              class:list={["btn", "tier-cta", { primary: t.featured, alt: !t.featured }]}
+              href={t.cta.href}
+              {...(t.ctaExternal ? { rel: "noopener", target: "_blank" } : {})}
+            >
+              {t.cta.label}
+            </a>
           </article>
         ))
       }
@@ -142,15 +144,17 @@ const faqs = [
   </section>
 
   <section class="section" aria-label="Questions">
-    <div class="section-kicker">Questions</div>
     <h2 class="section-title">The short answers.</h2>
     <div class="faqs">
       {
-        faqs.map((f) => (
-          <article class="faq">
-            <h3>{f.q}</h3>
+        faqs.map((f, i) => (
+          <details class="faq" open={i === 0}>
+            <summary>
+              <span class="faq-q">{f.q}</span>
+              <span class="faq-mark" aria-hidden="true" />
+            </summary>
             <p>{f.a}</p>
-          </article>
+          </details>
         ))
       }
     </div>
@@ -170,17 +174,27 @@ const faqs = [
     display: grid;
     gap: 1.25rem;
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    align-items: stretch;
   }
   .tier {
     position: relative;
     display: flex;
     flex-direction: column;
     border: var(--border);
+    border-top-width: 8px;
+    border-top-color: var(--accent-2);
     background: var(--surface-bg);
     box-shadow: var(--shadow-sm);
     padding: 1.5rem 1.4rem;
   }
+  .tier:nth-child(3) {
+    border-top-color: var(--accent-5);
+  }
+  .tier:nth-child(4) {
+    border-top-color: var(--accent);
+  }
   .tier.featured {
+    border-top-color: var(--accent);
     background: var(--accent-3);
     color: var(--accent-ink);
     box-shadow: var(--shadow);
@@ -194,9 +208,9 @@ const faqs = [
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    background: var(--ink);
+    background: #16130d;
     color: var(--paper);
-    border: 2px solid var(--ink);
+    border: 2px solid #16130d;
     padding: 0.25rem 0.5rem;
   }
   .tier-name {
@@ -215,6 +229,9 @@ const faqs = [
     font-family: var(--font-display);
     font-size: 2.4rem;
     line-height: 1;
+  }
+  .tier-price.text strong {
+    font-size: 1.55rem;
   }
   .tier-price span {
     font-family: var(--font-mono);
@@ -235,17 +252,14 @@ const faqs = [
   .tier.featured .tier-tagline {
     color: var(--accent-ink);
   }
-  .tier-cta {
-    width: 100%;
-    justify-content: center;
-    margin-bottom: 1.25rem;
-  }
   .tier-features {
     list-style: none;
-    margin: 0;
+    margin: 0 0 1.5rem;
     padding: 0;
     display: grid;
     gap: 0.6rem;
+    align-content: start;
+    flex: 1 1 auto;
   }
   .tier-features li {
     display: flex;
@@ -262,6 +276,11 @@ const faqs = [
   .tier.featured .tier-features svg {
     color: var(--accent-ink);
   }
+  .tier-cta {
+    width: 100%;
+    justify-content: center;
+    margin-top: auto;
+  }
   .price-disclaimer {
     margin-top: 1.75rem;
     font-family: var(--font-mono);
@@ -270,28 +289,80 @@ const faqs = [
     line-height: 1.6;
   }
 
+  /* FAQ accordion ---------------------------------------------------------- */
   .faqs {
-    display: grid;
-    gap: 1.25rem;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
     margin-top: 2rem;
-  }
-  .faq {
     border: var(--border);
     background: var(--surface-bg);
-    box-shadow: var(--shadow-sm);
-    padding: 1.25rem 1.4rem;
+    box-shadow: var(--shadow);
   }
-  .faq h3 {
+  .faq {
+    border-bottom: 2px solid var(--ink);
+  }
+  .faq:last-child {
+    border-bottom: none;
+  }
+  .faq summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+    list-style: none;
+    padding: 1.15rem 1.4rem;
     font-family: var(--font-display);
-    font-size: 1.05rem;
-    margin: 0 0 0.5rem;
+    font-size: 1.08rem;
     letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq summary:hover {
+    background: var(--surface-hover, rgba(255, 90, 31, 0.08));
+  }
+  .faq-mark {
+    position: relative;
+    flex: 0 0 auto;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .faq-mark::before,
+  .faq-mark::after {
+    content: "";
+    position: absolute;
+    background: var(--accent);
+    transition: transform 0.15s ease;
+  }
+  .faq-mark::before {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    transform: translateY(-50%);
+  }
+  .faq-mark::after {
+    left: 50%;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    transform: translateX(-50%);
+  }
+  .faq[open] .faq-mark::after {
+    transform: translateX(-50%) scaleY(0);
   }
   .faq p {
     margin: 0;
-    line-height: 1.55;
+    padding: 0 1.4rem 1.3rem;
+    line-height: 1.6;
     color: var(--muted);
-    font-size: 0.94rem;
+    font-size: 0.96rem;
+    max-width: 60ch;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .faq-mark::before,
+    .faq-mark::after {
+      transition: none;
+    }
   }
 </style>

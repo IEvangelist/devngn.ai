@@ -1,14 +1,18 @@
 ---
 /*
- * Shared shell for the standalone marketing pages (Features, Download, Pricing).
- * Matches the retro/neo-brutalist system: paper background, shared header/footer,
- * and a full SEO <head> (canonical, OpenGraph, Twitter, favicon, theme-color).
+ * Unified site shell for every non-landing page (marketing, legal, registry,
+ * API reference). Provides the uniform chrome David asked for: one sticky top
+ * nav, one left sidebar, one right "On this page" TOC, and one footer, plus
+ * Astro view transitions for smooth navigation. The Starlight docs are themed
+ * to match this exact chrome, and both sidebars come from site-nav.ts.
  *
- * These pages have no per-request data, so callers should `export const
- * prerender = true` to serve them as static HTML.
+ * Static pages should `export const prerender = true`.
  */
+import { ClientRouter } from "astro:transitions";
 import ThemeInit from "../components/ThemeInit.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import SiteSidebar from "../components/SiteSidebar.astro";
+import PageToc from "../components/PageToc.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import "../styles/retro.css";
 import "../styles/marketing.css";
@@ -22,8 +26,12 @@ interface Props {
   ogType?: string;
   /** Absolute or root-relative social share image. */
   image?: string;
-  /** Widen the content column (default 1140px). */
-  wide?: boolean;
+  /** Show the left sidebar (default true). */
+  sidebar?: boolean;
+  /** Show the right "On this page" TOC (default true). */
+  toc?: boolean;
+  /** Constrain the content to a readable prose measure (legal/reference). */
+  prose?: boolean;
 }
 
 const {
@@ -32,11 +40,13 @@ const {
   active,
   ogType = "website",
   image = "/og.png",
-  wide = true,
+  sidebar = true,
+  toc = true,
+  prose = false,
 } = Astro.props;
 
 const siteName = "devngn.ai";
-const fullTitle = title.includes(siteName) ? title : `${title} — ${siteName}`;
+const fullTitle = title.includes(siteName) ? title : `${title} · ${siteName}`;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImage = new URL(image, Astro.site).toString();
 ---
@@ -70,39 +80,17 @@ const ogImage = new URL(image, Astro.site).toString();
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <style define:vars={{ maxw: wide ? "1140px" : "50rem" }}>
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background:
-          repeating-linear-gradient(
-            45deg,
-            transparent 0 28px,
-            rgba(127, 110, 70, 0.05) 28px 29px
-          ),
-          var(--bg);
-        color: var(--text);
-        font-family: var(--font-body);
-        -webkit-font-smoothing: antialiased;
-      }
-      a {
-        color: inherit;
-      }
-      main {
-        margin: 0 auto;
-        max-width: var(--maxw);
-        padding: 0 1.5rem 5rem;
-      }
-    </style>
+    <ClientRouter />
   </head>
-  <body>
-    <SiteHeader active={active} />
-    <main>
-      <slot />
-    </main>
-    <SiteFooter />
+  <body class="has-shell">
+    <SiteHeader active={active} sidebar={sidebar} transition:persist="site-header" />
+    <div class:list={["shell", { "no-sidebar": !sidebar, "no-toc": !toc }]}>
+      <SiteSidebar />
+      <main class:list={["shell-main", { prose }]}>
+        <slot />
+      </main>
+      {toc && <PageToc />}
+    </div>
+    <SiteFooter transition:persist="site-footer" />
   </body>
 </html>
