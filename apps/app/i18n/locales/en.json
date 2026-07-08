@@ -41,6 +41,10 @@
     "githubButton": "Continue with GitHub",
     "deviceInstruction": "Enter this code at {url}:",
     "waiting": "Waiting for you to authorize on GitHub…",
+    "errorTitle": "Sign-in couldn't start",
+    "errorHint": "The wellness API rejected the request. Make sure the API is running and that a GitHub OAuth app with device flow enabled is configured.",
+    "devButton": "Dev sign-in (skip GitHub)",
+    "devHint": "Local development only — mints a token for a test user.",
     "signedInAs": "Signed in as {login}",
     "callback": {
       "title": "Finishing GitHub sign-in",

@@ -86,7 +86,11 @@ export class WellnessClient {
   constructor(config: WellnessClientConfig) {
     this.baseUrl = config.baseUrl;
     this.getToken = config.getToken;
-    this.fetchImpl = config.fetchImpl ?? fetch;
+    // The global `fetch` must be invoked with `this` bound to the realm's global
+    // object; storing a bare reference and calling `this.fetchImpl(...)` would run it
+    // with `this === WellnessClient`, which browsers reject with
+    // "Failed to execute 'fetch' on 'Window': Illegal invocation". Bind the default.
+    this.fetchImpl = config.fetchImpl ?? fetch.bind(globalThis);
   }
 
   // -----------------------------------------------------------------------
@@ -370,6 +374,30 @@ export class WellnessClient {
       throw new Error(`Device flow start failed: HTTP ${response.status}`);
     }
     return (await response.json()) as DeviceFlowStartResponse;
+  }
+
+  /**
+   * `POST /v1/auth/dev/login` — development-only sign-in that bypasses GitHub and
+   * returns a first-party token for a synthetic local user. The endpoint only exists
+   * when the API runs in the Development environment; a 404 here means it's disabled.
+   */
+  async devLogin(
+    identity?: { login?: string; displayName?: string },
+  ): Promise<AccessTokenResponse> {
+    const response = await this.fetchImpl(this.url("/v1/auth/dev/login"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(identity ?? {}),
+    });
+    if (response.status === 404) {
+      throw new Error(
+        "Dev sign-in is unavailable — the API is not running in Development mode.",
+      );
+    }
+    if (!response.ok) {
+      throw new Error(`Dev sign-in failed: HTTP ${response.status}`);
+    }
+    return (await response.json()) as AccessTokenResponse;
   }
 
   /** `POST /v1/auth/github/device/poll` — one poll tick, normalized to a result union. */

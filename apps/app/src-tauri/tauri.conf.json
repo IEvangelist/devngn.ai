@@ -44,7 +44,6 @@
         "schemes": ["devngn"]
       }
     },
-    "single-instance": {},
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBM0Y0OTQ3QkI3MzgxMDgKUldRSWdYTzdSMGsvR2w1dlI1MGtvbTgrRTRpa2t6YnRNcE94Tk5GRGJ6YlprSGlPZS9RYTVXeFAK",
       "endpoints": [

@@ -9,7 +9,10 @@
     <!-- ── Sidebar ─────────────────────────────────────── -->
     <aside class="shell__sidebar" aria-label="Primary navigation">
       <div class="shell__brand">
-        <span class="shell__logo" aria-hidden="true">◆</span>
+        <svg class="shell__logo" viewBox="0 0 32 32" role="img" aria-hidden="true" focusable="false">
+          <rect x="1.5" y="1.5" width="29" height="29" fill="#ff5a1f" stroke="#16130d" stroke-width="3" />
+          <path d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z" fill="#16130d" stroke="#16130d" stroke-width="1.5" stroke-linejoin="miter" />
+        </svg>
         <span v-if="!sidebarCollapsed" class="shell__brandname">{{ $t("app.name") }}</span>
       </div>
 
@@ -239,7 +242,12 @@ watch(isAuthenticated, (val) => {
   white-space: nowrap;
   overflow: hidden;
 }
-.shell__logo { color: var(--accent); flex: 0 0 auto; }
+.shell__logo {
+  width: 1.4em;
+  height: 1.4em;
+  flex: 0 0 auto;
+  display: block;
+}
 .shell__nav {
   display: flex;
   flex-direction: column;

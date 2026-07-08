@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/v1/auth/dev/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Development-only sign-in that bypasses GitHub and mints a local JWT. */
+        post: operations["DevLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/hello": {
         parameters: {
             query?: never;
@@ -720,7 +737,7 @@ export interface components {
             text: string;
         };
         /** @enum {unknown} */
-        DeliveryChannel: "Vscode" | "Cli" | "Web";
+        DeliveryChannel: "Vscode" | "Cli" | "Web" | "App";
         DeviceFlowPollRequest: {
             sessionId: string;
         };
@@ -732,6 +749,10 @@ export interface components {
             expiresInSeconds: number | string;
             /** Format: int32 */
             intervalSeconds: number | string;
+        };
+        DevLoginRequest: {
+            login: null | string;
+            displayName: null | string;
         };
         EquipmentResponse: {
             /** Format: uuid */
@@ -998,6 +1019,30 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    DevLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": null | components["schemas"]["DevLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessTokenResponse"];
+                };
+            };
+        };
+    };
     Hello: {
         parameters: {
             query?: never;
@@ -2433,6 +2478,15 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };

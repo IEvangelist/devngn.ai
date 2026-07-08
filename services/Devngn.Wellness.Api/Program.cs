@@ -101,10 +101,31 @@ builder.Services.AddOpenApi("v1", options =>
     });
 });
 
+// CORS (Development only): the desktop app (Tauri webview at http://localhost:3000)
+// and the installable PWA call this API cross-origin for GitHub sign-in and data.
+// Auth uses bearer tokens (no cookies), so a permissive any-origin policy is safe
+// here and is scoped to Development — production CORS origins must be configured
+// deliberately when the PWA is deployed.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+        options.AddDefaultPolicy(policy =>
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()));
+}
+
 var app = builder.Build();
 
 // /health (all checks) and /alive (liveness only) from Devngn.ServiceDefaults.
 app.MapDefaultEndpoints();
+
+// CORS must run before auth so preflight (OPTIONS) requests are answered and the
+// browser/webview is allowed to send the actual cross-origin auth request.
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -118,6 +139,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     // /scalar/v1
     app.MapScalarApiReference();
+    // POST /v1/auth/dev/login — local sign-in bypass (never mapped outside Development).
+    app.MapDevAuthEndpoints();
 }
 
 // Smoke endpoint until domain endpoints land in subsequent milestones.

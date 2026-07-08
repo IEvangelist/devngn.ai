@@ -19,6 +19,43 @@
     }
   ],
   "paths": {
+    "/v1/auth/dev/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Development-only sign-in that bypasses GitHub and mints a local JWT.",
+        "operationId": "DevLogin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DevLoginRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/hello": {
       "get": {
         "tags": [
@@ -2246,7 +2283,8 @@
         "enum": [
           "Vscode",
           "Cli",
-          "Web"
+          "Web",
+          "App"
         ]
       },
       "DeviceFlowPollRequest": {
@@ -2294,6 +2332,27 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "DevLoginRequest": {
+        "required": [
+          "login",
+          "displayName"
+        ],
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "displayName": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -3317,10 +3376,10 @@
   },
   "tags": [
     {
-      "name": "Meta"
+      "name": "Auth"
     },
     {
-      "name": "Auth"
+      "name": "Meta"
     },
     {
       "name": "Consent"

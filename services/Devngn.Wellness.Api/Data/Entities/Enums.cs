@@ -76,4 +76,5 @@ public enum DeliveryChannel
     Vscode,
     Cli,
     Web,
+    App,
 }

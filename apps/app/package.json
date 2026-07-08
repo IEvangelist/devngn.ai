@@ -5,9 +5,10 @@
   "description": "devngn.ai flagship app — a Tauri v2 desktop app and installable PWA for the wellness interruption engine, gamification, and social features.",
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev",
-    "build": "nuxt build",
-    "generate": "nuxt generate",
+    "build:deps": "pnpm --filter \"@devngn/app^...\" build",
+    "dev": "pnpm build:deps && nuxt dev",
+    "build": "pnpm build:deps && nuxt build",
+    "generate": "pnpm build:deps && nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",

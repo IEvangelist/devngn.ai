@@ -27,3 +27,6 @@ obj/
 .squad/.cache/
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
+
+# playwright-cli scratch (snapshots, screenshots, console/network logs)
+.playwright-cli/

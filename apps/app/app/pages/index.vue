@@ -11,9 +11,34 @@
     <template v-if="!isAuthenticated">
       <BrutPanel>
         <p>{{ $t("auth.subtitle") }}</p>
-        <BrutButton variant="accent" @click="auth.signIn()">
+        <BrutButton
+          variant="accent"
+          :loading="auth.isSigningIn"
+          :disabled="auth.isSigningIn"
+          @click="auth.signIn()"
+        >
           {{ $t("auth.githubButton") }}
         </BrutButton>
+
+        <!-- Sign-in error surface -->
+        <div v-if="auth.signInError" class="auth-error" role="alert">
+          <p class="auth-error__title">{{ $t("auth.errorTitle") }}</p>
+          <p class="auth-error__detail">{{ auth.signInError }}</p>
+          <p class="auth-error__hint">{{ $t("auth.errorHint") }}</p>
+        </div>
+
+        <!-- Dev-only sign-in bypass (compiled out of production builds) -->
+        <div v-if="isDev" class="auth-dev">
+          <BrutButton
+            variant="ghost"
+            size="sm"
+            :disabled="auth.isSigningIn"
+            @click="auth.devSignIn()"
+          >
+            {{ $t("auth.devButton") }}
+          </BrutButton>
+          <span class="auth-dev__hint">{{ $t("auth.devHint") }}</span>
+        </div>
 
         <!-- Device flow modal -->
         <BrutModal
@@ -63,6 +88,9 @@
 <script setup lang="ts">
 const auth = useAuthStore();
 const { isAuthenticated } = storeToRefs(auth);
+// Dev-only sign-in bypass button visibility; `import.meta.dev` is statically
+// replaced at build time, so the branch is tree-shaken out of production.
+const isDev = import.meta.dev;
 const interruptions = useInterruptionsStore();
 const { activePrompts } = storeToRefs(interruptions);
 const gamification = useGamificationStore();
@@ -94,5 +122,40 @@ const gamification = useGamificationStore();
   border: var(--border);
   padding: 0.5rem 1rem;
   margin: 0.75rem 0;
+}
+.auth-error {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: var(--border);
+  border-left-width: 6px;
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--paper-2));
+}
+.auth-error__title {
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+}
+.auth-error__detail {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  margin: 0 0 0.35rem;
+}
+.auth-error__hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+}
+.auth-dev {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--border-color, var(--muted));
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.auth-dev__hint {
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 </style>

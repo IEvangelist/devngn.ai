@@ -177,6 +177,26 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  /**
+   * Development-only: sign in as a synthetic local user WITHOUT GitHub. Backed by the
+   * API's `/v1/auth/dev/login` endpoint, which only exists in the Development
+   * environment. Surfaced behind `import.meta.dev` in the UI so it never ships.
+   */
+  async function devSignIn(): Promise<void> {
+    signInError.value = undefined;
+    isSigningIn.value = true;
+    try {
+      const result = await _client().devLogin();
+      await _persistToken(result.accessToken);
+      // The response embeds the user; set it directly to avoid an extra round-trip.
+      user.value = result.user;
+    } catch (e) {
+      signInError.value = e instanceof Error ? e.message : "Dev sign-in failed.";
+    } finally {
+      isSigningIn.value = false;
+    }
+  }
+
   function _startWebFlow(): void {
     const nonce = createAuthCallbackNonce();
     window.sessionStorage.setItem(AUTH_CALLBACK_NONCE_KEY, nonce);
@@ -204,6 +224,7 @@ export const useAuthStore = defineStore("auth", () => {
     deviceFlow,
     init,
     signIn,
+    devSignIn,
     signOut,
     handleCallback,
     refreshUser,

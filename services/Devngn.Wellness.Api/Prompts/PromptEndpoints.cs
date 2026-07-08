@@ -442,7 +442,7 @@ internal static class PromptEndpoints
         => $"Unknown or invalid time zone '{tz}'. Use an IANA name (e.g. 'America/New_York') or omit for UTC.";
 
     private static string InvalidChannelMessage(string? channel)
-        => $"Unknown channel '{channel}'. Valid values: vscode, cli, web.";
+        => $"Unknown channel '{channel}'. Valid values: vscode, cli, web, app.";
 
     private static async Task WriteValidationAsync(HttpContext http, string field, string message, CancellationToken ct)
     {
