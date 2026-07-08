@@ -43,11 +43,12 @@ const initials = computed(() =>
   justify-content: center;
   width: var(--sz, 2.25rem);
   height: var(--sz, 2.25rem);
-  border: var(--border);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  box-shadow: none;
   overflow: hidden;
   flex: 0 0 auto;
-  background: var(--accent-3);
+  background: var(--accent-tint);
 }
 .brut-avatar__img {
   width: 100%;
@@ -55,9 +56,9 @@ const initials = computed(() =>
   object-fit: cover;
 }
 .brut-avatar__initials {
-  font-family: var(--font-display);
-  font-weight: 900;
+  font-family: var(--font-body);
+  font-weight: 700;
   font-size: calc(var(--sz, 2.25rem) * 0.4);
-  color: var(--ink);
+  color: var(--accent-strong);
 }
 </style>

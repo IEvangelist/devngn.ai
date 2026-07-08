@@ -28,15 +28,19 @@
       </nav>
 
       <div class="shell__sidebar-foot">
-        <button
-          type="button"
-          class="brut-btn brut-btn--ghost brut-btn--sm sidebar-collapse-btn"
-          :aria-label="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')"
-          :title="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')"
-          @click="sidebarCollapsed = !sidebarCollapsed"
+        <BrutTooltip
+          :text="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')"
+          side="right"
         >
-          {{ sidebarCollapsed ? "▶" : "◀" }}
-        </button>
+          <button
+            type="button"
+            class="brut-btn brut-btn--ghost brut-btn--sm sidebar-collapse-btn"
+            :aria-label="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')"
+            @click="sidebarCollapsed = !sidebarCollapsed"
+          >
+            {{ sidebarCollapsed ? "▶" : "◀" }}
+          </button>
+        </BrutTooltip>
         <ThemeToggle v-if="!sidebarCollapsed" />
       </div>
     </aside>
@@ -96,18 +100,21 @@
         <!-- Auth avatar / sign-in -->
         <div class="statusbar__auth">
           <template v-if="isAuthenticated && user">
-            <BrutAvatar
-              :src="user.avatarUrl ?? undefined"
-              :alt="user.login ?? 'You'"
-              size="2rem"
-            />
-            <button
-              type="button"
-              class="brut-btn brut-btn--ghost brut-btn--sm"
-              @click="auth.signOut()"
-            >
-              {{ $t("common.signOut") }}
-            </button>
+            <BrutMenu :items="accountMenuItems" :label="user.login ?? undefined">
+              <template #trigger>
+                <button
+                  type="button"
+                  class="avatar-trigger"
+                  :aria-label="$t('common.account')"
+                >
+                  <BrutAvatar
+                    :src="user.avatarUrl ?? undefined"
+                    :alt="user.login ?? 'You'"
+                    size="2rem"
+                  />
+                </button>
+              </template>
+            </BrutMenu>
           </template>
           <template v-else>
             <BrutButton size="sm" variant="accent" @click="auth.signIn()">
@@ -147,6 +154,8 @@
 </template>
 
 <script setup lang="ts">
+import type { MenuItem } from "~/components/ui/BrutMenu.vue";
+
 const auth = useAuthStore();
 const { isAuthenticated, user } = storeToRefs(auth);
 const interruptions = useInterruptionsStore();
@@ -155,6 +164,24 @@ const gamification = useGamificationStore();
 const { playerState } = storeToRefs(gamification);
 
 const { t } = useI18n();
+const router = useRouter();
+
+const accountMenuItems = computed<MenuItem[]>(() => [
+  {
+    key: "settings",
+    label: t("nav.settings"),
+    icon: "⚙",
+    onSelect: () => router.push("/settings"),
+  },
+  {
+    key: "signout",
+    label: t("common.signOut"),
+    icon: "⏻",
+    danger: true,
+    separatorBefore: true,
+    onSelect: () => auth.signOut(),
+  },
+]);
 
 const sidebarCollapsed = ref(false);
 const mobileMenuOpen = ref(false);
@@ -204,7 +231,8 @@ watch(isAuthenticated, (val) => {
 .shell {
   display: grid;
   grid-template-columns: 240px 1fr;
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 .shell--collapsed {
   grid-template-columns: 52px 1fr;
@@ -228,7 +256,8 @@ watch(isAuthenticated, (val) => {
   padding: 1.25rem 0.75rem;
   background: var(--paper-2);
   border-right: var(--border);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   transition: width 0.15s ease;
 }
 .shell__brand {
@@ -236,9 +265,10 @@ watch(isAuthenticated, (val) => {
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 1.4rem;
-  text-transform: lowercase;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
 }
@@ -269,7 +299,7 @@ watch(isAuthenticated, (val) => {
 .shell__content {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -286,26 +316,39 @@ watch(isAuthenticated, (val) => {
 }
 .statusbar__spacer { flex: 1; }
 .statusbar__auth { display: flex; align-items: center; gap: 0.5rem; }
+.avatar-trigger {
+  display: inline-flex;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+}
+.avatar-trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .statusbar__xp { display: flex; align-items: center; gap: 0.4rem; }
 
 .xp-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-family: var(--font-mono);
+  gap: 0.3rem;
+  font-family: var(--font-body);
   font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 600;
   padding: 0.15rem 0.5rem;
-  border: 2px solid var(--ink);
-  background: var(--accent-3);
-  color: var(--accent-ink);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
 }
-.xp-badge--streak { background: var(--accent); color: var(--accent-ink); }
+.xp-badge--streak { background: var(--accent-tint); border-color: var(--accent-line); color: var(--accent-strong); }
 .xp-badge--tier {
-  background: var(--paper-2);
-  font-size: 0.65rem;
-  opacity: 0.85;
+  background: var(--surface-2);
+  font-size: 0.68rem;
+  opacity: 0.9;
 }
 .xp-progress {
   width: 5rem;
@@ -317,11 +360,11 @@ watch(isAuthenticated, (val) => {
 .status-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  gap: 0.4rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 .status-indicator__dot {
   width: 0.55rem;
@@ -345,6 +388,7 @@ watch(isAuthenticated, (val) => {
 
 .shell__main {
   flex: 1;
+  min-height: 0;
   padding: 1.75rem clamp(1rem, 4vw, 2.5rem);
   overflow-y: auto;
 }
@@ -363,7 +407,7 @@ watch(isAuthenticated, (val) => {
 @media (max-width: 720px) {
   .shell {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 1fr;
   }
   .shell__sidebar {
     display: none;

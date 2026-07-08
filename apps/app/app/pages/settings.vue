@@ -3,120 +3,137 @@
   Licensed under the MIT License. SPDX-License-Identifier: MIT
 -->
 <template>
-  <section>
-    <p class="brut-eyebrow">{{ $t("app.name") }}</p>
-    <h1>{{ $t("settings.title") }}</h1>
+  <section class="page">
+    <PageHeader :title="$t('settings.title')" :intro="$t('settings.intro')" />
 
-    <!-- Appearance -->
-    <BrutPanel class="settings-section">
-      <h2 class="settings-section__title">{{ $t("settings.appearance") }}</h2>
-
-      <div class="setting-row">
-        <label class="setting-row__label" for="theme-select">{{ $t("settings.theme") }}</label>
-        <div class="setting-row__control">
-          <select
-            id="theme-select"
-            class="brut-select"
-            :value="themeChoice"
-            @change="setTheme(($event.target as HTMLSelectElement).value as ThemeChoice)"
-          >
-            <option value="system">{{ $t("settings.themeSystem") }}</option>
-            <option value="light">{{ $t("settings.themeLight") }}</option>
-            <option value="dark">{{ $t("settings.themeDark") }}</option>
-          </select>
-        </div>
+    <div class="settings-stack">
+      <!-- Personal setup -->
+      <div class="reveal reveal--1">
+        <ProfileSettings />
       </div>
 
-      <!-- Language -->
-      <div class="setting-row">
-        <label class="setting-row__label" for="lang-select">{{ $t("settings.language") }}</label>
-        <div class="setting-row__control">
-          <select
-            id="lang-select"
-            class="brut-select"
-            :value="locale"
-            @change="setLocale(($event.target as HTMLSelectElement).value as 'en' | 'es' | 'fr' | 'de' | 'pt' | 'ja' | 'zh-Hans')"
-          >
-            <option v-for="loc in locales" :key="loc.code" :value="loc.code">
-              {{ loc.name }}
-            </option>
-          </select>
-        </div>
-      </div>
-    </BrutPanel>
-
-    <!-- Notifications -->
-    <BrutPanel class="settings-section">
-      <h2 class="settings-section__title">{{ $t("settings.notifications") }}</h2>
-
-      <div class="setting-row">
-        <span class="setting-row__label">{{ $t("settings.notificationsEnable") }}</span>
-        <div class="setting-row__control">
-          <BrutToggle
-            :model-value="settings.enabled"
-            :label="$t('settings.notificationsEnable')"
-            @update:model-value="toggleNotifications"
-          />
-        </div>
+      <!-- Equipment -->
+      <div class="reveal reveal--2">
+        <EquipmentSettings />
       </div>
 
-      <template v-if="settings.enabled">
-        <div class="setting-row">
-          <span class="setting-row__label">{{ $t("settings.sound") }}</span>
-          <div class="setting-row__control">
-            <BrutToggle
-              :model-value="settings.sound"
-              :label="$t('settings.sound')"
-              @update:model-value="updateSetting('sound', $event)"
-            />
+      <!-- Appearance -->
+      <BrutPanel class="reveal reveal--3">
+        <h2 class="section-label">{{ $t("settings.appearance") }}</h2>
+
+        <div class="settings-rows">
+          <div class="setting-row">
+            <label class="setting-row__label" for="theme-select">{{ $t("settings.theme") }}</label>
+            <div class="setting-row__control">
+              <select
+                id="theme-select"
+                class="brut-select"
+                :value="themeChoice"
+                @change="setTheme(($event.target as HTMLSelectElement).value as ThemeChoice)"
+              >
+                <option value="system">{{ $t("settings.themeSystem") }}</option>
+                <option value="light">{{ $t("settings.themeLight") }}</option>
+                <option value="dark">{{ $t("settings.themeDark") }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Language -->
+          <div class="setting-row">
+            <label class="setting-row__label" for="lang-select">{{ $t("settings.language") }}</label>
+            <div class="setting-row__control">
+              <select
+                id="lang-select"
+                class="brut-select"
+                :value="locale"
+                @change="setLocale(($event.target as HTMLSelectElement).value as 'en' | 'es' | 'fr' | 'de' | 'pt' | 'ja' | 'zh-Hans')"
+              >
+                <option v-for="loc in locales" :key="loc.code" :value="loc.code">
+                  {{ loc.name }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
+      </BrutPanel>
 
-        <div class="setting-row">
-          <label class="setting-row__label" for="qh-start">{{ $t("settings.quietHoursFrom") }}</label>
-          <input
-            id="qh-start"
-            type="time"
-            class="brut-input setting-time"
-            :value="settings.quietHoursStart"
-            @change="updateSetting('quietHoursStart', ($event.target as HTMLInputElement).value)"
-          />
-        </div>
-        <div class="setting-row">
-          <label class="setting-row__label" for="qh-end">{{ $t("settings.quietHoursTo") }}</label>
-          <input
-            id="qh-end"
-            type="time"
-            class="brut-input setting-time"
-            :value="settings.quietHoursEnd"
-            @change="updateSetting('quietHoursEnd', ($event.target as HTMLInputElement).value)"
-          />
-        </div>
-      </template>
-    </BrutPanel>
+      <!-- Notifications -->
+      <BrutPanel class="reveal reveal--4">
+        <h2 class="section-label">{{ $t("settings.notifications") }}</h2>
 
-    <!-- App updates -->
-    <BrutPanel class="settings-section">
-      <h2 class="settings-section__title">{{ $t("settings.updates") }}</h2>
-      <template v-if="isTauri">
-        <p v-if="updateStatus === 'idle'">{{ $t("settings.upToDate") }}</p>
-        <p v-else-if="updateStatus === 'checking'">{{ $t("common.loading") }}</p>
-        <div v-else-if="updateStatus === 'available'" class="update-available">
-          <p>{{ $t("settings.updateAvailable") }}</p>
-          <BrutButton variant="accent" @click="installUpdate">
-            {{ $t("settings.installUpdate") }}
-          </BrutButton>
-        </div>
-        <BrutButton size="sm" @click="checkForUpdates">
-          {{ $t("settings.checkForUpdates") }}
-        </BrutButton>
-      </template>
-      <p v-else class="brut-eyebrow">{{ $t("settings.pwaAutoUpdate") }}</p>
-    </BrutPanel>
+        <div class="settings-rows">
+          <div class="setting-row">
+            <span class="setting-row__label">{{ $t("settings.notificationsEnable") }}</span>
+            <div class="setting-row__control">
+              <BrutToggle
+                :model-value="settings.enabled"
+                :label="$t('settings.notificationsEnable')"
+                @update:model-value="toggleNotifications"
+              />
+            </div>
+          </div>
 
-    <!-- Save -->
-    <div class="settings__actions">
-      <BrutButton variant="accent" @click="save">{{ $t("common.save") }}</BrutButton>
+          <template v-if="settings.enabled">
+            <div class="setting-row">
+              <span class="setting-row__label">{{ $t("settings.sound") }}</span>
+              <div class="setting-row__control">
+                <BrutToggle
+                  :model-value="settings.sound"
+                  :label="$t('settings.sound')"
+                  @update:model-value="updateSetting('sound', $event)"
+                />
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <label class="setting-row__label" for="qh-start">{{ $t("settings.quietHoursFrom") }}</label>
+              <input
+                id="qh-start"
+                type="time"
+                class="brut-input setting-time"
+                :value="settings.quietHoursStart"
+                @change="updateSetting('quietHoursStart', ($event.target as HTMLInputElement).value)"
+              />
+            </div>
+            <div class="setting-row">
+              <label class="setting-row__label" for="qh-end">{{ $t("settings.quietHoursTo") }}</label>
+              <input
+                id="qh-end"
+                type="time"
+                class="brut-input setting-time"
+                :value="settings.quietHoursEnd"
+                @change="updateSetting('quietHoursEnd', ($event.target as HTMLInputElement).value)"
+              />
+            </div>
+          </template>
+        </div>
+      </BrutPanel>
+
+      <!-- App updates -->
+      <BrutPanel class="reveal reveal--5">
+        <h2 class="section-label">{{ $t("settings.updates") }}</h2>
+        <div class="settings-updates">
+          <template v-if="isTauri">
+            <p v-if="updateStatus === 'idle'" class="settings-updates__text">{{ $t("settings.upToDate") }}</p>
+            <p v-else-if="updateStatus === 'checking'" class="settings-updates__text">{{ $t("common.loading") }}</p>
+            <div v-else-if="updateStatus === 'available'" class="update-available">
+              <p class="settings-updates__text">{{ $t("settings.updateAvailable") }}</p>
+              <BrutButton variant="accent" @click="installUpdate">
+                {{ $t("settings.installUpdate") }}
+              </BrutButton>
+            </div>
+            <BrutButton size="sm" @click="checkForUpdates">
+              {{ $t("settings.checkForUpdates") }}
+            </BrutButton>
+          </template>
+          <p v-else class="settings-updates__text">{{ $t("settings.pwaAutoUpdate") }}</p>
+        </div>
+      </BrutPanel>
+
+      <!-- Save -->
+      <div class="settings__actions reveal reveal--5">
+        <BrutButton variant="accent" @click="save">{{ $t("common.save") }}</BrutButton>
+      </div>
     </div>
   </section>
 </template>
@@ -194,29 +211,38 @@ async function installUpdate(): Promise<void> {
 </script>
 
 <style scoped>
-.settings-section {
-  margin-bottom: 1.5rem;
+.page {
+  max-width: 44rem;
 }
-.settings-section__title {
-  font-size: 1rem;
-  margin: 0 0 1rem;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+.settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+/* A little breathing room under each panel heading. */
+.settings-rows {
+  margin-top: 1rem;
 }
 .setting-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--line);
 }
 .setting-row:last-child { border-bottom: none; }
-.setting-row__label { font-weight: 700; flex: 1; }
+.setting-row__label { font-weight: 600; flex: 1; }
 .setting-row__control { flex: 0 0 auto; }
 .setting-time { width: 9rem; }
-.update-available { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+.settings-updates {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+.settings-updates__text { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.update-available { display: flex; align-items: center; gap: 1rem; }
 .settings__actions { display: flex; gap: 0.75rem; }
 </style>

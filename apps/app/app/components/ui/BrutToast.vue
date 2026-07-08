@@ -42,21 +42,22 @@ const icons: Record<Toast["type"], string> = {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.7rem 1rem;
+  padding: 0.7rem 0.9rem;
   border: var(--border);
-  box-shadow: var(--shadow-sm);
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 700;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
   background: var(--surface-bg);
   color: var(--text);
   max-width: 420px;
   width: 100%;
 }
-.brut-toast--success { border-left: 5px solid var(--success); }
-.brut-toast--error   { border-left: 5px solid var(--danger);  }
-.brut-toast--warning { border-left: 5px solid var(--accent-3);}
-.brut-toast--info    { border-left: 5px solid var(--accent-6);}
+.brut-toast--success { border-left: 4px solid var(--success); }
+.brut-toast--error   { border-left: 4px solid var(--danger);  }
+.brut-toast--warning { border-left: 4px solid var(--accent-3);}
+.brut-toast--info    { border-left: 4px solid var(--accent-6);}
 .brut-toast__msg { flex: 1; word-break: break-word; }
 .brut-toast__icon { flex: 0 0 auto; font-size: 1rem; }
 .brut-toast__close { margin-left: auto; flex: 0 0 auto; }

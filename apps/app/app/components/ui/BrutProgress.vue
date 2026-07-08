@@ -42,39 +42,26 @@ const percent = computed(() =>
 <style scoped>
 .brut-progress {
   position: relative;
-  height: 1.1rem;
-  border: var(--border);
-  background: var(--surface-bg);
+  height: 1rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
   overflow: hidden;
 }
 .brut-progress__fill {
   height: 100%;
-  background: repeating-linear-gradient(
-    45deg,
-    var(--accent),
-    var(--accent) 8px,
-    var(--accent-3) 8px,
-    var(--accent-3) 16px
-  );
+  border-radius: inherit;
+  background: var(--accent);
   transition: width 0.4s ease;
 }
 .brut-progress__fill--teal {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--accent-2),
-    var(--accent-2) 8px,
-    var(--accent-3) 8px,
-    var(--accent-3) 16px
-  );
+  background: var(--accent-2);
 }
 .brut-progress__fill--purple {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--accent-4),
-    var(--accent-4) 8px,
-    var(--accent-5) 8px,
-    var(--accent-5) 16px
-  );
+  background: var(--accent-4);
+}
+.brut-progress__fill--pink {
+  background: var(--accent-5);
 }
 .brut-progress__label {
   position: absolute;
@@ -82,10 +69,9 @@ const percent = computed(() =>
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  mix-blend-mode: difference;
-  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--ink);
 }
 </style>

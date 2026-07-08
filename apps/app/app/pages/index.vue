@@ -3,74 +3,84 @@
   Licensed under the MIT License. SPDX-License-Identifier: MIT
 -->
 <template>
-  <section>
+  <!-- Unauthenticated: sign-in gate -->
+  <section v-if="!isAuthenticated" class="signin">
     <p class="brut-eyebrow">{{ $t("app.name") }}</p>
     <h1>{{ $t("today.title") }}</h1>
 
-    <!-- Auth gate -->
-    <template v-if="!isAuthenticated">
-      <BrutPanel>
-        <p>{{ $t("auth.subtitle") }}</p>
-        <BrutButton
-          variant="accent"
-          :loading="auth.isSigningIn"
-          :disabled="auth.isSigningIn"
-          @click="auth.signIn()"
-        >
-          {{ $t("auth.githubButton") }}
-        </BrutButton>
+    <BrutPanel>
+      <p>{{ $t("auth.subtitle") }}</p>
+      <BrutButton
+        variant="accent"
+        :loading="auth.isSigningIn"
+        :disabled="auth.isSigningIn"
+        @click="auth.signIn()"
+      >
+        {{ $t("auth.githubButton") }}
+      </BrutButton>
 
-        <!-- Sign-in error surface -->
-        <div v-if="auth.signInError" class="auth-error" role="alert">
-          <p class="auth-error__title">{{ $t("auth.errorTitle") }}</p>
-          <p class="auth-error__detail">{{ auth.signInError }}</p>
-          <p class="auth-error__hint">{{ $t("auth.errorHint") }}</p>
-        </div>
-
-        <!-- Dev-only sign-in bypass (compiled out of production builds) -->
-        <div v-if="isDev" class="auth-dev">
-          <BrutButton
-            variant="ghost"
-            size="sm"
-            :disabled="auth.isSigningIn"
-            @click="auth.devSignIn()"
-          >
-            {{ $t("auth.devButton") }}
-          </BrutButton>
-          <span class="auth-dev__hint">{{ $t("auth.devHint") }}</span>
-        </div>
-
-        <!-- Device flow modal -->
-        <BrutModal
-          :open="!!auth.deviceFlow"
-          :title="$t('auth.title')"
-          :close-on-backdrop="false"
-          @close="() => {}"
-        >
-          <p class="brut-eyebrow">{{ $t("auth.deviceInstruction", { url: auth.deviceFlow?.verificationUri }) }}</p>
-          <p class="device-code">{{ auth.deviceFlow?.userCode }}</p>
-          <p>{{ $t("auth.waiting") }}</p>
-        </BrutModal>
-      </BrutPanel>
-    </template>
-
-    <!-- Live interruption feed -->
-    <template v-else>
-      <!-- XP progress strip -->
-      <div class="today__xp-strip">
-        <BrutProgress
-          :value="Number(gamification.playerState?.xpIntoLevel ?? 0)"
-          :max="Number(gamification.playerState?.xpForNextLevel ?? 100)"
-          :label="$t('gamification.xpToNext', { remaining: Number(gamification.playerState?.xpForNextLevel ?? 0) - Number(gamification.playerState?.xpIntoLevel ?? 0), level: Number(gamification.playerState?.level ?? 1) + 1 })"
-          show-label
-          class="today__xp-bar"
-        />
-        <BrutBadge color="accent" icon="⚡">
-          {{ $t("gamification.level", { level: Number(gamification.playerState?.level ?? 1) }) }}
-        </BrutBadge>
+      <!-- Sign-in error surface -->
+      <div v-if="auth.signInError" class="auth-error" role="alert">
+        <p class="auth-error__title">{{ $t("auth.errorTitle") }}</p>
+        <p class="auth-error__detail">{{ auth.signInError }}</p>
+        <p class="auth-error__hint">{{ $t("auth.errorHint") }}</p>
       </div>
 
-      <!-- Active interruptions -->
+      <!-- Dev-only sign-in bypass (compiled out of production builds) -->
+      <div v-if="isDev" class="auth-dev">
+        <BrutButton
+          variant="ghost"
+          size="sm"
+          :disabled="auth.isSigningIn"
+          @click="auth.devSignIn()"
+        >
+          {{ $t("auth.devButton") }}
+        </BrutButton>
+        <span class="auth-dev__hint">{{ $t("auth.devHint") }}</span>
+      </div>
+
+      <!-- Device flow modal -->
+      <BrutModal
+        :open="!!auth.deviceFlow"
+        :title="$t('auth.title')"
+        :close-on-backdrop="false"
+        @close="() => {}"
+      >
+        <p class="brut-eyebrow">{{ $t("auth.deviceInstruction", { url: auth.deviceFlow?.verificationUri }) }}</p>
+        <p class="device-code">{{ auth.deviceFlow?.userCode }}</p>
+        <p>{{ $t("auth.waiting") }}</p>
+      </BrutModal>
+    </BrutPanel>
+  </section>
+
+  <!-- Authenticated: the daily hub -->
+  <section v-else class="today">
+    <!-- Greeting -->
+    <header class="today__intro reveal reveal--0">
+      <p class="today__date">{{ todayLabel }}</p>
+      <h1 class="today__greeting">
+        {{ greeting }}<template v-if="firstName">, <span class="today__name">{{ firstName }}</span></template>
+      </h1>
+      <p class="today__orient">{{ $t("today.orient") }}</p>
+    </header>
+
+    <!-- Level / XP -->
+    <div class="today__level reveal reveal--1">
+      <BrutBadge color="accent" icon="⚡">{{ $t("gamification.level", { level }) }}</BrutBadge>
+      <div class="today__level-track">
+        <BrutProgress
+          :value="xpInto"
+          :max="xpFor"
+          :label="$t('gamification.xpToNext', { remaining: xpRemaining, level: level + 1 })"
+        />
+      </div>
+      <span class="today__level-note">{{ $t("gamification.xpToNext", { remaining: xpRemaining, level: level + 1 }) }}</span>
+    </div>
+
+    <!-- Right now -->
+    <section class="today__block reveal reveal--2" aria-labelledby="today-now-h">
+      <h2 id="today-now-h" class="section-label">{{ $t("today.rightNow") }}</h2>
+
       <div v-if="activePrompts.length" class="today__cards">
         <InterruptionCard
           v-for="prompt in activePrompts"
@@ -78,41 +88,331 @@
           :prompt="prompt"
         />
       </div>
-      <BrutPanel v-else class="today__empty">
-        <p>{{ $t("today.empty") }}</p>
-      </BrutPanel>
-    </template>
+
+      <div v-else class="today__clear brut-card brut-card--flat">
+        <span class="today__clear-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path
+              d="M20 6 9 17l-5-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <div>
+          <p class="today__clear-title">{{ $t("today.clearTitle") }}</p>
+          <p class="today__clear-body">{{ $t("today.empty") }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Up next: a single-glance forecast teaser -->
+    <section
+      v-if="showNext"
+      class="today__block reveal reveal--3"
+      aria-labelledby="today-next-h"
+    >
+      <div class="today__block-head">
+        <h2 id="today-next-h" class="section-label">{{ $t("forecast.upNext") }}</h2>
+        <NuxtLink to="/interruptions" class="today__more">
+          {{ $t("forecast.title") }}
+          <span aria-hidden="true">&rarr;</span>
+        </NuxtLink>
+      </div>
+
+      <!-- Loading -->
+      <div v-if="forecast.loading && !forecast.loaded" class="today__next-skeleton" aria-hidden="true" />
+
+      <!-- Next gap -->
+      <div v-else-if="nextGap" class="today__next brut-card">
+        <div class="today__next-when">
+          <span class="today__next-rel">{{ relativeTo(nextGap.gap.startUtc) }}</span>
+          <span class="today__next-clock">{{ clock(nextGap.gap.startUtc) }}</span>
+          <BrutBadge size="sm">{{ $t("forecast.minutes", { n: Number(nextGap.gap.durationMinutes) }) }}</BrutBadge>
+        </div>
+
+        <div class="today__next-body">
+          <template v-if="nextGap.activity">
+            <div class="today__next-tags">
+              <BrutChip color="teal">{{ nextGap.activity.bodyArea }}</BrutChip>
+              <BrutBadge size="sm">{{ nextGap.activity.intensity }}</BrutBadge>
+            </div>
+            <p class="today__next-title">{{ nextGap.activity.title }}</p>
+            <p class="today__next-desc">{{ nextGap.activity.description }}</p>
+          </template>
+          <template v-else>
+            <p class="today__next-title">{{ $t("forecast.noFitTitle") }}</p>
+            <p class="today__next-desc">{{ $t("forecast.noFitSub") }}</p>
+          </template>
+        </div>
+      </div>
+    </section>
   </section>
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n();
+
 const auth = useAuthStore();
-const { isAuthenticated } = storeToRefs(auth);
+const { isAuthenticated, user } = storeToRefs(auth);
 // Dev-only sign-in bypass button visibility; `import.meta.dev` is statically
 // replaced at build time, so the branch is tree-shaken out of production.
 const isDev = import.meta.dev;
+
 const interruptions = useInterruptionsStore();
 const { activePrompts } = storeToRefs(interruptions);
 const gamification = useGamificationStore();
+const forecast = useForecastStore();
+
+// A ticking clock so the greeting and relative labels stay honest across a long
+// session without a manual refresh.
+const now = ref(new Date());
+let clockTimer: ReturnType<typeof setInterval> | undefined;
+
+onMounted(() => {
+  clockTimer = setInterval(() => (now.value = new Date()), 60_000);
+  if (isAuthenticated.value && !forecast.loaded) forecast.fetch();
+});
+onBeforeUnmount(() => {
+  if (clockTimer) clearInterval(clockTimer);
+});
+watch(isAuthenticated, (v) => {
+  if (v && !forecast.loaded) forecast.fetch();
+});
+
+const greeting = computed((): string => {
+  const h = now.value.getHours();
+  if (h < 12) return t("today.greetMorning");
+  if (h < 18) return t("today.greetAfternoon");
+  return t("today.greetEvening");
+});
+
+// First name only, so the greeting reads like a person said it. Falls back to
+// the GitHub login when no display name is set; empty when unknown.
+const firstName = computed((): string => {
+  const name = user.value?.displayName?.trim() || user.value?.login?.trim() || "";
+  return name.split(/\s+/)[0] ?? "";
+});
+
+const todayLabel = computed((): string =>
+  now.value.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }),
+);
+
+const level = computed((): number => Number(gamification.playerState?.level ?? 1));
+const xpInto = computed((): number => Number(gamification.playerState?.xpIntoLevel ?? 0));
+const xpFor = computed((): number => Number(gamification.playerState?.xpForNextLevel ?? 100));
+const xpRemaining = computed((): number => Math.max(0, xpFor.value - xpInto.value));
+
+const nextGap = computed(() => forecast.items[0]);
+const showNext = computed(
+  (): boolean => (forecast.loading && !forecast.loaded) || !!nextGap.value,
+);
+
+function clock(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+/** Humane "in 25 min" / "in 2 h" / "in 1 d" relative label. */
+function relativeTo(iso: string): string {
+  const diffMs = new Date(iso).getTime() - now.value.getTime();
+  const mins = Math.round(diffMs / 60000);
+  if (mins <= 0) return t("forecast.now");
+  if (mins < 60) return t("forecast.inMinutes", { n: mins });
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return t("forecast.inHours", { n: hours });
+  const days = Math.round(hours / 24);
+  return t("forecast.inDays", { n: days });
+}
 </script>
 
 <style scoped>
-.today__xp-strip {
+/* ── Daily hub layout ─────────────────────────────────────────────────────
+ * A calm vertical rhythm: greeting, a quiet level line, then the two blocks
+ * that carry the page (what needs you now, what is coming). */
+.today {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 44rem;
+}
+
+/* Greeting */
+.today__date {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.today__greeting {
+  margin: 0;
+  font-size: clamp(1.7rem, 1.15rem + 1.7vw, 2.35rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+.today__name {
+  color: var(--accent-strong);
+}
+.today__orient {
+  margin: 0.6rem 0 0;
+  max-width: 42ch;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+/* Level line */
+.today__level {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-top: -0.75rem;
 }
-.today__xp-bar { flex: 1; }
+.today__level-track {
+  flex: 1;
+  max-width: 16rem;
+}
+.today__level-note {
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* Section blocks */
+.today__block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.today__block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.today__more {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: gap 0.18s ease;
+}
+.today__more:hover {
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
 .today__cards {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
-.today__empty {
-  text-align: center;
-  color: var(--muted);
+
+/* Composed "you're clear" state — calm, not a dead line. */
+.today__clear {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-tint) 55%, var(--surface)),
+    var(--surface)
+  );
+  border-color: var(--accent-line);
 }
+.today__clear-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  color: var(--accent-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.today__clear-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+.today__clear-body {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Up-next teaser */
+.today__next {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, auto) 1fr;
+  gap: 1.15rem;
+  align-items: start;
+}
+.today__next-when {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-start;
+}
+.today__next-rel {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.today__next-clock {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.today__next-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.45rem;
+}
+.today__next-title {
+  margin: 0;
+  font-weight: 600;
+}
+.today__next-desc {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.today__next-skeleton {
+  height: 5.5rem;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2));
+  background-size: 200% 100%;
+  animation: today-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes today-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .today__next-skeleton { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .today__level { flex-wrap: wrap; }
+  .today__level-note { flex-basis: 100%; }
+  .today__next { grid-template-columns: 1fr; gap: 0.6rem; }
+}
+
+/* ── Sign-in gate (unauthenticated) ──────────────────────────────────────── */
 .device-code {
   font-family: var(--font-mono);
   font-size: 2rem;

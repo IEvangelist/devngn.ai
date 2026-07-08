@@ -19,10 +19,10 @@
   "common": {
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "loading": "Loading\u2026",
+    "loading": "Loading…",
     "ready": "Ready",
-    "connecting": "Connecting\u2026",
-    "reconnecting": "Reconnecting\u2026",
+    "connecting": "Connecting…",
+    "reconnecting": "Reconnecting…",
     "offline": "Offline",
     "save": "Save",
     "saved": "Saved!",
@@ -33,27 +33,40 @@
     "skipToContent": "Skip to content",
     "loadError": "Failed to load data.",
     "saveError": "Failed to save.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "edit": "编辑",
+    "remove": "移除",
+    "confirm": "确认",
+    "account": "账户"
   },
   "auth": {
     "title": "Sign in as yourself",
     "subtitle": "Use your GitHub account to bring your wellness engine into the app.",
     "githubButton": "Continue with GitHub",
     "deviceInstruction": "Enter this code at {url}:",
-    "waiting": "Waiting for you to authorize on GitHub\u2026",
+    "waiting": "Waiting for you to authorize on GitHub…",
     "signedInAs": "Signed in as {login}"
   },
   "today": {
     "title": "Today",
     "empty": "No interruptions right now. We'll nudge you when it's time.",
-    "nextIn": "Next nudge in {time}"
+    "nextIn": "Next nudge in {time}",
+    "greetMorning": "早上好",
+    "greetAfternoon": "下午好",
+    "greetEvening": "晚上好",
+    "orient": "工作日中的宁静角落。在最需要的时候，来点小小的放松。",
+    "rightNow": "此刻",
+    "clearTitle": "现在很清净"
   },
   "interruptions": {
     "title": "Interruptions",
     "completeCta": "Done",
     "snoozeCta": "Snooze",
     "dismissCta": "Not now",
-    "feedback": "How was that?"
+    "feedback": "How was that?",
+    "liveTitle": "实时与最近",
+    "intro": "实时提醒随到随看，以及你这一天的记录。",
+    "emptyTitle": "当前没有实时提醒"
   },
   "goals": {
     "title": "Goal title",
@@ -82,7 +95,7 @@
     "locked": "Locked",
     "hidden": "Hidden milestone",
     "hiddenBadge": "???",
-    "loading": "Loading badges\u2026",
+    "loading": "Loading badges…",
     "error": "Failed to load badges.",
     "empty": "No badges yet. Keep completing wellness interruptions!",
     "earnedOn": "Earned {date}"
@@ -91,7 +104,7 @@
     "title": "Milestones",
     "hidden": "Mystery Milestone",
     "unlockHint": "Keep going to unlock this hidden milestone.",
-    "loading": "Loading milestones\u2026",
+    "loading": "Loading milestones…",
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
     "achievedOn": "Achieved {date}"
@@ -103,7 +116,7 @@
     "playerColumn": "Developer",
     "xpColumn": "XP",
     "tierColumn": "Tier",
-    "loading": "Loading leaderboard\u2026",
+    "loading": "Loading leaderboard…",
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard."
@@ -120,14 +133,14 @@
     "profile": "My Profile",
     "displayName": "Display Name",
     "bio": "Bio",
-    "bioPlaceholder": "Tell the community about yourself\u2026",
+    "bioPlaceholder": "Tell the community about yourself…",
     "bioSanitized": "Content is reviewed and sanitized server-side.",
     "publicProfile": "Public Profile",
     "saveProfile": "Save Profile",
     "profileSaved": "Profile saved!",
     "profileError": "Failed to save profile.",
     "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
-    "feedLoading": "Loading feed\u2026"
+    "feedLoading": "Loading feed…"
   },
   "pwa": {
     "updateAvailable": "New version available!",
@@ -154,6 +167,80 @@
     "updateAvailable": "Update available",
     "installUpdate": "Install and restart",
     "updateError": "Update failed. Please try again.",
-    "pwaAutoUpdate": "PWA updates automatically in the background."
+    "pwaAutoUpdate": "PWA updates automatically in the background.",
+    "intro": "调整 devngn 如何贴合你的身体、器材和一天的节奏。"
+  },
+  "profile": {
+    "title": "个人设置",
+    "intro": "告诉我们你喜欢怎样活动。这会影响每一次提醒：强度、节奏，以及要避免的动作。",
+    "saved": "已保存",
+    "savedToast": "你的设置已保存。",
+    "signInHint": "登录以设置你的个人资料。",
+    "fitnessBaseline": "活动水平",
+    "preferredIntensity": "偏好强度",
+    "ageRange": "年龄段",
+    "timeOfDay": "最佳时段",
+    "heightCm": "身高 (cm)",
+    "weightKg": "体重 (kg)",
+    "limitations": "限制",
+    "limitationsPlaceholder": "例如：手腕酸痛、膝盖不适",
+    "limitationsHelp": "我们会避免可能加重这些问题的动作。",
+    "optional": "可选",
+    "notSet": "未设置",
+    "save": "保存设置",
+    "baseline": {
+      "Unspecified": "不愿透露",
+      "Sedentary": "大多久坐",
+      "Light": "轻度活动",
+      "Moderate": "中等活动",
+      "Active": "非常活跃"
+    },
+    "intensity": {
+      "Low": "低",
+      "Medium": "中",
+      "High": "高"
+    },
+    "time": {
+      "Morning": "上午",
+      "Afternoon": "下午",
+      "Evening": "晚上",
+      "Anytime": "任意时间"
+    }
+  },
+  "equipment": {
+    "title": "器材",
+    "intro": "添加你手边的器材。我们了解得越多，越能为你匹配合适的休息。",
+    "add": "添加器材",
+    "addTitle": "添加器材",
+    "editTitle": "编辑器材",
+    "quickAdd": "快速添加",
+    "signInHint": "登录以管理你的器材。",
+    "empty": "还没有器材。添加你手边的东西吧。",
+    "tag": "标签",
+    "tagPlaceholder": "例如：chair-only",
+    "tagHelp": "引擎使用的简短匹配键。小写、无空格。",
+    "tagLocked": "创建后标签不可更改。",
+    "displayName": "名称",
+    "notes": "备注",
+    "added": "已添加 {name}。",
+    "removed": "已移除 {name}。",
+    "removeTitle": "移除器材？",
+    "removeBody": "从器材中移除 {name}？你可以稍后再次添加。"
+  },
+  "forecast": {
+    "title": "即将到来",
+    "intro": "预览你接下来的空闲时段，以及我们最可能建议的休息。有些会作为惊喜保留。",
+    "refresh": "刷新",
+    "empty": "未来几天没有空闲时间。连接日历即可查看预测。",
+    "upNext": "接下来",
+    "surpriseTitle": "已准备一个惊喜",
+    "surpriseSub": "到时候再揭晓。",
+    "noFitTitle": "空闲时刻",
+    "noFitSub": "目前还没有合适的项目。添加器材可解锁更多。",
+    "minutes": "{n} 分钟",
+    "now": "现在",
+    "inMinutes": "{n} 分钟后",
+    "inHours": "{n} 小时后",
+    "inDays": "{n} 天后"
   }
 }

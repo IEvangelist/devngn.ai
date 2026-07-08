@@ -19,10 +19,10 @@
   "common": {
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "loading": "Loading\u2026",
+    "loading": "Loading…",
     "ready": "Ready",
-    "connecting": "Connecting\u2026",
-    "reconnecting": "Reconnecting\u2026",
+    "connecting": "Connecting…",
+    "reconnecting": "Reconnecting…",
     "offline": "Offline",
     "save": "Save",
     "saved": "Saved!",
@@ -33,27 +33,40 @@
     "skipToContent": "Skip to content",
     "loadError": "Failed to load data.",
     "saveError": "Failed to save.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "edit": "Modifier",
+    "remove": "Retirer",
+    "confirm": "Confirmer",
+    "account": "Compte"
   },
   "auth": {
     "title": "Sign in as yourself",
     "subtitle": "Use your GitHub account to bring your wellness engine into the app.",
     "githubButton": "Continue with GitHub",
     "deviceInstruction": "Enter this code at {url}:",
-    "waiting": "Waiting for you to authorize on GitHub\u2026",
+    "waiting": "Waiting for you to authorize on GitHub…",
     "signedInAs": "Signed in as {login}"
   },
   "today": {
     "title": "Today",
     "empty": "No interruptions right now. We'll nudge you when it's time.",
-    "nextIn": "Next nudge in {time}"
+    "nextIn": "Next nudge in {time}",
+    "greetMorning": "Bonjour",
+    "greetAfternoon": "Bon après-midi",
+    "greetEvening": "Bonsoir",
+    "orient": "Votre coin de calme dans la journée. De petites pauses, au bon moment.",
+    "rightNow": "En ce moment",
+    "clearTitle": "Rien ne vous attend"
   },
   "interruptions": {
     "title": "Interruptions",
     "completeCta": "Done",
     "snoozeCta": "Snooze",
     "dismissCta": "Not now",
-    "feedback": "How was that?"
+    "feedback": "How was that?",
+    "liveTitle": "En direct et récent",
+    "intro": "Les pauses en direct dès qu'elles arrivent, et l'historique de votre journée.",
+    "emptyTitle": "Rien en direct pour l'instant"
   },
   "goals": {
     "title": "Goal title",
@@ -82,7 +95,7 @@
     "locked": "Locked",
     "hidden": "Hidden milestone",
     "hiddenBadge": "???",
-    "loading": "Loading badges\u2026",
+    "loading": "Loading badges…",
     "error": "Failed to load badges.",
     "empty": "No badges yet. Keep completing wellness interruptions!",
     "earnedOn": "Earned {date}"
@@ -91,7 +104,7 @@
     "title": "Milestones",
     "hidden": "Mystery Milestone",
     "unlockHint": "Keep going to unlock this hidden milestone.",
-    "loading": "Loading milestones\u2026",
+    "loading": "Loading milestones…",
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
     "achievedOn": "Achieved {date}"
@@ -103,7 +116,7 @@
     "playerColumn": "Developer",
     "xpColumn": "XP",
     "tierColumn": "Tier",
-    "loading": "Loading leaderboard\u2026",
+    "loading": "Loading leaderboard…",
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard."
@@ -120,14 +133,14 @@
     "profile": "My Profile",
     "displayName": "Display Name",
     "bio": "Bio",
-    "bioPlaceholder": "Tell the community about yourself\u2026",
+    "bioPlaceholder": "Tell the community about yourself…",
     "bioSanitized": "Content is reviewed and sanitized server-side.",
     "publicProfile": "Public Profile",
     "saveProfile": "Save Profile",
     "profileSaved": "Profile saved!",
     "profileError": "Failed to save profile.",
     "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
-    "feedLoading": "Loading feed\u2026"
+    "feedLoading": "Loading feed…"
   },
   "pwa": {
     "updateAvailable": "New version available!",
@@ -154,6 +167,80 @@
     "updateAvailable": "Update available",
     "installUpdate": "Install and restart",
     "updateError": "Update failed. Please try again.",
-    "pwaAutoUpdate": "PWA updates automatically in the background."
+    "pwaAutoUpdate": "PWA updates automatically in the background.",
+    "intro": "Réglez comment devngn s'adapte à votre corps, votre matériel et votre journée."
+  },
+  "profile": {
+    "title": "Configuration personnelle",
+    "intro": "Dites-nous comment vous aimez bouger. Cela façonne chaque rappel : intensité, rythme et ce qu'il faut éviter.",
+    "saved": "Enregistré",
+    "savedToast": "Votre configuration est enregistrée.",
+    "signInHint": "Connectez-vous pour configurer votre profil.",
+    "fitnessBaseline": "Niveau d'activité",
+    "preferredIntensity": "Intensité préférée",
+    "ageRange": "Tranche d'âge",
+    "timeOfDay": "Meilleur moment de la journée",
+    "heightCm": "Taille (cm)",
+    "weightKg": "Poids (kg)",
+    "limitations": "Limitations",
+    "limitationsPlaceholder": "ex. poignet douloureux, genou fragile",
+    "limitationsHelp": "Nous éviterons les mouvements qui pourraient les aggraver.",
+    "optional": "Facultatif",
+    "notSet": "Non défini",
+    "save": "Enregistrer",
+    "baseline": {
+      "Unspecified": "Je préfère ne pas dire",
+      "Sedentary": "Plutôt sédentaire",
+      "Light": "Peu actif",
+      "Moderate": "Modérément actif",
+      "Active": "Très actif"
+    },
+    "intensity": {
+      "Low": "Faible",
+      "Medium": "Moyenne",
+      "High": "Élevée"
+    },
+    "time": {
+      "Morning": "Matin",
+      "Afternoon": "Après-midi",
+      "Evening": "Soir",
+      "Anytime": "À tout moment"
+    }
+  },
+  "equipment": {
+    "title": "Équipement",
+    "intro": "Ajoutez le matériel que vous avez à portée. Plus nous en savons, mieux nous adaptons la pause.",
+    "add": "Ajouter",
+    "addTitle": "Ajouter un équipement",
+    "editTitle": "Modifier l'équipement",
+    "quickAdd": "Ajout rapide",
+    "signInHint": "Connectez-vous pour gérer votre équipement.",
+    "empty": "Aucun équipement pour l'instant. Ajoutez ce que vous avez à portée.",
+    "tag": "Étiquette",
+    "tagPlaceholder": "ex. chair-only",
+    "tagHelp": "Une clé courte utilisée par le moteur. Minuscules, sans espaces.",
+    "tagLocked": "L'étiquette ne peut pas être modifiée après création.",
+    "displayName": "Nom",
+    "notes": "Notes",
+    "added": "{name} ajouté.",
+    "removed": "{name} retiré.",
+    "removeTitle": "Retirer l'équipement ?",
+    "removeBody": "Retirer {name} de votre équipement ? Vous pourrez l'ajouter à nouveau plus tard."
+  },
+  "forecast": {
+    "title": "Ce qui arrive",
+    "intro": "Un aperçu de vos prochains moments libres et de la pause que nous suggérerions le plus probablement. Certaines restent une surprise.",
+    "refresh": "Actualiser",
+    "empty": "Pas de temps libre dans les prochains jours. Connectez un calendrier pour voir vos prévisions.",
+    "upNext": "Bientôt",
+    "surpriseTitle": "Une surprise est prévue",
+    "surpriseSub": "Nous la révélerons le moment venu.",
+    "noFitTitle": "Moment libre",
+    "noFitSub": "Rien de votre catalogue ne convient encore. Ajoutez de l'équipement pour en débloquer plus.",
+    "minutes": "{n} min",
+    "now": "Maintenant",
+    "inMinutes": "dans {n} min",
+    "inHours": "dans {n} h",
+    "inDays": "dans {n} j"
   }
 }

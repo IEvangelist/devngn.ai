@@ -33,7 +33,11 @@
     "skipToContent": "Skip to content",
     "loadError": "Failed to load data.",
     "saveError": "Failed to save.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "edit": "Edit",
+    "remove": "Remove",
+    "confirm": "Confirm",
+    "account": "Account"
   },
   "auth": {
     "title": "Sign in as yourself",
@@ -44,7 +48,7 @@
     "errorTitle": "Sign-in couldn't start",
     "errorHint": "The wellness API rejected the request. Make sure the API is running and that a GitHub OAuth app with device flow enabled is configured.",
     "devButton": "Dev sign-in (skip GitHub)",
-    "devHint": "Local development only — mints a token for a test user.",
+    "devHint": "Local development only. Mints a token for a test user.",
     "signedInAs": "Signed in as {login}",
     "callback": {
       "title": "Finishing GitHub sign-in",
@@ -61,14 +65,23 @@
   "today": {
     "title": "Today",
     "empty": "No interruptions right now. We'll nudge you when it's time.",
-    "nextIn": "Next nudge in {time}"
+    "nextIn": "Next nudge in {time}",
+    "greetMorning": "Good morning",
+    "greetAfternoon": "Good afternoon",
+    "greetEvening": "Good evening",
+    "orient": "Your calm corner of the workday. Small resets, right when they help.",
+    "rightNow": "Right now",
+    "clearTitle": "You're clear right now"
   },
   "interruptions": {
     "title": "Interruptions",
     "completeCta": "Done",
     "snoozeCta": "Snooze",
     "dismissCta": "Not now",
-    "feedback": "How was that?"
+    "feedback": "How was that?",
+    "liveTitle": "Live & recent",
+    "intro": "Live nudges as they arrive, and the history of how your day went.",
+    "emptyTitle": "Nothing live right now"
   },
   "goals": {
     "title": "Goal title",
@@ -169,6 +182,80 @@
     "updateAvailable": "Update available",
     "installUpdate": "Install and restart",
     "updateError": "Update failed. Please try again.",
-    "pwaAutoUpdate": "PWA updates automatically in the background."
+    "pwaAutoUpdate": "PWA updates automatically in the background.",
+    "intro": "Tune how devngn fits your body, your gear, and your day."
+  },
+  "profile": {
+    "title": "Personal setup",
+    "intro": "Tell us how you like to move. This shapes every nudge: intensity, pace, and what to skip.",
+    "saved": "Saved",
+    "savedToast": "Your setup is saved.",
+    "signInHint": "Sign in to set up your profile.",
+    "fitnessBaseline": "Activity level",
+    "preferredIntensity": "Preferred intensity",
+    "ageRange": "Age range",
+    "timeOfDay": "Best time of day",
+    "heightCm": "Height (cm)",
+    "weightKg": "Weight (kg)",
+    "limitations": "Limitations",
+    "limitationsPlaceholder": "e.g. sore wrist, bad knee",
+    "limitationsHelp": "We'll avoid moves that could aggravate these.",
+    "optional": "Optional",
+    "notSet": "Not set",
+    "save": "Save setup",
+    "baseline": {
+      "Unspecified": "Prefer not to say",
+      "Sedentary": "Mostly sedentary",
+      "Light": "Lightly active",
+      "Moderate": "Moderately active",
+      "Active": "Very active"
+    },
+    "intensity": {
+      "Low": "Low",
+      "Medium": "Medium",
+      "High": "High"
+    },
+    "time": {
+      "Morning": "Morning",
+      "Afternoon": "Afternoon",
+      "Evening": "Evening",
+      "Anytime": "Anytime"
+    }
+  },
+  "equipment": {
+    "title": "Equipment",
+    "intro": "Add the gear you have nearby. The more we know, the better we can match a break to your setup.",
+    "add": "Add equipment",
+    "addTitle": "Add equipment",
+    "editTitle": "Edit equipment",
+    "quickAdd": "Quick add",
+    "signInHint": "Sign in to manage your equipment.",
+    "empty": "No equipment yet. Add what you have nearby.",
+    "tag": "Tag",
+    "tagPlaceholder": "e.g. chair-only",
+    "tagHelp": "A short matching key the engine uses. Lowercase, no spaces.",
+    "tagLocked": "The tag can't be changed after creation.",
+    "displayName": "Name",
+    "notes": "Notes",
+    "added": "Added {name}.",
+    "removed": "Removed {name}.",
+    "removeTitle": "Remove equipment?",
+    "removeBody": "Remove {name} from your equipment? You can add it again later."
+  },
+  "forecast": {
+    "title": "What's coming",
+    "intro": "A look at your next free moments and the break we'd most likely suggest. A few are left as a surprise.",
+    "refresh": "Refresh",
+    "empty": "No free time coming up in the next couple of days. Connect a calendar to see your forecast.",
+    "upNext": "Up next",
+    "surpriseTitle": "A surprise is planned",
+    "surpriseSub": "We'll reveal this one when it's time.",
+    "noFitTitle": "Open moment",
+    "noFitSub": "Nothing in your catalog fits yet. Add equipment to unlock more.",
+    "minutes": "{n} min",
+    "now": "Now",
+    "inMinutes": "in {n} min",
+    "inHours": "in {n} h",
+    "inDays": "in {n} d"
   }
 }

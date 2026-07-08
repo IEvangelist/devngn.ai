@@ -3,15 +3,16 @@
   Licensed under the MIT License. SPDX-License-Identifier: MIT
 -->
 <template>
-  <button
-    type="button"
-    class="brut-btn brut-btn--sm theme-toggle"
-    :aria-label="label"
-    :title="label"
-    @click="toggle"
-  >
-    <span aria-hidden="true">{{ glyph }}</span>
-  </button>
+  <BrutTooltip :text="label">
+    <button
+      type="button"
+      class="brut-btn brut-btn--sm theme-toggle"
+      :aria-label="label"
+      @click="toggle"
+    >
+      <span aria-hidden="true">{{ glyph }}</span>
+    </button>
+  </BrutTooltip>
 </template>
 
 <script setup lang="ts">
