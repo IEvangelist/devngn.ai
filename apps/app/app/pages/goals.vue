@@ -3,17 +3,16 @@
   Licensed under the MIT License. SPDX-License-Identifier: MIT
 -->
 <template>
-  <section>
-    <p class="brut-eyebrow">{{ $t("app.name") }}</p>
-    <h1>{{ $t("goals.title") }}</h1>
+  <section class="page">
+    <PageHeader :title="$t('goals.pageTitle')" :intro="$t('goals.intro')">
+      <template #actions>
+        <BrutButton variant="accent" @click="showCreate = true">
+          {{ $t("goals.addGoal") }}
+        </BrutButton>
+      </template>
+    </PageHeader>
 
-    <div class="goals__actions">
-      <BrutButton variant="accent" @click="showCreate = true">
-        {{ $t("goals.addGoal") }}
-      </BrutButton>
-    </div>
-
-    <div v-if="goals.length" class="goals__list">
+    <div v-if="goals.length" class="goals__list reveal reveal--1">
       <BrutCard v-for="goal in goals" :key="goal.id" class="goal-card">
         <div class="goal-card__header">
           <BrutChip :color="categoryColor(goal.category)">
@@ -29,10 +28,10 @@
         <p v-if="goal.description" class="goal-card__desc">{{ goal.description }}</p>
       </BrutCard>
     </div>
-    <BrutPanel v-else-if="!loading" class="goals__empty">
+    <BrutPanel v-else-if="!loading" class="goals__empty reveal reveal--1">
       <p>{{ $t("goals.empty") }}</p>
     </BrutPanel>
-    <BrutPanel v-else>
+    <BrutPanel v-else class="reveal reveal--1">
       <p>{{ $t("common.loading") }}</p>
     </BrutPanel>
 
@@ -120,7 +119,6 @@ watch(isAuthenticated, (v) => { if (v) fetchGoals(); });
 </script>
 
 <style scoped>
-.goals__actions { margin-bottom: 1.25rem; }
 .goals__list { display: grid; gap: 1rem; }
 .goals__empty { text-align: center; color: var(--muted); }
 .goal-card__header { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.65rem; }

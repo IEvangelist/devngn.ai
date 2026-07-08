@@ -4,9 +4,8 @@
   Wave 2: bound to /v1/gamification/milestones via gamification store.
 -->
 <template>
-  <section>
-    <p class="brut-eyebrow">{{ $t("app.name") }}</p>
-    <h1>{{ $t("milestones.title") }}</h1>
+  <section class="page">
+    <PageHeader :title="$t('milestones.title')" :intro="$t('milestones.intro')" />
 
     <!-- Loading -->
     <div v-if="loadingMilestones" class="state-msg" role="status" aria-live="polite">

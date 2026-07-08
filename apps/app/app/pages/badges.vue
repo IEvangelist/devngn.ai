@@ -4,9 +4,8 @@
   Wave 2: bound to /v1/gamification/badges via gamification store.
 -->
 <template>
-  <section>
-    <p class="brut-eyebrow">{{ $t("app.name") }}</p>
-    <h1>{{ $t("badges.title") }}</h1>
+  <section class="page">
+    <PageHeader :title="$t('badges.title')" :intro="$t('badges.intro')" />
 
     <!-- Loading -->
     <div v-if="loadingBadges" class="state-msg" role="status" aria-live="polite">
@@ -21,7 +20,7 @@
 
     <template v-else>
       <!-- Earned badges -->
-      <h2 class="section-heading">{{ $t("badges.earned") }} ({{ earnedBadges.length }})</h2>
+      <h2 class="section-label">{{ $t("badges.earned") }} ({{ earnedBadges.length }})</h2>
 
       <p v-if="earnedBadges.length === 0" class="state-msg">{{ $t("badges.empty") }}</p>
 
@@ -45,7 +44,7 @@
       </div>
 
       <!-- Locked / hidden badges -->
-      <h2 class="section-heading">{{ $t("badges.locked") }} ({{ lockedBadges.length }})</h2>
+      <h2 class="section-label">{{ $t("badges.locked") }} ({{ lockedBadges.length }})</h2>
 
       <div v-if="lockedBadges.length > 0" class="badge-grid" role="list">
         <div
@@ -80,13 +79,8 @@ onMounted(() => store.fetchBadges());
 </script>
 
 <style scoped>
-.section-heading {
-  font-size: 1rem;
-  margin: 1.5rem 0 0.75rem;
-  color: var(--muted);
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.section-label {
+  margin: 1.5rem 0 0.85rem;
 }
 .state-msg {
   display: flex;

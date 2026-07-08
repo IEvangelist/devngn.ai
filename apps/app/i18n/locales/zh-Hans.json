@@ -77,7 +77,8 @@
     "category": "Category",
     "target": "Target",
     "progress": "Progress",
-    "created": "Goal created!"
+    "created": "Goal created!",
+    "intro": "定好方向。小小的坚持，日积月累。"
   },
   "gamification": {
     "level": "Level {level}",
@@ -98,7 +99,8 @@
     "loading": "Loading badges…",
     "error": "Failed to load badges.",
     "empty": "No badges yet. Keep completing wellness interruptions!",
-    "earnedOn": "Earned {date}"
+    "earnedOn": "Earned {date}",
+    "intro": "你已解锁的奖励，以及触手可及的下一个。"
   },
   "milestones": {
     "title": "Milestones",
@@ -107,7 +109,8 @@
     "loading": "Loading milestones…",
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
-    "achievedOn": "Achieved {date}"
+    "achievedOn": "Achieved {date}",
+    "intro": "旅程中的重要时刻，以及抵达的路径。"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -119,7 +122,8 @@
     "loading": "Loading leaderboard…",
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
-    "signIn": "Sign in to see the leaderboard."
+    "signIn": "Sign in to see the leaderboard.",
+    "intro": "看看你的势头与其他开发者相比如何。"
   },
   "social": {
     "title": "Social",
@@ -140,7 +144,8 @@
     "profileSaved": "Profile saved!",
     "profileError": "Failed to save profile.",
     "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
-    "feedLoading": "Loading feed…"
+    "feedLoading": "Loading feed…",
+    "intro": "你的公开资料，以及你的圈子在做什么。"
   },
   "pwa": {
     "updateAvailable": "New version available!",

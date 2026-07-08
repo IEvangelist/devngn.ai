@@ -77,7 +77,8 @@
     "category": "Category",
     "target": "Target",
     "progress": "Progress",
-    "created": "Goal created!"
+    "created": "Goal created!",
+    "intro": "方向を決めよう。小さな達成が積み重なっていきます。"
   },
   "gamification": {
     "level": "Level {level}",
@@ -98,7 +99,8 @@
     "loading": "Loading badges…",
     "error": "Failed to load badges.",
     "empty": "No badges yet. Keep completing wellness interruptions!",
-    "earnedOn": "Earned {date}"
+    "earnedOn": "Earned {date}",
+    "intro": "獲得した報酬と、あと少しで手が届くもの。"
   },
   "milestones": {
     "title": "Milestones",
@@ -107,7 +109,8 @@
     "loading": "Loading milestones…",
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
-    "achievedOn": "Achieved {date}"
+    "achievedOn": "Achieved {date}",
+    "intro": "旅の大きな節目と、そこへの道のり。"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -119,7 +122,8 @@
     "loading": "Loading leaderboard…",
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
-    "signIn": "Sign in to see the leaderboard."
+    "signIn": "Sign in to see the leaderboard.",
+    "intro": "あなたの勢いを、ほかの開発者と比べてみましょう。"
   },
   "social": {
     "title": "Social",
@@ -140,7 +144,8 @@
     "profileSaved": "Profile saved!",
     "profileError": "Failed to save profile.",
     "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
-    "feedLoading": "Loading feed…"
+    "feedLoading": "Loading feed…",
+    "intro": "あなたの公開プロフィールと、仲間の近況。"
   },
   "pwa": {
     "updateAvailable": "New version available!",

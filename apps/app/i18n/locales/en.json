@@ -92,7 +92,8 @@
     "category": "Category",
     "target": "Target",
     "progress": "Progress",
-    "created": "Goal created!"
+    "created": "Goal created!",
+    "intro": "Set the direction. Small, repeatable wins that add up."
   },
   "gamification": {
     "level": "Level {level}",
@@ -113,7 +114,8 @@
     "loading": "Loading badges…",
     "error": "Failed to load badges.",
     "empty": "No badges yet. Keep completing wellness interruptions!",
-    "earnedOn": "Earned {date}"
+    "earnedOn": "Earned {date}",
+    "intro": "The rewards you've unlocked, and what's still within reach."
   },
   "milestones": {
     "title": "Milestones",
@@ -122,7 +124,8 @@
     "loading": "Loading milestones…",
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
-    "achievedOn": "Achieved {date}"
+    "achievedOn": "Achieved {date}",
+    "intro": "Bigger moments on your journey, and how to reach them."
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -134,7 +137,8 @@
     "loading": "Loading leaderboard…",
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
-    "signIn": "Sign in to see the leaderboard."
+    "signIn": "Sign in to see the leaderboard.",
+    "intro": "See how your momentum stacks up against other developers."
   },
   "social": {
     "title": "Social",
@@ -155,7 +159,8 @@
     "profileSaved": "Profile saved!",
     "profileError": "Failed to save profile.",
     "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
-    "feedLoading": "Loading feed…"
+    "feedLoading": "Loading feed…",
+    "intro": "Your public profile and what your circle is up to."
   },
   "pwa": {
     "updateAvailable": "New version available!",

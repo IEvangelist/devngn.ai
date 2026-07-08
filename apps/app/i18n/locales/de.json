@@ -77,7 +77,8 @@
     "category": "Category",
     "target": "Target",
     "progress": "Progress",
-    "created": "Goal created!"
+    "created": "Goal created!",
+    "intro": "Gib die Richtung vor. Kleine Erfolge, die sich summieren."
   },
   "gamification": {
     "level": "Level {level}",
@@ -98,7 +99,8 @@
     "loading": "Loading badges…",
     "error": "Failed to load badges.",
     "empty": "No badges yet. Keep completing wellness interruptions!",
-    "earnedOn": "Earned {date}"
+    "earnedOn": "Earned {date}",
+    "intro": "Die Belohnungen, die du freigeschaltet hast, und was noch erreichbar ist."
   },
   "milestones": {
     "title": "Milestones",
@@ -107,7 +109,8 @@
     "loading": "Loading milestones…",
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
-    "achievedOn": "Achieved {date}"
+    "achievedOn": "Achieved {date}",
+    "intro": "Die großen Momente deines Weges und wie du sie erreichst."
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -119,7 +122,8 @@
     "loading": "Loading leaderboard…",
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
-    "signIn": "Sign in to see the leaderboard."
+    "signIn": "Sign in to see the leaderboard.",
+    "intro": "Sieh, wie dein Schwung im Vergleich zu anderen Entwicklern steht."
   },
   "social": {
     "title": "Social",
@@ -140,7 +144,8 @@
     "profileSaved": "Profile saved!",
     "profileError": "Failed to save profile.",
     "feedEmpty": "Your feed is empty. Follow others to see their activity here.",
-    "feedLoading": "Loading feed…"
+    "feedLoading": "Loading feed…",
+    "intro": "Dein öffentliches Profil und was dein Kreis gerade macht."
   },
   "pwa": {
     "updateAvailable": "New version available!",

@@ -8,9 +8,8 @@
     - isCurrentUser is determined by comparing userId to auth.user.id
 -->
 <template>
-  <section>
-    <p class="brut-eyebrow">{{ $t("app.name") }}</p>
-    <h1>{{ $t("leaderboard.title") }}</h1>
+  <section class="page">
+    <PageHeader :title="$t('leaderboard.title')" :intro="$t('leaderboard.intro')" />
 
     <!-- Loading -->
     <div v-if="loadingLeaderboard" class="state-msg" role="status" aria-live="polite">
@@ -121,7 +120,8 @@ onMounted(() => store.fetchLeaderboard());
   overflow-x: auto;
   margin-top: 1rem;
   border: var(--border);
-  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
 }
 .leaderboard__table {
   width: 100%;
@@ -132,7 +132,7 @@ onMounted(() => store.fetchLeaderboard());
 .leaderboard__table td {
   padding: 0.65rem 0.85rem;
   text-align: left;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
 .leaderboard__table thead tr {

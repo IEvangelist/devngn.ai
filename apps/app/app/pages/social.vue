@@ -10,9 +10,8 @@
     - Profanity filter is server-side; UI just shows the server-sanitized value.
 -->
 <template>
-  <section>
-    <p class="brut-eyebrow">{{ $t("app.name") }}</p>
-    <h1>{{ $t("social.title") }}</h1>
+  <section class="page">
+    <PageHeader :title="$t('social.title')" :intro="$t('social.intro')" />
 
     <div v-if="!isAuthenticated" class="state-msg">
       {{ $t("leaderboard.signIn") }}
@@ -237,15 +236,6 @@ watch(isAuthenticated, (val) => {
 }
 .state-msg--error { color: var(--danger); }
 
-.section-label {
-  font-size: 0.85rem;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  margin: 0 0 1rem;
-}
-
 /* Profile panel */
 .social-panel { display: flex; flex-direction: column; gap: 1rem; }
 
@@ -304,6 +294,7 @@ watch(isAuthenticated, (val) => {
 
 /* Feed */
 .social-feed { display: flex; flex-direction: column; gap: 0.25rem; }
+.social-feed .section-label { margin-bottom: 0.5rem; }
 .feed-list { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .feed-card { display: flex; flex-direction: column; gap: 0.5rem; }
