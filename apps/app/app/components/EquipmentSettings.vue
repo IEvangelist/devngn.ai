@@ -8,8 +8,8 @@
   <BrutPanel class="settings-section">
     <div class="section-head">
       <h2 class="section-label">{{ $t("equipment.title") }}</h2>
-      <BrutButton size="sm" variant="accent" :disabled="!isAuthenticated" @click="openCreate">
-        {{ $t("equipment.add") }}
+      <BrutButton size="sm" variant="ghost" :disabled="!isAuthenticated" @click="openCreate">
+        <AppIcon name="plus" /> {{ $t("equipment.addCustom") }}
       </BrutButton>
     </div>
     <p class="section-intro">{{ $t("equipment.intro") }}</p>
@@ -19,47 +19,73 @@
     </template>
 
     <template v-else>
-      <!-- Quick add: gear the catalog knows about that you haven't registered -->
-      <div v-if="suggestions.length" class="quick-add">
-        <span class="field-label">{{ $t("equipment.quickAdd") }}</span>
-        <div class="quick-add__chips">
+      <div v-if="equipmentStore.loading && !catalogGroups.length" class="tile-skeleton" aria-hidden="true">
+        <div v-for="n in 6" :key="n" class="skeleton-tile" />
+      </div>
+
+      <!-- Curated, categorised gear picker. Tap a tile to add or remove. -->
+      <div v-for="group in catalogGroups" :key="group.category" class="equip-group">
+        <h3 class="equip-group__label">
+          <AppIcon :name="categoryIcon(group.category)" />
+          {{ categoryLabel(group.category) }}
+        </h3>
+        <div class="equip-grid">
           <button
-            v-for="s in suggestions"
-            :key="s.tag"
+            v-for="entry in group.entries"
+            :key="entry.tag"
             type="button"
-            class="quick-chip"
+            class="equip-tile"
+            :class="{ 'equip-tile--owned': isOwned(entry.tag) }"
+            :aria-pressed="isOwned(entry.tag)"
+            :aria-label="isOwned(entry.tag)
+              ? $t('equipment.removeA11y', { name: entry.displayName })
+              : $t('equipment.addA11y', { name: entry.displayName })"
             :disabled="equipmentStore.saving"
-            @click="quickAdd(s)"
+            @click="toggleCatalog(entry)"
           >
-            <span aria-hidden="true">＋</span> {{ s.displayName }}
+            <span class="equip-tile__mark" aria-hidden="true">
+              <AppIcon :name="equipmentIcon(entry.tag)" />
+            </span>
+            <span class="equip-tile__name">{{ entry.displayName }}</span>
+            <span v-if="policyHint(entry)" class="equip-tile__hint">{{ policyHint(entry) }}</span>
+            <span v-if="isOwned(entry.tag)" class="equip-tile__check" aria-hidden="true">
+              <AppIcon name="check-circle" />
+            </span>
           </button>
         </div>
       </div>
 
-      <!-- Owned equipment -->
-      <ul v-if="equipmentStore.items.length" class="equip-list">
-        <li v-for="item in equipmentStore.items" :key="item.id" class="equip-row">
-          <div class="equip-row__main">
-            <span class="equip-row__name">{{ item.displayName }}</span>
-            <BrutBadge color="teal">{{ item.tag }}</BrutBadge>
-            <span v-if="item.notes" class="equip-row__notes">{{ item.notes }}</span>
-          </div>
-          <div class="equip-row__actions">
-            <BrutButton size="sm" variant="ghost" @click="openEdit(item)">
-              {{ $t("common.edit") }}
-            </BrutButton>
-            <BrutButton size="sm" variant="ghost" @click="askRemove(item)">
-              {{ $t("common.remove") }}
-            </BrutButton>
-          </div>
-        </li>
-      </ul>
-
-      <div v-else-if="equipmentStore.loading" class="form-skeleton" aria-hidden="true">
-        <div v-for="n in 2" :key="n" class="skeleton-row" />
+      <!-- Gear you registered by hand that isn't in the curated catalog -->
+      <div v-if="customItems.length" class="equip-group">
+        <h3 class="equip-group__label">
+          <AppIcon name="barbell" />
+          {{ $t("equipment.customTitle") }}
+        </h3>
+        <ul class="equip-list">
+          <li v-for="item in customItems" :key="item.id" class="equip-row">
+            <div class="equip-row__main">
+              <span class="equip-row__name">{{ item.displayName }}</span>
+              <BrutBadge color="teal">{{ item.tag }}</BrutBadge>
+              <span v-if="item.notes" class="equip-row__notes">{{ item.notes }}</span>
+            </div>
+            <div class="equip-row__actions">
+              <BrutButton size="sm" variant="ghost" @click="openEdit(item)">
+                {{ $t("common.edit") }}
+              </BrutButton>
+              <BrutButton size="sm" variant="ghost" @click="askRemove(item)">
+                {{ $t("common.remove") }}
+              </BrutButton>
+            </div>
+          </li>
+        </ul>
       </div>
 
-      <p v-else class="equip-empty">{{ $t("equipment.empty") }}</p>
+      <p
+        v-if="!equipmentStore.loading && !catalogGroups.length && !customItems.length"
+        class="equip-empty"
+      >
+        {{ $t("equipment.empty") }}
+      </p>
 
       <p v-if="equipmentStore.error" class="form-error" role="alert">{{ equipmentStore.error }}</p>
     </template>
@@ -110,29 +136,72 @@
 </template>
 
 <script setup lang="ts">
-import type { EquipmentResponse, ActivityResponse } from "~/types/wellness";
+import type {
+  EquipmentResponse,
+  EquipmentCatalogEntryResponse,
+  EquipmentCategory,
+} from "~/types/wellness";
 
 const { t } = useI18n();
 const toast = useToast();
 const { isAuthenticated } = storeToRefs(useAuthStore());
 const equipmentStore = useEquipmentStore();
-const apiFetch = useApiFetch();
+const { equipmentIcon, categoryIcon } = useEquipmentIcons();
 
-/** Friendly names for the tags the seeded catalog understands. */
-const KNOWN_TAG_NAMES: Record<string, string> = {
-  "chair-only": "Office chair",
-  "bands-light": "Light resistance band",
-  mat: "Exercise mat",
-};
+/** Stable category order for the picker sections. */
+const CATEGORY_ORDER: EquipmentCategory[] = ["Cardio", "Strength", "Mobility", "Desk"];
 
-const catalogTags = ref<string[]>([]);
+const catalogTagSet = computed(() => new Set(equipmentStore.catalog.map((c) => c.tag)));
+const ownedTagSet = computed(() => new Set(equipmentStore.tags));
 
-const suggestions = computed(() => {
-  const owned = new Set(equipmentStore.tags);
-  return catalogTags.value
-    .filter((tag) => !owned.has(tag))
-    .map((tag) => ({ tag, displayName: KNOWN_TAG_NAMES[tag] ?? tag }));
-});
+/** Catalog entries grouped by category, in a fixed display order. */
+const catalogGroups = computed(() =>
+  CATEGORY_ORDER.map((category) => ({
+    category,
+    entries: equipmentStore.catalog.filter((c) => c.category === category),
+  })).filter((g) => g.entries.length > 0),
+);
+
+/** Registered gear that isn't part of the curated catalog. */
+const customItems = computed(() =>
+  equipmentStore.items.filter((i) => !catalogTagSet.value.has(i.tag)),
+);
+
+function isOwned(tag: string): boolean {
+  return ownedTagSet.value.has(tag);
+}
+
+function categoryLabel(category: EquipmentCategory): string {
+  return t(`equipment.category${category}`);
+}
+
+/** A short cadence hint for gear that carries a recommended usage policy. */
+function policyHint(entry: EquipmentCatalogEntryResponse): string | null {
+  const sessions = Number(entry.recommendedWeeklySessions) || 0;
+  const minutes = Number(entry.minSessionMinutes) || 0;
+  if (sessions && minutes) return t("equipment.policyFull", { sessions, minutes });
+  if (sessions) return t("equipment.policySessions", { sessions });
+  if (minutes) return t("equipment.policyMinutes", { minutes });
+  return null;
+}
+
+async function toggleCatalog(entry: EquipmentCatalogEntryResponse): Promise<void> {
+  const owned = equipmentStore.ownedByTag(entry.tag);
+  if (owned) {
+    askRemove(owned);
+    return;
+  }
+  const ok = await equipmentStore.create({
+    tag: entry.tag,
+    displayName: entry.displayName,
+    notes: null,
+  });
+  if (ok) {
+    toast.success(t("equipment.added", { name: entry.displayName }));
+  } else {
+    toast.error(t("common.saveError"));
+  }
+}
 
 const showForm = ref(false);
 const editing = ref<EquipmentResponse | null>(null);
@@ -174,15 +243,6 @@ async function submitForm(): Promise<void> {
   }
 }
 
-async function quickAdd(s: { tag: string; displayName: string }): Promise<void> {
-  const ok = await equipmentStore.create({ tag: s.tag, displayName: s.displayName, notes: null });
-  if (ok) {
-    toast.success(t("equipment.added", { name: s.displayName }));
-  } else {
-    toast.error(t("common.saveError"));
-  }
-}
-
 const confirmOpen = ref(false);
 const pendingRemove = ref<EquipmentResponse | null>(null);
 
@@ -204,22 +264,9 @@ async function doRemove(): Promise<void> {
   }
 }
 
-async function loadCatalogTags(): Promise<void> {
-  try {
-    const catalog = await apiFetch<ActivityResponse[]>("/v1/activities");
-    const tags = new Set<string>();
-    for (const a of catalog ?? []) {
-      for (const tag of a.equipmentTags) tags.add(tag);
-    }
-    catalogTags.value = Array.from(tags).sort();
-  } catch {
-    catalogTags.value = [];
-  }
-}
-
 async function loadForUser(): Promise<void> {
   await Promise.all([
-    catalogTags.value.length ? Promise.resolve() : loadCatalogTags(),
+    equipmentStore.catalogLoaded ? Promise.resolve() : equipmentStore.fetchCatalog(),
     equipmentStore.loaded ? Promise.resolve() : equipmentStore.fetch(),
   ]);
 }
@@ -252,33 +299,85 @@ watch(isAuthenticated, (v) => {
   color: var(--ink);
 }
 .field-help { font-size: 0.78rem; color: var(--muted); }
-.quick-add {
+
+.equip-group { margin-top: 1.4rem; }
+.equip-group:first-of-type { margin-top: 0.4rem; }
+.equip-group__label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.equip-group__label :deep(svg) { color: var(--accent-strong); font-size: 1.05rem; }
+
+.equip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 0.7rem;
+}
+.equip-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.1rem;
-}
-.quick-add__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.quick-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--accent-strong);
-  background: var(--accent-tint);
-  border: 1px solid var(--accent-line);
-  border-radius: var(--radius-pill);
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.85rem 0.85rem 0.9rem;
+  text-align: left;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
 }
-.quick-chip:hover { background: var(--accent-tint-strong); }
-.quick-chip:disabled { opacity: 0.5; cursor: default; }
+.equip-tile:hover { border-color: var(--accent-line); }
+.equip-tile:active { transform: translateY(1px); }
+.equip-tile:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+.equip-tile:disabled { opacity: 0.6; cursor: default; }
+.equip-tile--owned {
+  border-color: var(--accent-strong);
+  background: var(--accent-tint);
+}
+.equip-tile__mark {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1.25rem;
+}
+.equip-tile--owned .equip-tile__mark {
+  color: var(--accent-strong);
+  border-color: var(--accent-line);
+}
+.equip-tile__name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+}
+.equip-tile__hint {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.equip-tile--owned .equip-tile__hint { color: var(--accent-strong); }
+.equip-tile__check {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: var(--accent-strong);
+  font-size: 1.05rem;
+  line-height: 0;
+}
+
 .equip-list {
   list-style: none;
   margin: 0;
@@ -307,10 +406,15 @@ watch(isAuthenticated, (v) => {
 .equip-row__actions { flex: 0 0 auto; display: flex; gap: 0.35rem; }
 .equip-empty { color: var(--muted); font-size: 0.9rem; margin: 0.25rem 0; }
 .form-error { margin: 0.5rem 0 0; color: var(--danger); font-size: 0.85rem; }
-.form-skeleton { display: flex; flex-direction: column; gap: 0.7rem; }
-.skeleton-row {
-  height: 2.5rem;
-  border-radius: var(--radius-sm);
+
+.tile-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 0.7rem;
+}
+.skeleton-tile {
+  height: 6rem;
+  border-radius: var(--radius);
   background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2));
   background-size: 200% 100%;
   animation: shimmer 1.3s ease-in-out infinite;
@@ -320,7 +424,7 @@ watch(isAuthenticated, (v) => {
   to   { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .skeleton-row { animation: none; }
+  .skeleton-tile { animation: none; }
 }
 @media (max-width: 640px) {
   .equip-row { flex-direction: column; align-items: flex-start; }

@@ -44,6 +44,18 @@ internal sealed class PromptMatcher : IPromptMatcher
     private const int GoalAlignmentBonus = 3;
     private const int VarietyBonus = 1;
 
+    // Lean on registered gear "more often than not": a soft nudge toward activities that
+    // actually use equipment the user owns, without overpowering intensity/goal fit.
+    private const int EquipmentUseBonus = 2;
+
+    // Cadence policy (e.g. under-desk treadmill 3x/week): while the user is behind on the
+    // weekly target, push policy'd activities hard so they reliably land across the week.
+    private const int PolicyFrequencyBonus = 6;
+
+    // When a gap is long enough, prefer a policy'd activity that meets its minimum session
+    // length (e.g. a 30-minute treadmill walk over a 10-minute stroll).
+    private const int PolicyMinSessionBonus = 3;
+
     public Activity? Match(PromptMatchContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -89,6 +101,46 @@ internal sealed class PromptMatcher : IPromptMatcher
         if (!context.RecentActivityIds.Contains(activity.Id))
         {
             score += VarietyBonus;
+        }
+
+        score += EquipmentScore(activity, context);
+
+        return score;
+    }
+
+    /// <summary>
+    /// Rewards activities that use the user's registered equipment, and applies cadence
+    /// policy on top: a strong bonus while the user is behind a weekly target, plus a
+    /// preference for meeting a policy's minimum session length when the gap allows.
+    /// Returns 0 for no-equipment activities so simple stretches stay first-class.
+    /// </summary>
+    private static int EquipmentScore(Activity activity, PromptMatchContext context)
+    {
+        if (activity.EquipmentTags.Length == 0 ||
+            !IsEquipmentSubset(activity.EquipmentTags, context.EquipmentTags))
+        {
+            return 0;
+        }
+
+        var score = EquipmentUseBonus;
+
+        foreach (var tag in activity.EquipmentTags)
+        {
+            if (!context.EquipmentPolicies.TryGetValue(tag, out var policy))
+            {
+                continue;
+            }
+
+            var deliveredThisWeek = context.EquipmentDeliveryCountsLast7Days.GetValueOrDefault(tag);
+            if (deliveredThisWeek < policy.RecommendedWeeklySessions)
+            {
+                score += PolicyFrequencyBonus;
+            }
+
+            if (policy.MinSessionMinutes > 0 && activity.DurationSeconds >= policy.MinSessionMinutes * 60)
+            {
+                score += PolicyMinSessionBonus;
+            }
         }
 
         return score;

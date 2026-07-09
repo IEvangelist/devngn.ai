@@ -69,6 +69,29 @@
         }
       }
     },
+    "/v1/equipment/catalog": {
+      "get": {
+        "tags": [
+          "Equipment"
+        ],
+        "operationId": "ListEquipmentCatalog",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EquipmentCatalogEntryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/auth/github/device": {
       "post": {
         "tags": [
@@ -1968,7 +1991,8 @@
           "equipmentTags",
           "animationProvider",
           "animationAssetId",
-          "licenseAttribution"
+          "licenseAttribution",
+          "steps"
         ],
         "type": "object",
         "properties": {
@@ -2016,6 +2040,50 @@
               "null",
               "string"
             ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityStep"
+            }
+          }
+        }
+      },
+      "ActivityStep": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "holdSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "reps": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "sets": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -2355,6 +2423,60 @@
             ]
           }
         }
+      },
+      "EquipmentCatalogEntryResponse": {
+        "required": [
+          "tag",
+          "displayName",
+          "category",
+          "description",
+          "recommendedWeeklySessions",
+          "minSessionMinutes"
+        ],
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/EquipmentCategory"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "recommendedWeeklySessions": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "minSessionMinutes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "EquipmentCategory": {
+        "enum": [
+          "Cardio",
+          "Strength",
+          "Mobility",
+          "Desk"
+        ]
       },
       "EquipmentResponse": {
         "required": [
@@ -2883,6 +3005,7 @@
           "animationProvider",
           "animationAssetId",
           "licenseAttribution",
+          "steps",
           "gapStartUtc",
           "gapEndUtc",
           "deliveredAt",
@@ -2941,6 +3064,12 @@
               "null",
               "string"
             ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityStep"
+            }
           },
           "gapStartUtc": {
             "type": "string",
@@ -3382,6 +3511,9 @@
       "name": "Meta"
     },
     {
+      "name": "Equipment"
+    },
+    {
       "name": "Consent"
     },
     {
@@ -3389,9 +3521,6 @@
     },
     {
       "name": "Goals"
-    },
-    {
-      "name": "Equipment"
     },
     {
       "name": "ScheduleSources"

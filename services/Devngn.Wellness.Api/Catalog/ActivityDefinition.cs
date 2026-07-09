@@ -21,6 +21,8 @@ namespace Devngn.Wellness.Api.Catalog;
 ///   <item><see cref="DurationSeconds"/> is &gt; 0.</item>
 ///   <item>Each entry in <see cref="EquipmentTags"/> matches the same
 ///         lower-kebab shape as the slug.</item>
+///   <item><see cref="Steps"/> is optional; when present each step has non-empty
+///         text and any numeric field (hold/reps/sets) is positive.</item>
 /// </list>
 /// </remarks>
 public sealed record ActivityDefinition(
@@ -33,4 +35,5 @@ public sealed record ActivityDefinition(
     string[] EquipmentTags,
     string AnimationProvider,
     string AnimationAssetId,
-    string? LicenseAttribution);
+    string? LicenseAttribution,
+    ActivityStep[]? Steps = null);

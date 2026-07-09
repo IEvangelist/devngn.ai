@@ -190,6 +190,7 @@ export const mockPendingPrompt: PromptResponse = {
   intensity: "Low",
   durationSeconds: 120,
   equipmentTags: [],
+  steps: [],
   animationProvider: "lottie",
   animationAssetId: "standing-break.json",
   licenseAttribution: null,

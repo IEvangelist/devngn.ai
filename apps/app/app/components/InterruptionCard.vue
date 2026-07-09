@@ -19,11 +19,34 @@
         </header>
 
         <h3 class="interruption-card__title">{{ prompt.activityTitle }}</h3>
+
+        <div class="interruption-card__meta">
+          <span class="ix-meta-chip" :class="`ix-meta-chip--${intensityKey}`">
+            {{ intensityLabel }}
+          </span>
+          <span class="ix-meta-chip ix-meta-chip--time">
+            <AppIcon name="timer" /> {{ durationLabel }}
+          </span>
+          <span v-if="gearName" class="ix-meta-chip ix-meta-chip--gear">
+            <AppIcon :name="gearIcon" /> {{ $t("interruptions.usesGear", { name: gearName }) }}
+          </span>
+        </div>
+
         <p class="interruption-card__body">{{ prompt.activityDescription }}</p>
 
-        <div v-if="showHistory" class="interruption-card__meta brut-eyebrow">
-          {{ prompt.intensity }} · {{ prompt.durationSeconds }}s
-        </div>
+        <!-- Step-by-step guidance for the more involved activities. Simple
+             one-liners carry no steps and stay a single sentence above. -->
+        <ol v-if="hasSteps" class="ix-steps">
+          <li v-for="(step, i) in prompt.steps" :key="i" class="ix-step">
+            <span class="ix-step__num">{{ i + 1 }}</span>
+            <span class="ix-step__body">
+              <span class="ix-step__text">{{ step.text }}</span>
+              <span v-if="stepMetrics(step).length" class="ix-step__metrics">
+                <span v-for="m in stepMetrics(step)" :key="m" class="ix-step__metric">{{ m }}</span>
+              </span>
+            </span>
+          </li>
+        </ol>
 
         <!-- Actions: only for pending prompts (not yet dismissed or completed) -->
         <footer v-if="isActionable" class="interruption-card__actions">
@@ -87,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import type { PromptResponse } from "@devngn/wellness-types";
+import type { PromptResponse, ActivityStep } from "@devngn/wellness-types";
 
 const props = defineProps<{
   prompt: PromptResponse;
@@ -95,6 +118,8 @@ const props = defineProps<{
 }>();
 
 const interruptions = useInterruptionsStore();
+const equipment = useEquipmentStore();
+const { equipmentIcon } = useEquipmentIcons();
 const toast = useToast();
 const { t } = useI18n();
 const acting = ref<"complete" | "snooze" | "dismiss" | null>(null);
@@ -129,6 +154,60 @@ const statusColor = computed((): "teal" | "purple" | "pink" | "blue" | undefined
   if (props.prompt.completedAt) return "teal";
   if (props.prompt.dismissedAt) return "blue";
   return "pink";
+});
+
+/** Normalised intensity key (Low/Medium/High) for label + accent styling. */
+const intensityKey = computed(() => String(props.prompt.intensity).toLowerCase());
+const intensityLabel = computed(() => t(`profile.intensity.${props.prompt.intensity}`));
+
+/** Friendly duration: whole minutes when it divides cleanly, else seconds. */
+const durationLabel = computed((): string => {
+  const secs = Number(props.prompt.durationSeconds) || 0;
+  if (secs >= 60 && secs % 60 === 0) {
+    return t("interruptions.minutesLabel", { count: secs / 60 });
+  }
+  if (secs >= 90) {
+    return t("interruptions.minutesLabel", { count: Math.round(secs / 60) });
+  }
+  return t("interruptions.secondsLabel", { count: secs });
+});
+
+const hasSteps = computed(() => (props.prompt.steps?.length ?? 0) > 0);
+
+/**
+ * When an activity needs gear the user owns, surface it. The prompt only carries
+ * the tag, so resolve the friendly name from the registered item (falling back
+ * to a prettified tag) and show the first required piece.
+ */
+const gearName = computed((): string | null => {
+  const tags = props.prompt.equipmentTags ?? [];
+  if (tags.length === 0) return null;
+  const tag = tags[0]!;
+  const owned = equipment.ownedByTag(tag);
+  if (owned) return owned.displayName;
+  return tag
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+});
+
+const gearIcon = computed(() => equipmentIcon(props.prompt.equipmentTags?.[0] ?? ""));
+
+/** Human-readable hold / reps / sets chips for one step. */
+function stepMetrics(step: ActivityStep): string[] {
+  const out: string[] = [];
+  if (step.holdSeconds) out.push(t("interruptions.holdLabel", { count: Number(step.holdSeconds) }));
+  if (step.reps) out.push(t("interruptions.repsLabel", { count: Number(step.reps) }));
+  if (step.sets) out.push(t("interruptions.setsLabel", { count: Number(step.sets) }));
+  return out;
+}
+
+// If this activity leans on registered gear, make sure the equipment list is
+// loaded so the badge shows the user's own name for it (not a prettified tag).
+onMounted(() => {
+  if ((props.prompt.equipmentTags?.length ?? 0) > 0 && !equipment.loaded) {
+    equipment.fetch();
+  }
 });
 
 async function doComplete(): Promise<void> {
@@ -287,7 +366,98 @@ function formatTime(iso: string | undefined): string {
   color: var(--muted);
 }
 .interruption-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.ix-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
   color: var(--muted);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+.ix-meta-chip--low {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 40%, var(--line));
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+}
+.ix-meta-chip--medium {
+  color: var(--accent-strong);
+  border-color: var(--accent-line);
+  background: var(--accent-tint);
+}
+.ix-meta-chip--high {
+  color: var(--accent-3);
+  border-color: color-mix(in srgb, var(--accent-3) 40%, var(--line));
+  background: color-mix(in srgb, var(--accent-3) 12%, transparent);
+}
+.ix-meta-chip--gear {
+  color: var(--accent-strong);
+  border-color: var(--accent-line);
+  background: var(--accent-tint);
+}
+
+.ix-steps {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+.ix-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.ix-step__num {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-top: 0.05rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-line);
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.ix-step__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.ix-step__text {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.ix-step__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.ix-step__metric {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
 }
 .interruption-card__actions {
   display: flex;

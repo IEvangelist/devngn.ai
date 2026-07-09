@@ -16,6 +16,7 @@ public static class WellnessCatalogExtensions
         // The embedded provider is stateless once initialised, so a singleton is correct;
         // it also caches the parsed catalog so requests don't re-deserialise per call.
         services.AddSingleton<IActivityCatalogProvider, EmbeddedActivityCatalogProvider>();
+        services.AddSingleton<IEquipmentCatalogProvider, EmbeddedEquipmentCatalogProvider>();
         services.AddHostedService<ActivityCatalogSeeder>();
         return services;
     }

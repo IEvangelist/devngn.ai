@@ -107,14 +107,35 @@ describe("InterruptionCard — rendering", () => {
     expect(wrapper.text()).toContain("Back");
   });
 
-  it("does NOT show history meta by default (showHistory=false)", () => {
+  it("always shows the intensity and duration meta row", () => {
     const wrapper = mountCard(mockPendingPrompt as PromptResponse, false);
-    expect(wrapper.find(".interruption-card__meta").exists()).toBe(false);
+    expect(wrapper.find(".interruption-card__meta").exists()).toBe(true);
+    // Intensity chip + duration chip render regardless of view.
+    expect(wrapper.findAll(".ix-meta-chip").length).toBeGreaterThanOrEqual(2);
   });
 
-  it("shows history meta when showHistory=true", () => {
+  it("shows the meta row when showHistory=true", () => {
     const wrapper = mountCard(mockPendingPrompt as PromptResponse, true);
     expect(wrapper.find(".interruption-card__meta").exists()).toBe(true);
+  });
+
+  it("renders a step list with hold/reps/sets chips when the prompt has steps", () => {
+    const stepped = {
+      ...mockPendingPrompt,
+      steps: [
+        { text: "Inhale for four counts", holdSeconds: 4, reps: null, sets: null },
+        { text: "Squat down", holdSeconds: null, reps: 10, sets: 3 },
+      ],
+    } as PromptResponse;
+    const wrapper = mountCard(stepped, false);
+    expect(wrapper.findAll(".ix-step").length).toBe(2);
+    // The metric chips (hold/reps/sets) render for steps that define them.
+    expect(wrapper.findAll(".ix-step__metric").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("renders no step list for simple one-liner activities", () => {
+    const wrapper = mountCard(mockPendingPrompt as PromptResponse, false);
+    expect(wrapper.find(".ix-steps").exists()).toBe(false);
   });
 
   it("renders the completed back face in glance view (showHistory=false)", () => {

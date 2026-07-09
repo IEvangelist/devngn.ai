@@ -5,6 +5,7 @@ import type {
   CreateEquipmentRequest,
   EquipmentResponse,
   UpdateEquipmentRequest,
+  EquipmentCatalogEntryResponse,
 } from "~/types/wellness";
 
 /**
@@ -17,13 +18,31 @@ export const useEquipmentStore = defineStore("equipment", () => {
   const apiFetch = useApiFetch();
 
   const items = ref<EquipmentResponse[]>([]);
+  const catalog = ref<EquipmentCatalogEntryResponse[]>([]);
   const loading = ref(false);
   const saving = ref(false);
   const error = ref<string | null>(null);
   const loaded = ref(false);
+  const catalogLoaded = ref(false);
 
   /** Lower-cased tag set — the exact shape the matcher compares against. */
   const tags = computed(() => items.value.map((e) => e.tag));
+
+  /** The owned item for a catalog tag, if the user has registered it. */
+  function ownedByTag(tag: string): EquipmentResponse | undefined {
+    return items.value.find((e) => e.tag === tag);
+  }
+
+  async function fetchCatalog(): Promise<void> {
+    if (catalogLoaded.value) return;
+    try {
+      catalog.value = await apiFetch<EquipmentCatalogEntryResponse[]>("/v1/equipment/catalog");
+    } catch {
+      catalog.value = [];
+    } finally {
+      catalogLoaded.value = true;
+    }
+  }
 
   async function fetch(): Promise<void> {
     loading.value = true;
@@ -90,12 +109,16 @@ export const useEquipmentStore = defineStore("equipment", () => {
 
   return {
     items,
+    catalog,
     loading,
     saving,
     error,
     loaded,
+    catalogLoaded,
     tags,
+    ownedByTag,
     fetch,
+    fetchCatalog,
     create,
     update,
     remove,

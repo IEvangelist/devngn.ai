@@ -73,7 +73,13 @@
     "emptyTitle": "当前没有实时提醒",
     "completed": "已完成",
     "completeError": "无法完成，请重试。",
-    "completeA11y": "将 {title} 标记为完成"
+    "completeA11y": "将 {title} 标记为完成",
+    "usesGear": "使用你的 {name}",
+    "minutesLabel": "{count} 分钟",
+    "secondsLabel": "{count} 秒",
+    "holdLabel": "保持 {count} 秒",
+    "repsLabel": "{count} 次",
+    "setsLabel": "{count} 组"
   },
   "goals": {
     "title": "Goal title",
@@ -257,7 +263,18 @@
     "added": "已添加 {name}。",
     "removed": "已移除 {name}。",
     "removeTitle": "移除器材？",
-    "removeBody": "从器材中移除 {name}？你可以稍后再次添加。"
+    "removeBody": "从器材中移除 {name}？你可以稍后再次添加。",
+    "addCustom": "添加自定义器材",
+    "categoryCardio": "有氧",
+    "categoryStrength": "力量",
+    "categoryMobility": "灵活性",
+    "categoryDesk": "在办公桌旁",
+    "customTitle": "自定义器材",
+    "addA11y": "将 {name} 添加到你的配置",
+    "removeA11y": "从你的配置中移除 {name}",
+    "policyFull": "每周 {sessions} 次，每次 {minutes} 分钟",
+    "policySessions": "每周 {sessions} 次",
+    "policyMinutes": "{minutes} 分钟的锻炼"
   },
   "forecast": {
     "title": "即将到来",

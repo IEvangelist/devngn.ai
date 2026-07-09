@@ -221,6 +221,43 @@ public sealed class ActivityEndpointTests(PostgresContainerFixture postgres)
         });
     }
 
+    [Fact]
+    public async Task Get_returns_step_list_for_activities_that_define_one()
+    {
+        await using var factory = new AuthWebAppFactory(postgres.ConnectionString);
+        await ReseedAsync(factory);
+        var seeded = await factory.SeedAuthenticatedUserAsync(withConsent: false);
+        using var client = factory.CreateClientWithBearer(seeded.Token);
+
+        var response = await client.GetAsync("/v1/activities?bodyArea=Breath");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var rows = await response.Content.ReadFromJsonAsync<List<ActivityResponse>>(ClientJson);
+        Assert.NotNull(rows);
+
+        // Box breathing is authored with an explicit, timed step list.
+        var boxBreathing = Assert.Single(rows!, r => r.Slug == "box-breathing-4-4-4-4");
+        Assert.NotEmpty(boxBreathing.Steps);
+        Assert.All(boxBreathing.Steps, s => Assert.False(string.IsNullOrWhiteSpace(s.Text)));
+        Assert.Contains(boxBreathing.Steps, s => s.HoldSeconds == 4);
+    }
+
+    [Fact]
+    public async Task Get_returns_empty_steps_for_simple_one_liner_activities()
+    {
+        await using var factory = new AuthWebAppFactory(postgres.ConnectionString);
+        await ReseedAsync(factory);
+        var seeded = await factory.SeedAuthenticatedUserAsync(withConsent: false);
+        using var client = factory.CreateClientWithBearer(seeded.Token);
+
+        var response = await client.GetAsync("/v1/activities?maxDurationSeconds=30");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var rows = await response.Content.ReadFromJsonAsync<List<ActivityResponse>>(ClientJson);
+        Assert.NotNull(rows);
+
+        var shoulderRolls = Assert.Single(rows!, r => r.Slug == "shoulder-rolls");
+        Assert.Empty(shoulderRolls.Steps);
+    }
+
     private static async Task ReseedAsync(AuthWebAppFactory factory)
     {
         using var scope = factory.Services.CreateScope();

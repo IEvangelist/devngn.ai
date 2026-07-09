@@ -88,6 +88,7 @@ internal sealed class ActivityCatalogSeeder(
         AnimationProvider = d.AnimationProvider,
         AnimationAssetId = d.AnimationAssetId,
         LicenseAttribution = d.LicenseAttribution,
+        Steps = CloneSteps(d.Steps),
     };
 
     private static void Apply(ActivityDefinition d, Activity target)
@@ -101,7 +102,11 @@ internal sealed class ActivityCatalogSeeder(
         target.AnimationProvider = d.AnimationProvider;
         target.AnimationAssetId = d.AnimationAssetId;
         target.LicenseAttribution = d.LicenseAttribution;
+        target.Steps = CloneSteps(d.Steps);
     }
+
+    private static ActivityStep[] CloneSteps(ActivityStep[]? steps) =>
+        steps is { Length: > 0 } ? (ActivityStep[])steps.Clone() : [];
 
     private static bool HasChanges(Activity current, ActivityDefinition d) =>
         current.Title != d.Title
@@ -112,5 +117,6 @@ internal sealed class ActivityCatalogSeeder(
         || current.AnimationProvider != d.AnimationProvider
         || current.AnimationAssetId != d.AnimationAssetId
         || current.LicenseAttribution != d.LicenseAttribution
-        || !current.EquipmentTags.SequenceEqual(d.EquipmentTags, StringComparer.Ordinal);
+        || !current.EquipmentTags.SequenceEqual(d.EquipmentTags, StringComparer.Ordinal)
+        || !current.Steps.SequenceEqual(CloneSteps(d.Steps));
 }

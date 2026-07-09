@@ -42,5 +42,12 @@ public sealed class Activity
     /// <summary>Attribution string surfaced to the user when the prompt is shown.</summary>
     public string? LicenseAttribution { get; set; }
 
+    /// <summary>
+    /// Optional ordered instruction sequence. Empty for simple activities that a single
+    /// <see cref="Description"/> sentence covers; populated for guided moves so the client
+    /// can render holds, reps, and sets. Persisted as a jsonb column.
+    /// </summary>
+    public ActivityStep[] Steps { get; set; } = [];
+
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

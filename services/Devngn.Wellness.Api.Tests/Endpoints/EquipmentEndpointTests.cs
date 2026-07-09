@@ -106,10 +106,55 @@ public sealed class EquipmentEndpointTests(PostgresContainerFixture postgres)
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Catalog_returns_curated_entries_without_requiring_consent()
+    {
+        using var factory = Factory();
+        // Catalog is reference metadata, so it must be readable before the user consents
+        // (the equipment picker needs it on first run).
+        var seeded = await factory.SeedAuthenticatedUserAsync(withConsent: false);
+        using var client = factory.CreateClientWithBearer(seeded.Token);
+
+        var response = await client.GetAsync("/v1/equipment/catalog");
+        response.EnsureSuccessStatusCode();
+        var entries = await response.Content.ReadFromJsonAsync<List<CatalogEntryDto>>();
+
+        Assert.NotNull(entries);
+        Assert.NotEmpty(entries!);
+
+        var treadmill = Assert.Single(entries!, e => e.Tag == "under-desk-treadmill");
+        Assert.Equal(3, treadmill.RecommendedWeeklySessions);
+        Assert.Equal(30, treadmill.MinSessionMinutes);
+
+        // A plain piece of gear carries no cadence policy.
+        var mat = Assert.Single(entries!, e => e.Tag == "mat");
+        Assert.Null(mat.RecommendedWeeklySessions);
+        Assert.Null(mat.MinSessionMinutes);
+    }
+
+    [Fact]
+    public async Task Catalog_requires_authentication()
+    {
+        using var factory = Factory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/v1/equipment/catalog");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
     private sealed record EquipmentDto(
         Guid Id,
         string Tag,
         string DisplayName,
         string? Notes,
         DateTimeOffset CreatedAt);
+
+    private sealed record CatalogEntryDto(
+        string Tag,
+        string DisplayName,
+        string Category,
+        string? Description,
+        int? RecommendedWeeklySessions,
+        int? MinSessionMinutes);
 }

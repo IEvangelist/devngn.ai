@@ -58,6 +58,17 @@ public enum GoalCategory
 }
 
 /// <summary>
+/// Grouping used to organise the registerable equipment catalog in the UI.
+/// </summary>
+public enum EquipmentCategory
+{
+    Cardio,
+    Strength,
+    Mobility,
+    Desk,
+}
+
+/// <summary>
 /// Origin of a <see cref="ScheduleEvent"/>. User events are pushed by the dev directly;
 /// Google and Microsoft are read-only free/busy syncs.
 /// </summary>

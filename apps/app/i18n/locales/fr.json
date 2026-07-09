@@ -73,7 +73,13 @@
     "emptyTitle": "Rien en direct pour l'instant",
     "completed": "Terminé",
     "completeError": "Impossible de terminer. Veuillez réessayer.",
-    "completeA11y": "Marquer {title} comme terminé"
+    "completeA11y": "Marquer {title} comme terminé",
+    "usesGear": "Utilise votre {name}",
+    "minutesLabel": "{count} min",
+    "secondsLabel": "{count} s",
+    "holdLabel": "Tenez {count} s",
+    "repsLabel": "{count} reps",
+    "setsLabel": "{count} séries"
   },
   "goals": {
     "title": "Goal title",
@@ -257,7 +263,18 @@
     "added": "{name} ajouté.",
     "removed": "{name} retiré.",
     "removeTitle": "Retirer l'équipement ?",
-    "removeBody": "Retirer {name} de votre équipement ? Vous pourrez l'ajouter à nouveau plus tard."
+    "removeBody": "Retirer {name} de votre équipement ? Vous pourrez l'ajouter à nouveau plus tard.",
+    "addCustom": "Ajouter un équipement personnalisé",
+    "categoryCardio": "Cardio",
+    "categoryStrength": "Force",
+    "categoryMobility": "Mobilité",
+    "categoryDesk": "À votre bureau",
+    "customTitle": "Équipement personnalisé",
+    "addA11y": "Ajouter {name} à votre configuration",
+    "removeA11y": "Retirer {name} de votre configuration",
+    "policyFull": "{sessions}x par semaine, {minutes} min",
+    "policySessions": "{sessions}x par semaine",
+    "policyMinutes": "séances de {minutes} min"
   },
   "forecast": {
     "title": "Ce qui arrive",

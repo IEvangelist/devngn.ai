@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // SPDX-License-Identifier: MIT
 
+using Devngn.Wellness.Api.Catalog;
 using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.Data.Entities;
 using Devngn.Wellness.Api.Gamification;
@@ -20,6 +21,7 @@ internal sealed class PromptService(
     IGapDetector detector,
     IPromptMatcher matcher,
     IGamificationService gamification,
+    IEquipmentCatalogProvider equipmentCatalog,
     IOptions<GapDetectionOptions> gapOptions,
     IOptions<PromptDeliveryOptions> promptOptions,
     ILogger<PromptService> logger,
@@ -116,13 +118,49 @@ internal sealed class PromptService(
             .Select(t => t.Trim().ToLowerInvariant())
             .ToHashSet(StringComparer.Ordinal);
 
+        // Per-equipment delivery cadence over the last 7 days: for each prompt delivered in
+        // the window, fan its activity's equipment tags into a count. Lets the matcher tell
+        // whether the user is behind a policy's weekly target (e.g. under-desk treadmill 3x).
+        var weekAgo = now - TimeSpan.FromDays(7);
+        var deliveredTagLists = await db.Prompts
+            .AsNoTracking()
+            .Where(p => p.UserId == userId && p.DeliveredAt >= weekAgo && p.DeliveredAt <= now)
+            .Join(
+                db.Activities.AsNoTracking(),
+                p => p.ActivityId,
+                a => a.Id,
+                (p, a) => a.EquipmentTags)
+            .ToListAsync(cancellationToken);
+
+        var deliveryCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var tags in deliveredTagLists)
+        {
+            foreach (var tag in tags)
+            {
+                deliveryCounts[tag] = deliveryCounts.GetValueOrDefault(tag) + 1;
+            }
+        }
+
+        // Resolve cadence policies for the gear the user actually has registered.
+        var equipmentDefinitions = await equipmentCatalog.GetCatalogAsync(cancellationToken);
+        var policies = new Dictionary<string, EquipmentPolicy>(StringComparer.Ordinal);
+        foreach (var def in equipmentDefinitions)
+        {
+            if (def.RecommendedWeeklySessions is int weekly && weekly > 0 && equipmentSet.Contains(def.Tag))
+            {
+                policies[def.Tag] = new EquipmentPolicy(weekly, def.MinSessionMinutes ?? 0);
+            }
+        }
+
         var context = new PromptMatchContext(
             gapDurationSeconds,
             profile,
             goals,
             equipmentSet,
             catalog,
-            recentActivityIds.ToHashSet());
+            recentActivityIds.ToHashSet(),
+            policies,
+            deliveryCounts);
 
         var activity = matcher.Match(context);
         if (activity is null)

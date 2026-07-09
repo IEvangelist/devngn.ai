@@ -14,6 +14,7 @@ function activity(partial: Partial<ActivityResponse> & Pick<ActivityResponse, "s
     intensity: partial.intensity ?? "Low",
     durationSeconds: partial.durationSeconds ?? 30,
     equipmentTags: partial.equipmentTags ?? [],
+    steps: partial.steps ?? [],
     animationProvider: "local",
     animationAssetId: partial.slug,
     licenseAttribution: null,

@@ -129,6 +129,27 @@ internal sealed partial class EmbeddedActivityCatalogProvider : IActivityCatalog
                     $"Catalog entry '{d.Slug}': equipment tag '{tag}' must be lower-kebab-case.");
             }
         }
+
+        // Steps are optional. When present, each must carry an instruction and any numeric
+        // hint must be positive so the client never renders "0 reps" / "hold for 0s".
+        if (d.Steps is { Length: > 0 } steps)
+        {
+            for (var s = 0; s < steps.Length; s++)
+            {
+                var step = steps[s];
+                if (string.IsNullOrWhiteSpace(step.Text))
+                {
+                    throw new InvalidOperationException(
+                        $"Catalog entry '{d.Slug}': step [{s}] must have non-empty text.");
+                }
+
+                if (step.HoldSeconds is <= 0 || step.Reps is <= 0 || step.Sets is <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Catalog entry '{d.Slug}': step [{s}] hold/reps/sets must be > 0 when specified.");
+                }
+            }
+        }
     }
 
     [GeneratedRegex("^[a-z0-9]+(-[a-z0-9]+)*$", RegexOptions.CultureInvariant)]

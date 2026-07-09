@@ -73,7 +73,13 @@
     "emptyTitle": "Gerade nichts live",
     "completed": "Erledigt",
     "completeError": "Konnte nicht abgeschlossen werden. Bitte versuche es erneut.",
-    "completeA11y": "{title} als erledigt markieren"
+    "completeA11y": "{title} als erledigt markieren",
+    "usesGear": "Nutzt dein {name}",
+    "minutesLabel": "{count} Min.",
+    "secondsLabel": "{count} s",
+    "holdLabel": "{count} s halten",
+    "repsLabel": "{count} Wdh.",
+    "setsLabel": "{count} Sätze"
   },
   "goals": {
     "title": "Goal title",
@@ -257,7 +263,18 @@
     "added": "{name} hinzugefügt.",
     "removed": "{name} entfernt.",
     "removeTitle": "Ausrüstung entfernen?",
-    "removeBody": "{name} aus deiner Ausrüstung entfernen? Du kannst sie später wieder hinzufügen."
+    "removeBody": "{name} aus deiner Ausrüstung entfernen? Du kannst sie später wieder hinzufügen.",
+    "addCustom": "Eigenes Gerät hinzufügen",
+    "categoryCardio": "Cardio",
+    "categoryStrength": "Kraft",
+    "categoryMobility": "Mobilität",
+    "categoryDesk": "Am Schreibtisch",
+    "customTitle": "Eigene Geräte",
+    "addA11y": "{name} zu deiner Ausstattung hinzufügen",
+    "removeA11y": "{name} aus deiner Ausstattung entfernen",
+    "policyFull": "{sessions}x pro Woche, {minutes} Min.",
+    "policySessions": "{sessions}x pro Woche",
+    "policyMinutes": "{minutes}-Min.-Einheiten"
   },
   "forecast": {
     "title": "Was kommt",

@@ -57,7 +57,15 @@
     "equipmentTags": [],
     "animationProvider": "local",
     "animationAssetId": "box-breathing-4-4-4-4",
-    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)"
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Sit tall and exhale fully to empty your lungs." },
+      { "text": "Inhale slowly through your nose.", "holdSeconds": 4 },
+      { "text": "Hold your breath, stay relaxed.", "holdSeconds": 4 },
+      { "text": "Exhale steadily through your mouth.", "holdSeconds": 4 },
+      { "text": "Hold empty before the next breath.", "holdSeconds": 4 },
+      { "text": "Repeat the cycle, keeping each phase even.", "sets": 3 }
+    ]
   },
   {
     "slug": "breath-4-7-8",
@@ -69,7 +77,14 @@
     "equipmentTags": [],
     "animationProvider": "local",
     "animationAssetId": "breath-4-7-8",
-    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)"
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Rest the tip of your tongue behind your top teeth." },
+      { "text": "Inhale quietly through your nose.", "holdSeconds": 4 },
+      { "text": "Hold your breath.", "holdSeconds": 7 },
+      { "text": "Exhale fully through your mouth with a whoosh.", "holdSeconds": 8 },
+      { "text": "Repeat the cycle, letting your shoulders drop.", "sets": 4 }
+    ]
   },
   {
     "slug": "seated-hip-opener",
@@ -81,7 +96,12 @@
     "equipmentTags": ["chair-only"],
     "animationProvider": "local",
     "animationAssetId": "seated-hip-opener",
-    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)"
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Sit tall and cross your right ankle over your left knee." },
+      { "text": "Hinge forward from the hips until you feel a stretch.", "holdSeconds": 20 },
+      { "text": "Switch sides and repeat.", "holdSeconds": 20 }
+    ]
   },
   {
     "slug": "ankle-pumps",
@@ -117,7 +137,11 @@
     "equipmentTags": [],
     "animationProvider": "local",
     "animationAssetId": "calf-raises",
-    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)"
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Stand tall with feet hip-width apart." },
+      { "text": "Rise onto the balls of your feet, then lower with control.", "reps": 15, "sets": 2 }
+    ]
   },
   {
     "slug": "band-pull-aparts",
@@ -129,7 +153,12 @@
     "equipmentTags": ["bands-light"],
     "animationProvider": "local",
     "animationAssetId": "band-pull-aparts",
-    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)"
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Hold the band at chest height with straight arms." },
+      { "text": "Pull your hands apart, squeezing your shoulder blades.", "reps": 12, "sets": 2 },
+      { "text": "Return slowly, keeping tension on the band." }
+    ]
   },
   {
     "slug": "mat-cat-cow",
@@ -141,7 +170,13 @@
     "equipmentTags": ["mat"],
     "animationProvider": "local",
     "animationAssetId": "mat-cat-cow",
-    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)"
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Start on hands and knees, wrists under shoulders." },
+      { "text": "Inhale, drop your belly and lift your gaze (cow).", "holdSeconds": 3 },
+      { "text": "Exhale, round your spine and tuck your chin (cat).", "holdSeconds": 3 },
+      { "text": "Flow between the two with your breath.", "reps": 8 }
+    ]
   },
   {
     "slug": "core-dead-bug",
@@ -153,6 +188,231 @@
     "equipmentTags": ["mat"],
     "animationProvider": "local",
     "animationAssetId": "core-dead-bug",
-    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)"
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Lie on your back, arms up, knees bent over hips." },
+      { "text": "Press your low back into the floor and hold it there." },
+      { "text": "Extend opposite arm and leg, then return.", "reps": 10, "sets": 2 }
+    ]
+  },
+  {
+    "slug": "mat-glute-bridge",
+    "title": "Glute bridge",
+    "description": "Lying on your back, drive through your heels to lift your hips and wake up the posterior chain.",
+    "bodyArea": "Core",
+    "intensity": "Medium",
+    "durationSeconds": 90,
+    "equipmentTags": ["mat"],
+    "animationProvider": "local",
+    "animationAssetId": "mat-glute-bridge",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Lie on your back, knees bent, feet flat and hip-width." },
+      { "text": "Drive through your heels to lift your hips into a line.", "holdSeconds": 2 },
+      { "text": "Lower with control and repeat.", "reps": 12, "sets": 2 }
+    ]
+  },
+  {
+    "slug": "under-desk-treadmill-walk",
+    "title": "Under-desk treadmill walk",
+    "description": "A steady 30-minute walk at your desk. Keep working while you rack up easy cardio.",
+    "bodyArea": "Full",
+    "intensity": "Medium",
+    "durationSeconds": 1800,
+    "equipmentTags": ["under-desk-treadmill"],
+    "animationProvider": "local",
+    "animationAssetId": "under-desk-treadmill-walk",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Start the belt slow and find a comfortable, quiet pace." },
+      { "text": "Settle in and keep working at a walk you can sustain.", "holdSeconds": 1500 },
+      { "text": "Ease the pace down for the last few minutes to cool off.", "holdSeconds": 120 }
+    ]
+  },
+  {
+    "slug": "under-desk-treadmill-stroll",
+    "title": "Under-desk stroll",
+    "description": "A gentle 10-minute walk at your desk when a full session won't fit.",
+    "bodyArea": "Full",
+    "intensity": "Low",
+    "durationSeconds": 600,
+    "equipmentTags": ["under-desk-treadmill"],
+    "animationProvider": "local",
+    "animationAssetId": "under-desk-treadmill-stroll",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Set the belt to an easy pace you barely notice." },
+      { "text": "Walk while you read or think, breathing easily.", "holdSeconds": 540 }
+    ]
+  },
+  {
+    "slug": "treadmill-brisk-walk",
+    "title": "Brisk treadmill walk",
+    "description": "A 15-minute brisk walk to raise your heart rate and reset between meetings.",
+    "bodyArea": "Full",
+    "intensity": "Medium",
+    "durationSeconds": 900,
+    "equipmentTags": ["treadmill"],
+    "animationProvider": "local",
+    "animationAssetId": "treadmill-brisk-walk",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Warm up at an easy pace.", "holdSeconds": 120 },
+      { "text": "Lift to a brisk walk where talking is a little harder.", "holdSeconds": 660 },
+      { "text": "Slow down and let your breathing settle.", "holdSeconds": 120 }
+    ]
+  },
+  {
+    "slug": "stationary-bike-spin",
+    "title": "Easy bike spin",
+    "description": "A 15-minute low-impact spin to move blood without pounding your joints.",
+    "bodyArea": "Lower",
+    "intensity": "Medium",
+    "durationSeconds": 900,
+    "equipmentTags": ["stationary-bike"],
+    "animationProvider": "local",
+    "animationAssetId": "stationary-bike-spin",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Set a light resistance and spin easy to warm up.", "holdSeconds": 120 },
+      { "text": "Add a touch of resistance and hold a steady cadence.", "holdSeconds": 660 },
+      { "text": "Drop the resistance and spin out to cool down.", "holdSeconds": 120 }
+    ]
+  },
+  {
+    "slug": "standing-desk-reset",
+    "title": "Standing desk reset",
+    "description": "Raise your desk and reset your stance to undo a stretch of sitting.",
+    "bodyArea": "Posture",
+    "intensity": "Low",
+    "durationSeconds": 120,
+    "equipmentTags": ["standing-desk"],
+    "animationProvider": "local",
+    "animationAssetId": "standing-desk-reset",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Raise your desk to standing height." },
+      { "text": "Stack your ears over shoulders over hips and stand tall.", "holdSeconds": 20 },
+      { "text": "Shift your weight side to side to stay loose.", "holdSeconds": 60 }
+    ]
+  },
+  {
+    "slug": "dumbbell-rows",
+    "title": "Dumbbell rows",
+    "description": "Hinge at the hips and row the weights to your ribs to counter desk-rounded shoulders.",
+    "bodyArea": "Upper",
+    "intensity": "Medium",
+    "durationSeconds": 180,
+    "equipmentTags": ["free-weights"],
+    "animationProvider": "local",
+    "animationAssetId": "dumbbell-rows",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Hinge forward with a flat back, a weight in each hand." },
+      { "text": "Row the weights to your ribs, squeezing your back.", "reps": 10, "sets": 3 },
+      { "text": "Lower under control between reps." }
+    ]
+  },
+  {
+    "slug": "goblet-squats",
+    "title": "Goblet squats",
+    "description": "Hold one weight at your chest and squat to wake up your legs and hips.",
+    "bodyArea": "Lower",
+    "intensity": "Medium",
+    "durationSeconds": 180,
+    "equipmentTags": ["free-weights"],
+    "animationProvider": "local",
+    "animationAssetId": "goblet-squats",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Hold one weight against your chest with both hands." },
+      { "text": "Sit back and down, keeping your chest tall.", "reps": 12, "sets": 3 },
+      { "text": "Drive through your heels to stand." }
+    ]
+  },
+  {
+    "slug": "dumbbell-bench-press",
+    "title": "Dumbbell bench press",
+    "description": "Press the weights from a bench to load your chest and shoulders. Warm up first.",
+    "bodyArea": "Upper",
+    "intensity": "High",
+    "durationSeconds": 300,
+    "equipmentTags": ["weight-bench", "free-weights"],
+    "animationProvider": "local",
+    "animationAssetId": "dumbbell-bench-press",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Lie back on the bench with a weight in each hand at chest level." },
+      { "text": "Press the weights up until your arms are straight.", "reps": 8, "sets": 3 },
+      { "text": "Lower slowly to the start, keeping control." }
+    ]
+  },
+  {
+    "slug": "kettlebell-swings",
+    "title": "Kettlebell swings",
+    "description": "Hinge and snap your hips to swing the bell to chest height. Powerful full-body cardio.",
+    "bodyArea": "Full",
+    "intensity": "High",
+    "durationSeconds": 180,
+    "equipmentTags": ["kettlebell"],
+    "animationProvider": "local",
+    "animationAssetId": "kettlebell-swings",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Stand over the bell, hinge back, and hike it behind you." },
+      { "text": "Snap your hips forward to float the bell to chest height.", "reps": 15, "sets": 3 },
+      { "text": "Let it swing back down and flow into the next rep." }
+    ]
+  },
+  {
+    "slug": "dead-hang",
+    "title": "Dead hang",
+    "description": "Hang from the bar to decompress your spine and open up tight shoulders.",
+    "bodyArea": "Upper",
+    "intensity": "Medium",
+    "durationSeconds": 60,
+    "equipmentTags": ["pull-up-bar"],
+    "animationProvider": "local",
+    "animationAssetId": "dead-hang",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Grip the bar shoulder-width and let your body hang." },
+      { "text": "Relax your shoulders and breathe into the stretch.", "holdSeconds": 30 },
+      { "text": "Step down, rest, and repeat if it felt good.", "sets": 2 }
+    ]
+  },
+  {
+    "slug": "foam-roll-upper-back",
+    "title": "Foam roll upper back",
+    "description": "Roll slowly along your upper back to release tension from hours at the keyboard.",
+    "bodyArea": "Back",
+    "intensity": "Low",
+    "durationSeconds": 120,
+    "equipmentTags": ["foam-roller"],
+    "animationProvider": "local",
+    "animationAssetId": "foam-roll-upper-back",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Lie back with the roller across your upper back, hips down." },
+      { "text": "Roll slowly between your shoulder blades and mid-back.", "holdSeconds": 90 },
+      { "text": "Pause and breathe on any tight spot you find." }
+    ]
+  },
+  {
+    "slug": "jump-rope-intervals",
+    "title": "Jump rope intervals",
+    "description": "Short bursts of skipping with brief rests for a quick, sweaty conditioning hit.",
+    "bodyArea": "Full",
+    "intensity": "High",
+    "durationSeconds": 180,
+    "equipmentTags": ["jump-rope"],
+    "animationProvider": "local",
+    "animationAssetId": "jump-rope-intervals",
+    "licenseAttribution": "Curated devngn.ai wellness motion (placeholder asset, v1)",
+    "steps": [
+      { "text": "Skip at an easy pace to find your rhythm.", "holdSeconds": 30 },
+      { "text": "Skip hard, then rest.", "holdSeconds": 30, "sets": 3 },
+      { "text": "Finish with easy skips until your breathing settles." }
+    ]
   }
 ]

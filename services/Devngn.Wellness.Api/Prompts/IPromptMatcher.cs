@@ -26,13 +26,35 @@ namespace Devngn.Wellness.Api.Prompts;
 /// <param name="RecentActivityIds">
 /// Activities delivered to this user recently; de-prioritised for variety.
 /// </param>
+/// <param name="EquipmentPolicies">
+/// Cadence policies for the equipment the user has registered, keyed by lower-kebab tag.
+/// Only tags with a policy appear here. Drives the weekly-target and min-session bonuses.
+/// </param>
+/// <param name="EquipmentDeliveryCountsLast7Days">
+/// Per-tag count of prompts delivered in the last 7 days that used that equipment, keyed
+/// by lower-kebab tag. Absent tags count as zero. Used to tell whether the user is behind
+/// on a policy's weekly target.
+/// </param>
 internal sealed record PromptMatchContext(
     int GapDurationSeconds,
     Profile? Profile,
     IReadOnlyCollection<GoalCategory> Goals,
     IReadOnlySet<string> EquipmentTags,
     IReadOnlyList<Activity> Catalog,
-    IReadOnlySet<Guid> RecentActivityIds);
+    IReadOnlySet<Guid> RecentActivityIds,
+    IReadOnlyDictionary<string, EquipmentPolicy> EquipmentPolicies,
+    IReadOnlyDictionary<string, int> EquipmentDeliveryCountsLast7Days);
+
+/// <summary>
+/// Recommender cadence policy for a piece of equipment. Sourced from the equipment catalog
+/// and only attached to gear the user has actually registered.
+/// </summary>
+/// <param name="RecommendedWeeklySessions">Target number of sessions per week using this gear.</param>
+/// <param name="MinSessionMinutes">
+/// Preferred minimum session length, in minutes (0 when unset). When a gap allows it, the
+/// matcher favours activities that meet this length.
+/// </param>
+internal sealed record EquipmentPolicy(int RecommendedWeeklySessions, int MinSessionMinutes);
 
 /// <summary>
 /// Picks the best-fit <see cref="Activity"/> for a gap given the user's context.

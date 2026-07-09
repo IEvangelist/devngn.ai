@@ -1,0 +1,82 @@
+[
+  {
+    "tag": "under-desk-treadmill",
+    "displayName": "Under-desk treadmill",
+    "category": "Cardio",
+    "description": "Walk slowly while you work. Great for long focus blocks.",
+    "recommendedWeeklySessions": 3,
+    "minSessionMinutes": 30
+  },
+  {
+    "tag": "treadmill",
+    "displayName": "Treadmill",
+    "category": "Cardio",
+    "description": "A standing treadmill for brisk walks or intervals."
+  },
+  {
+    "tag": "stationary-bike",
+    "displayName": "Stationary bike",
+    "category": "Cardio",
+    "description": "Seated or upright bike for low-impact cardio."
+  },
+  {
+    "tag": "jump-rope",
+    "displayName": "Jump rope",
+    "category": "Cardio",
+    "description": "A rope for quick, high-energy conditioning bursts."
+  },
+  {
+    "tag": "free-weights",
+    "displayName": "Free weights",
+    "category": "Strength",
+    "description": "Dumbbells or adjustable weights for resistance work."
+  },
+  {
+    "tag": "kettlebell",
+    "displayName": "Kettlebell",
+    "category": "Strength",
+    "description": "A single kettlebell for swings, squats, and carries."
+  },
+  {
+    "tag": "weight-bench",
+    "displayName": "Weight bench",
+    "category": "Strength",
+    "description": "A flat or adjustable bench for pressing and rows."
+  },
+  {
+    "tag": "pull-up-bar",
+    "displayName": "Pull-up bar",
+    "category": "Strength",
+    "description": "A doorway or wall bar for hangs and pulls."
+  },
+  {
+    "tag": "bands-light",
+    "displayName": "Resistance bands",
+    "category": "Strength",
+    "description": "Light elastic bands for controlled strength moves."
+  },
+  {
+    "tag": "mat",
+    "displayName": "Yoga mat",
+    "category": "Mobility",
+    "description": "A floor mat for stretching and core work."
+  },
+  {
+    "tag": "foam-roller",
+    "displayName": "Foam roller",
+    "category": "Mobility",
+    "description": "A roller for releasing tight muscles between sessions."
+  },
+  {
+    "tag": "standing-desk",
+    "displayName": "Standing desk",
+    "category": "Desk",
+    "description": "A desk that raises so you can work on your feet."
+  },
+  {
+    "tag": "chair-only",
+    "displayName": "Office chair",
+    "category": "Desk",
+    "description": "Your desk chair, for quick seated stretches."
+  }
+]

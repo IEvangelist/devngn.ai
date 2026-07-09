@@ -37,6 +37,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/equipment/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ListEquipmentCatalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/github/device": {
         parameters: {
             query?: never;
@@ -676,6 +692,16 @@ export interface components {
             animationProvider: string;
             animationAssetId: string;
             licenseAttribution: null | string;
+            steps: components["schemas"]["ActivityStep"][];
+        };
+        ActivityStep: {
+            text: string;
+            /** Format: int32 */
+            holdSeconds?: null | number | string;
+            /** Format: int32 */
+            reps?: null | number | string;
+            /** Format: int32 */
+            sets?: null | number | string;
         };
         AuthenticatedUserResponse: {
             /** Format: uuid */
@@ -754,6 +780,18 @@ export interface components {
             login: null | string;
             displayName: null | string;
         };
+        EquipmentCatalogEntryResponse: {
+            tag: string;
+            displayName: string;
+            category: components["schemas"]["EquipmentCategory"];
+            description: null | string;
+            /** Format: int32 */
+            recommendedWeeklySessions: null | number | string;
+            /** Format: int32 */
+            minSessionMinutes: null | number | string;
+        };
+        /** @enum {unknown} */
+        EquipmentCategory: "Cardio" | "Strength" | "Mobility" | "Desk";
         EquipmentResponse: {
             /** Format: uuid */
             id: string;
@@ -903,6 +941,7 @@ export interface components {
             animationProvider: string;
             animationAssetId: string;
             licenseAttribution: null | string;
+            steps: components["schemas"]["ActivityStep"][];
             /** Format: date-time */
             gapStartUtc: string;
             /** Format: date-time */
@@ -1058,6 +1097,26 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    ListEquipmentCatalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentCatalogEntryResponse"][];
+                };
             };
         };
     };

@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Catalog\catalog.json" />
+    <EmbeddedResource Include="Catalog\equipment-catalog.json" />
   </ItemGroup>
 
 </Project>

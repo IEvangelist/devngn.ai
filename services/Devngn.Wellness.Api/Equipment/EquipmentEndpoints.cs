@@ -2,7 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 // SPDX-License-Identifier: MIT
 
+using Devngn.Wellness.Api.Catalog;
 using Devngn.Wellness.Api.Data;
+using Devngn.Wellness.Api.Data.Entities;
 using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Validation;
 using EquipmentEntity = Devngn.Wellness.Api.Data.Entities.Equipment;
@@ -19,6 +21,14 @@ internal static class EquipmentEndpoints
 
     public static IEndpointRouteBuilder MapEquipmentEndpoints(this IEndpointRouteBuilder app)
     {
+        // Curated, registerable gear list. Pure static metadata (no per-user data), so it
+        // sits outside the consent gate: a user setting up for the first time can browse it.
+        app.MapGet("/v1/equipment/catalog", ListCatalogAsync)
+            .RequireAuthorization()
+            .WithTags("Equipment")
+            .Produces<IReadOnlyList<EquipmentCatalogEntryResponse>>()
+            .WithName("ListEquipmentCatalog");
+
         var group = app.MapGroup("/v1/equipment")
             .WithTags("Equipment")
             .RequireAuthorization()
@@ -49,6 +59,25 @@ internal static class EquipmentEndpoints
             .WithName("DeleteEquipment");
 
         return app;
+    }
+
+    private static async Task<IResult> ListCatalogAsync(
+        IEquipmentCatalogProvider catalog,
+        CancellationToken ct)
+    {
+        var items = await catalog.GetCatalogAsync(ct);
+        var result = new List<EquipmentCatalogEntryResponse>(items.Count);
+        foreach (var e in items)
+        {
+            result.Add(new EquipmentCatalogEntryResponse(
+                e.Tag,
+                e.DisplayName,
+                e.Category,
+                e.Description,
+                e.RecommendedWeeklySessions,
+                e.MinSessionMinutes));
+        }
+        return Results.Ok(result);
     }
 
     private static async Task<IResult> ListAsync(
@@ -168,3 +197,12 @@ internal static class EquipmentEndpoints
     private static EquipmentResponse Map(EquipmentEntity e) => new(
         e.Id, e.Tag, e.DisplayName, e.Notes, e.CreatedAt);
 }
+
+/// <summary>Wire shape for one entry in <c>GET /v1/equipment/catalog</c>.</summary>
+public sealed record EquipmentCatalogEntryResponse(
+    string Tag,
+    string DisplayName,
+    EquipmentCategory Category,
+    string? Description,
+    int? RecommendedWeeklySessions,
+    int? MinSessionMinutes);

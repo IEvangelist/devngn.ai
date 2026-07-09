@@ -120,7 +120,8 @@ internal static class ActivityEndpoints
         a.EquipmentTags,
         a.AnimationProvider,
         a.AnimationAssetId,
-        a.LicenseAttribution);
+        a.LicenseAttribution,
+        a.Steps);
 }
 
 /// <summary>Wire response shape for <c>GET /v1/activities</c>.</summary>
@@ -135,4 +136,5 @@ public sealed record ActivityResponse(
     string[] EquipmentTags,
     string AnimationProvider,
     string AnimationAssetId,
-    string? LicenseAttribution);
+    string? LicenseAttribution,
+    ActivityStep[] Steps);

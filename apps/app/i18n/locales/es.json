@@ -73,7 +73,13 @@
     "emptyTitle": "Nada en directo ahora",
     "completed": "Completado",
     "completeError": "No se pudo completar. Inténtalo de nuevo.",
-    "completeA11y": "Marcar {title} como hecho"
+    "completeA11y": "Marcar {title} como hecho",
+    "usesGear": "Usa tu {name}",
+    "minutesLabel": "{count} min",
+    "secondsLabel": "{count} s",
+    "holdLabel": "Mantén {count} s",
+    "repsLabel": "{count} reps",
+    "setsLabel": "{count} series"
   },
   "goals": {
     "title": "Goal title",
@@ -257,7 +263,18 @@
     "added": "Se añadió {name}.",
     "removed": "Se quitó {name}.",
     "removeTitle": "¿Quitar equipo?",
-    "removeBody": "¿Quitar {name} de tu equipo? Puedes añadirlo de nuevo más tarde."
+    "removeBody": "¿Quitar {name} de tu equipo? Puedes añadirlo de nuevo más tarde.",
+    "addCustom": "Agregar equipo personalizado",
+    "categoryCardio": "Cardio",
+    "categoryStrength": "Fuerza",
+    "categoryMobility": "Movilidad",
+    "categoryDesk": "En tu escritorio",
+    "customTitle": "Equipo personalizado",
+    "addA11y": "Agregar {name} a tu configuración",
+    "removeA11y": "Quitar {name} de tu configuración",
+    "policyFull": "{sessions} por semana, {minutes} min",
+    "policySessions": "{sessions} por semana",
+    "policyMinutes": "sesiones de {minutes} min"
   },
   "forecast": {
     "title": "Lo que viene",

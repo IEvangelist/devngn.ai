@@ -18,6 +18,7 @@ public sealed record PromptResponse(
     string AnimationProvider,
     string AnimationAssetId,
     string? LicenseAttribution,
+    ActivityStep[] Steps,
     DateTimeOffset GapStartUtc,
     DateTimeOffset GapEndUtc,
     DateTimeOffset DeliveredAt,

@@ -88,7 +88,13 @@
     "emptyTitle": "Nothing live right now",
     "completed": "Completed",
     "completeError": "Could not complete that. Please try again.",
-    "completeA11y": "Mark {title} done"
+    "completeA11y": "Mark {title} done",
+    "usesGear": "Uses your {name}",
+    "minutesLabel": "{count} min",
+    "secondsLabel": "{count}s",
+    "holdLabel": "Hold {count}s",
+    "repsLabel": "{count} reps",
+    "setsLabel": "{count} sets"
   },
   "goals": {
     "title": "Goal title",
@@ -272,7 +278,18 @@
     "added": "Added {name}.",
     "removed": "Removed {name}.",
     "removeTitle": "Remove equipment?",
-    "removeBody": "Remove {name} from your equipment? You can add it again later."
+    "removeBody": "Remove {name} from your equipment? You can add it again later.",
+    "addCustom": "Add custom gear",
+    "categoryCardio": "Cardio",
+    "categoryStrength": "Strength",
+    "categoryMobility": "Mobility",
+    "categoryDesk": "At your desk",
+    "customTitle": "Custom gear",
+    "addA11y": "Add {name} to your setup",
+    "removeA11y": "Remove {name} from your setup",
+    "policyFull": "{sessions}x a week, {minutes} min",
+    "policySessions": "{sessions}x a week",
+    "policyMinutes": "{minutes} min sessions"
   },
   "forecast": {
     "title": "What's coming",

@@ -73,7 +73,13 @@
     "emptyTitle": "今はライブの通知はありません",
     "completed": "完了しました",
     "completeError": "完了できませんでした。もう一度お試しください。",
-    "completeA11y": "{title} を完了にする"
+    "completeA11y": "{title} を完了にする",
+    "usesGear": "{name} を使用",
+    "minutesLabel": "{count}分",
+    "secondsLabel": "{count}秒",
+    "holdLabel": "{count}秒キープ",
+    "repsLabel": "{count}回",
+    "setsLabel": "{count}セット"
   },
   "goals": {
     "title": "Goal title",
@@ -257,7 +263,18 @@
     "added": "{name} を追加しました。",
     "removed": "{name} を削除しました。",
     "removeTitle": "器具を削除しますか？",
-    "removeBody": "{name} を器具から削除しますか？後でもう一度追加できます。"
+    "removeBody": "{name} を器具から削除しますか？後でもう一度追加できます。",
+    "addCustom": "カスタム機器を追加",
+    "categoryCardio": "有酸素",
+    "categoryStrength": "筋力",
+    "categoryMobility": "モビリティ",
+    "categoryDesk": "デスクで",
+    "customTitle": "カスタム機器",
+    "addA11y": "{name} をセットアップに追加",
+    "removeA11y": "{name} をセットアップから削除",
+    "policyFull": "週{sessions}回、{minutes}分",
+    "policySessions": "週{sessions}回",
+    "policyMinutes": "{minutes}分のセッション"
   },
   "forecast": {
     "title": "この先の予定",

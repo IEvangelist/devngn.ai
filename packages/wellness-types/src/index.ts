@@ -89,6 +89,7 @@ export type GapResponse = WellnessSchemas["GapResponse"];
 
 // --- Activities -------------------------------------------------------------
 export type ActivityResponse = WellnessSchemas["ActivityResponse"];
+export type ActivityStep = WellnessSchemas["ActivityStep"];
 
 // --- Prompts ----------------------------------------------------------------
 export type FeedbackRequest = WellnessSchemas["FeedbackRequest"];

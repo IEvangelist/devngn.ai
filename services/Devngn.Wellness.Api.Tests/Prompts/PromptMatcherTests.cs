@@ -123,6 +123,80 @@ public sealed class PromptMatcherTests
     }
 
     [Fact]
+    public void Match_leans_toward_registered_equipment_when_all_else_equal()
+    {
+        // Same body area, intensity, duration; the only difference is that one activity
+        // uses gear the user owns. The equipment nudge should tip the selection.
+        var freehand = Act("a-freehand");
+        var withGear = Act("z-gear", equipment: ["bands-light"]);
+
+        var picked = _matcher.Match(Ctx([freehand, withGear], equipment: ["bands-light"]));
+        Assert.Same(withGear, picked);
+    }
+
+    [Fact]
+    public void Match_pushes_a_policy_activity_while_behind_its_weekly_target()
+    {
+        // "a-bike" sorts first and also uses owned gear (+2). "z-treadmill" carries a
+        // cadence policy; while the user is behind the weekly target it gets a strong
+        // frequency bonus that overtakes the better slug.
+        var bike = Act("a-bike", equipment: ["stationary-bike"]);
+        var treadmill = Act("z-treadmill", equipment: ["under-desk-treadmill"]);
+        var policies = new Dictionary<string, EquipmentPolicy>(StringComparer.Ordinal)
+        {
+            ["under-desk-treadmill"] = new(RecommendedWeeklySessions: 3, MinSessionMinutes: 0),
+        };
+
+        var behind = _matcher.Match(Ctx(
+            [bike, treadmill],
+            equipment: ["stationary-bike", "under-desk-treadmill"],
+            policies: policies,
+            deliveryCounts: new Dictionary<string, int>(StringComparer.Ordinal) { ["under-desk-treadmill"] = 0 }));
+        Assert.Same(treadmill, behind);
+    }
+
+    [Fact]
+    public void Match_drops_the_frequency_bonus_once_the_weekly_target_is_met()
+    {
+        // Same pair as above, but the weekly target is already satisfied, so the
+        // frequency bonus disappears and the two equipment activities tie — the better
+        // slug ("a-bike") then wins.
+        var bike = Act("a-bike", equipment: ["stationary-bike"]);
+        var treadmill = Act("z-treadmill", equipment: ["under-desk-treadmill"]);
+        var policies = new Dictionary<string, EquipmentPolicy>(StringComparer.Ordinal)
+        {
+            ["under-desk-treadmill"] = new(RecommendedWeeklySessions: 3, MinSessionMinutes: 0),
+        };
+
+        var caughtUp = _matcher.Match(Ctx(
+            [bike, treadmill],
+            equipment: ["stationary-bike", "under-desk-treadmill"],
+            policies: policies,
+            deliveryCounts: new Dictionary<string, int>(StringComparer.Ordinal) { ["under-desk-treadmill"] = 3 }));
+        Assert.Same(bike, caughtUp);
+    }
+
+    [Fact]
+    public void Match_prefers_a_policy_min_session_length_when_the_gap_allows()
+    {
+        // The 30-minute walk meets the policy's min-session length and the 10-minute
+        // stroll doesn't; in a long gap the walk should win despite being longer.
+        var walk = Act("a-walk", durationSeconds: 1800, equipment: ["under-desk-treadmill"]);
+        var stroll = Act("z-stroll", durationSeconds: 600, equipment: ["under-desk-treadmill"]);
+        var policies = new Dictionary<string, EquipmentPolicy>(StringComparer.Ordinal)
+        {
+            ["under-desk-treadmill"] = new(RecommendedWeeklySessions: 3, MinSessionMinutes: 30),
+        };
+
+        var picked = _matcher.Match(Ctx(
+            [stroll, walk],
+            gapSeconds: 3600,
+            equipment: ["under-desk-treadmill"],
+            policies: policies));
+        Assert.Same(walk, picked);
+    }
+
+    [Fact]
     public void Match_returns_null_when_nothing_fits()
     {
         Assert.Null(_matcher.Match(Ctx([])));
@@ -155,11 +229,15 @@ public sealed class PromptMatcherTests
         Profile? profile = null,
         IReadOnlyCollection<GoalCategory>? goals = null,
         IEnumerable<string>? equipment = null,
-        IEnumerable<Guid>? recent = null) => new(
+        IEnumerable<Guid>? recent = null,
+        IReadOnlyDictionary<string, EquipmentPolicy>? policies = null,
+        IReadOnlyDictionary<string, int>? deliveryCounts = null) => new(
             gapSeconds,
             profile,
             goals ?? [],
             (equipment ?? []).ToHashSet(StringComparer.Ordinal),
             catalog,
-            (recent ?? []).ToHashSet());
+            (recent ?? []).ToHashSet(),
+            policies ?? new Dictionary<string, EquipmentPolicy>(StringComparer.Ordinal),
+            deliveryCounts ?? new Dictionary<string, int>(StringComparer.Ordinal));
 }

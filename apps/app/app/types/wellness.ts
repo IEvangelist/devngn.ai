@@ -23,9 +23,12 @@ export type IntensityLevel = WellnessSchemas["IntensityLevel"];
 export type EquipmentResponse = WellnessSchemas["EquipmentResponse"];
 export type CreateEquipmentRequest = WellnessSchemas["CreateEquipmentRequest"];
 export type UpdateEquipmentRequest = WellnessSchemas["UpdateEquipmentRequest"];
+export type EquipmentCatalogEntryResponse = WellnessSchemas["EquipmentCatalogEntryResponse"];
+export type EquipmentCategory = WellnessSchemas["EquipmentCategory"];
 
 // ── Catalog / schedule ────────────────────────────────────────────────────
 export type ActivityResponse = WellnessSchemas["ActivityResponse"];
+export type ActivityStep = WellnessSchemas["ActivityStep"];
 export type BodyArea = WellnessSchemas["BodyArea"];
 export type GapResponse = WellnessSchemas["GapResponse"];
 
