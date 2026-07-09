@@ -70,7 +70,10 @@
     "feedback": "How was that?",
     "liveTitle": "En direct et récent",
     "intro": "Les pauses en direct dès qu'elles arrivent, et l'historique de votre journée.",
-    "emptyTitle": "Rien en direct pour l'instant"
+    "emptyTitle": "Rien en direct pour l'instant",
+    "completed": "Terminé",
+    "completeError": "Impossible de terminer. Veuillez réessayer.",
+    "completeA11y": "Marquer {title} comme terminé"
   },
   "goals": {
     "title": "Goal title",

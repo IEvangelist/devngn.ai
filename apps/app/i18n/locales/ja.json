@@ -70,7 +70,10 @@
     "feedback": "How was that?",
     "liveTitle": "ライブと最近",
     "intro": "届いたその瞬間のナッジと、一日の記録。",
-    "emptyTitle": "今はライブの通知はありません"
+    "emptyTitle": "今はライブの通知はありません",
+    "completed": "完了しました",
+    "completeError": "完了できませんでした。もう一度お試しください。",
+    "completeA11y": "{title} を完了にする"
   },
   "goals": {
     "title": "Goal title",

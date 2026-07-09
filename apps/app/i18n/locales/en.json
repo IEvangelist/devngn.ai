@@ -85,7 +85,10 @@
     "feedback": "How was that?",
     "liveTitle": "Live & recent",
     "intro": "Live nudges as they arrive, and the history of how your day went.",
-    "emptyTitle": "Nothing live right now"
+    "emptyTitle": "Nothing live right now",
+    "completed": "Completed",
+    "completeError": "Could not complete that. Please try again.",
+    "completeA11y": "Mark {title} done"
   },
   "goals": {
     "title": "Goal title",

@@ -5,16 +5,19 @@
  * Component tests for InterruptionCard.
  *
  * Strategy: mount InterruptionCard with a real Pinia instance (populated with
- * a mock interruptions store state) and stubs for child components + i18n.
- * This keeps the test focused on the card's own logic without booting the full
- * Nuxt layout or making real network calls.
+ * a mock interruptions store state) and stubs for child components. A real
+ * (but message-less) vue-i18n instance is installed so both the `$t` template
+ * helper and the `useI18n()` composable resolve; its `missing` handler returns
+ * the key, so assertions stay stable while the component's script-side
+ * translation calls work.
  *
  * Child components (BrutButton, BrutChip) are stubbed so tests remain fast and
  * don't depend on those components' implementations.
  */
 
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
+import { createI18n } from "vue-i18n";
 import InterruptionCard from "~/components/InterruptionCard.vue";
 import type { PromptResponse } from "@devngn/wellness-types";
 import {
@@ -23,11 +26,33 @@ import {
   mockDismissedPrompt,
 } from "../../fixtures/wellness";
 
-// ── i18n stub ────────────────────────────────────────────────────────────────
-// Provide a minimal $t function so template string interpolation works.
-const i18nPlugin = {
-  install(app: import("vue").App) {
-    app.config.globalProperties.$t = (key: string) => key;
+// ── i18n instance ────────────────────────────────────────────────────────────
+// A real vue-i18n instance so useI18n() resolves in <script setup>. The missing
+// handler returns the key, keeping the existing key-based assertions valid.
+const i18n = createI18n({
+  legacy: false,
+  globalInjection: true,
+  locale: "en",
+  missing: (_locale: string, key: string) => key,
+  missingWarn: false,
+  fallbackWarn: false,
+  messages: { en: {} },
+  // Cast: the app augments vue-i18n's message schema to require all locales;
+  // this test-only instance intentionally ships an empty message set and relies
+  // on the `missing` handler returning the key.
+} as never);
+
+// ── stubs shared across mounts ───────────────────────────────────────────────
+const stubs = {
+  BrutButton: {
+    template:
+      '<button class="brut-btn-stub" v-bind="$attrs" @click="$emit(\'click\')"><slot/></button>',
+    props: ["variant", "size", "loading"],
+    emits: ["click"],
+  },
+  BrutChip: {
+    template: '<span class="brut-chip-stub"><slot/></span>',
+    props: ["color"],
   },
 };
 
@@ -50,19 +75,8 @@ function mountCard(
   return mount(InterruptionCard, {
     props: { prompt: prompt as PromptResponse, showHistory },
     global: {
-      plugins: [pinia, i18nPlugin],
-      stubs: {
-        BrutButton: {
-          template:
-            '<button class="brut-btn-stub" v-bind="$attrs" @click="$emit(\'click\')"><slot/></button>',
-          props: ["variant", "size", "loading"],
-          emits: ["click"],
-        },
-        BrutChip: {
-          template: '<span class="brut-chip-stub"><slot/></span>',
-          props: ["color"],
-        },
-      },
+      plugins: [pinia, i18n],
+      stubs,
     },
   });
 }
@@ -80,9 +94,11 @@ describe("InterruptionCard — rendering", () => {
     expect(wrapper.text()).toContain("Stand up and stretch for 2 minutes.");
   });
 
-  it("uses the prompt's activityTitle as the article aria-label", () => {
+  it("uses the prompt's activityTitle as the front-face aria-label", () => {
     const wrapper = mountCard(mockPendingPrompt as PromptResponse);
-    expect(wrapper.attributes("aria-label")).toBe("Take a standing break");
+    expect(wrapper.find(".interruption-card").attributes("aria-label")).toBe(
+      "Take a standing break",
+    );
   });
 
   it("shows bodyArea chip", () => {
@@ -99,6 +115,16 @@ describe("InterruptionCard — rendering", () => {
   it("shows history meta when showHistory=true", () => {
     const wrapper = mountCard(mockPendingPrompt as PromptResponse, true);
     expect(wrapper.find(".interruption-card__meta").exists()).toBe(true);
+  });
+
+  it("renders the completed back face in glance view (showHistory=false)", () => {
+    const wrapper = mountCard(mockPendingPrompt as PromptResponse, false);
+    expect(wrapper.find(".ix-flip__back").exists()).toBe(true);
+  });
+
+  it("does NOT render the completed back face in history view", () => {
+    const wrapper = mountCard(mockPendingPrompt as PromptResponse, true);
+    expect(wrapper.find(".ix-flip__back").exists()).toBe(false);
   });
 });
 
@@ -142,66 +168,71 @@ describe("InterruptionCard — actionable footer visibility", () => {
 
 describe("InterruptionCard — store interactions", () => {
   it("calls store.snooze() with 15 minutes when Snooze button is clicked", async () => {
-    setActivePinia(createPinia());
-    const pinia = createPinia();
-    const store = useInterruptionsStore(pinia);
-    store.prompts = [mockPendingPrompt as PromptResponse];
-
+    const wrapper = mountCard(mockPendingPrompt as PromptResponse);
+    const store = useInterruptionsStore();
     const snoozeSpy = vi.spyOn(store, "snooze");
 
-    const wrapper = mount(InterruptionCard, {
-      props: { prompt: mockPendingPrompt as PromptResponse },
-      global: {
-        plugins: [pinia, i18nPlugin],
-        stubs: {
-          BrutButton: {
-            template:
-              '<button class="brut-btn-stub" v-bind="$attrs" @click="$emit(\'click\')"><slot/></button>',
-            props: ["variant", "size", "loading"],
-            emits: ["click"],
-          },
-          BrutChip: { template: "<span><slot/></span>", props: ["color"] },
-        },
-      },
-    });
-
-    // The Snooze button renders after Complete button — it contains the snoozeCta key
-    const buttons = wrapper.findAll(".brut-btn-stub");
     // buttons order: Complete, Snooze, Dismiss (as per template)
-    const snoozeBtn = buttons[1];
+    const snoozeBtn = wrapper.findAll(".brut-btn-stub")[1];
     await snoozeBtn!.trigger("click");
 
     expect(snoozeSpy).toHaveBeenCalledWith(mockPendingPrompt.id, 15);
   });
 
-  it("calls store.complete() when Complete button is clicked", async () => {
-    setActivePinia(createPinia());
-    const pinia = createPinia();
-    const store = useInterruptionsStore(pinia);
-    store.prompts = [mockPendingPrompt as PromptResponse];
-
+  it("history view completes in place immediately (no flip)", async () => {
+    const wrapper = mountCard(mockPendingPrompt as PromptResponse, true);
+    const store = useInterruptionsStore();
     vi.spyOn(store, "complete").mockResolvedValue(undefined);
 
-    const wrapper = mount(InterruptionCard, {
-      props: { prompt: mockPendingPrompt as PromptResponse },
-      global: {
-        plugins: [pinia, i18nPlugin],
-        stubs: {
-          BrutButton: {
-            template:
-              '<button class="brut-btn-stub" v-bind="$attrs" @click="$emit(\'click\')"><slot/></button>',
-            props: ["variant", "size", "loading"],
-            emits: ["click"],
-          },
-          BrutChip: { template: "<span><slot/></span>", props: ["color"] },
-        },
-      },
-    });
-
-    const buttons = wrapper.findAll(".brut-btn-stub");
-    await buttons[0]!.trigger("click"); // Complete button
+    await wrapper.findAll(".brut-btn-stub")[0]!.trigger("click"); // Complete
+    await flushPromises();
 
     expect(store.complete).toHaveBeenCalledWith(mockPendingPrompt.id);
+    // History view does not flip to the completed face.
+    expect(wrapper.find(".ix-item").classes()).not.toContain("is-flipped");
+  });
+
+  it("glance view flips first, then persists completion after the hold", async () => {
+    vi.useFakeTimers();
+    try {
+      const wrapper = mountCard(mockPendingPrompt as PromptResponse, false);
+      const store = useInterruptionsStore();
+      vi.spyOn(store, "complete").mockResolvedValue(undefined);
+
+      await wrapper.findAll(".brut-btn-stub")[0]!.trigger("click"); // Complete
+
+      // The card flips to the completed face immediately...
+      expect(wrapper.find(".ix-item").classes()).toContain("is-flipped");
+      // ...but completion is deferred until the flip has been shown.
+      expect(store.complete).not.toHaveBeenCalled();
+
+      // Advance past the glance-mode hold; completion now persists.
+      await vi.advanceTimersByTimeAsync(1200);
+      expect(store.complete).toHaveBeenCalledWith(mockPendingPrompt.id);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("ignores repeat Done clicks while a glance completion is in flight", async () => {
+    vi.useFakeTimers();
+    try {
+      const wrapper = mountCard(mockPendingPrompt as PromptResponse, false);
+      const store = useInterruptionsStore();
+      const completeSpy = vi
+        .spyOn(store, "complete")
+        .mockResolvedValue(undefined);
+
+      const doneBtn = wrapper.findAll(".brut-btn-stub")[0]!;
+      await doneBtn.trigger("click");
+      await doneBtn.trigger("click");
+      await doneBtn.trigger("click");
+
+      await vi.advanceTimersByTimeAsync(1200);
+      expect(completeSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

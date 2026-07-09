@@ -70,7 +70,10 @@
     "feedback": "How was that?",
     "liveTitle": "Ao vivo e recente",
     "intro": "Avisos ao vivo assim que chegam, e o histórico de como correu o teu dia.",
-    "emptyTitle": "Nada ao vivo agora"
+    "emptyTitle": "Nada ao vivo agora",
+    "completed": "Concluído",
+    "completeError": "Não foi possível concluir. Tente novamente.",
+    "completeA11y": "Marcar {title} como concluído"
   },
   "goals": {
     "title": "Goal title",

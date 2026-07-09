@@ -70,7 +70,10 @@
     "feedback": "How was that?",
     "liveTitle": "实时与最近",
     "intro": "实时提醒随到随看，以及你这一天的记录。",
-    "emptyTitle": "当前没有实时提醒"
+    "emptyTitle": "当前没有实时提醒",
+    "completed": "已完成",
+    "completeError": "无法完成，请重试。",
+    "completeA11y": "将 {title} 标记为完成"
   },
   "goals": {
     "title": "Goal title",

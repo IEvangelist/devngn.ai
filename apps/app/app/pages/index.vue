@@ -141,13 +141,13 @@
     <section class="today__block reveal reveal--1" aria-labelledby="today-now-h">
       <h2 id="today-now-h" class="section-label">{{ $t("today.rightNow") }}</h2>
 
-      <div v-if="activePrompts.length" class="today__cards">
+      <TransitionGroup v-if="activePrompts.length" tag="div" name="ix-leave" class="today__cards">
         <InterruptionCard
           v-for="prompt in activePrompts"
           :key="prompt.id"
           :prompt="prompt"
         />
-      </div>
+      </TransitionGroup>
 
       <div v-else class="today__clear brut-card brut-card--flat">
         <span class="today__clear-mark" aria-hidden="true">
@@ -593,6 +593,19 @@ function relativeTo(iso: string): string {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Completed / snoozed / dismissed cards ease out of the active list rather
+ * than vanishing. The card that fades is already showing its completed face. */
+.ix-leave-leave-active {
+  transition: opacity 0.32s ease, transform 0.32s ease;
+}
+.ix-leave-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
+}
+.ix-leave-move {
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Composed "you're clear" state — calm, not a dead line. */

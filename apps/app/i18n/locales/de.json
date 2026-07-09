@@ -70,7 +70,10 @@
     "feedback": "How was that?",
     "liveTitle": "Live & aktuell",
     "intro": "Live-Impulse, sobald sie eintreffen, und der Verlauf deines Tages.",
-    "emptyTitle": "Gerade nichts live"
+    "emptyTitle": "Gerade nichts live",
+    "completed": "Erledigt",
+    "completeError": "Konnte nicht abgeschlossen werden. Bitte versuche es erneut.",
+    "completeA11y": "{title} als erledigt markieren"
   },
   "goals": {
     "title": "Goal title",
