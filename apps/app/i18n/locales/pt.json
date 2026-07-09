@@ -125,7 +125,11 @@
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
     "achievedOn": "Achieved {date}",
-    "intro": "Os grandes momentos do teu percurso e como alcançá-los."
+    "intro": "Os grandes momentos do teu percurso e como alcançá-los.",
+    "progress": "{done} de {total} alcançados",
+    "upNext": "A seguir",
+    "reached": "Alcançado",
+    "journeyLabel": "Sua jornada"
   },
   "leaderboard": {
     "title": "Leaderboard",

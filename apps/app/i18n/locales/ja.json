@@ -125,7 +125,11 @@
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
     "achievedOn": "Achieved {date}",
-    "intro": "旅の大きな節目と、そこへの道のり。"
+    "intro": "旅の大きな節目と、そこへの道のり。",
+    "progress": "{total}件中{done}件達成",
+    "upNext": "次の目標",
+    "reached": "達成",
+    "journeyLabel": "あなたの歩み"
   },
   "leaderboard": {
     "title": "Leaderboard",

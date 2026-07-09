@@ -125,7 +125,11 @@
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
     "achievedOn": "Achieved {date}",
-    "intro": "旅程中的重要时刻，以及抵达的路径。"
+    "intro": "旅程中的重要时刻，以及抵达的路径。",
+    "progress": "已达成 {done}/{total}",
+    "upNext": "下一个",
+    "reached": "已达成",
+    "journeyLabel": "你的历程"
   },
   "leaderboard": {
     "title": "Leaderboard",

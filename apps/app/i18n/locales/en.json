@@ -140,7 +140,11 @@
     "error": "Failed to load milestones.",
     "empty": "No milestones yet.",
     "achievedOn": "Achieved {date}",
-    "intro": "Bigger moments on your journey, and how to reach them."
+    "intro": "Bigger moments on your journey, and how to reach them.",
+    "progress": "{done} of {total} reached",
+    "upNext": "Up next",
+    "reached": "Reached",
+    "journeyLabel": "Your journey"
   },
   "leaderboard": {
     "title": "Leaderboard",
