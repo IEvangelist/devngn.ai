@@ -759,6 +759,7 @@ dependencies = [
  "tauri-plugin-single-instance",
  "tauri-plugin-store",
  "tauri-plugin-updater",
+ "tauri-winrt-notification",
 ]
 
 [[package]]

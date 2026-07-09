@@ -35,8 +35,14 @@ export const useSocialStore = defineStore("social", () => {
     try {
       profile.value = await apiFetch<SocialProfileResponse>("/v1/social/profile");
     } catch (e) {
-      errorProfile.value =
-        e instanceof Error ? e.message : "Failed to load profile.";
+      // A 404 just means the user has not created a social profile yet. Treat
+      // that as an empty first-run state (show the edit form), not a failure.
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("404")) {
+        profile.value = null;
+      } else {
+        errorProfile.value = msg || "Failed to load profile.";
+      }
     } finally {
       loadingProfile.value = false;
     }

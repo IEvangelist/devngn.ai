@@ -158,19 +158,18 @@ export const useNotificationsStore = defineStore("notifications", () => {
 
     const title = "devngn";
     const body = prompt.activityTitle ?? "Time for a wellness break!";
+    // Active wellness prompts surface on the Today page, so clicking the toast
+    // takes the user straight to the "Right now" details.
+    const route = "/";
 
     if (isTauri) {
       try {
-        const { sendNotification, isPermissionGranted, requestPermission } =
-          await import("@tauri-apps/plugin-notification");
-        let ok = await isPermissionGranted();
-        if (!ok) {
-          const result = await requestPermission();
-          ok = result === "granted";
-        }
-        if (ok) {
-          sendNotification({ title, body });
-        }
+        // A native Rust command shows the toast so we can wire click-to-open on
+        // Windows (the JS notification plugin can't deliver desktop click
+        // callbacks). On click it focuses the window and emits the route the
+        // notification-activate plugin listens for.
+        const { invoke } = await import("@tauri-apps/api/core");
+        await invoke("show_wellness_notification", { title, body, route });
       } catch (e) {
         console.warn("[notifications] Tauri notification error:", e);
       }
