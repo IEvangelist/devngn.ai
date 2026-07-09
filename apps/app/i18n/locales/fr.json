@@ -84,7 +84,12 @@
     "created": "Goal created!",
     "intro": "Donnez le cap. De petites victoires qui s'accumulent.",
     "started": "Commencé",
-    "due": "Échéance"
+    "due": "Échéance",
+    "markDone": "Terminé",
+    "markDoneA11y": "Marquer {title} comme terminé",
+    "completed": "Terminé",
+    "completedToast": "Beau travail. Objectif atteint.",
+    "completeError": "Impossible de terminer l'objectif. Veuillez réessayer."
   },
   "gamification": {
     "level": "Level {level}",

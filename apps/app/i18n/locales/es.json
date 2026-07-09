@@ -84,7 +84,12 @@
     "created": "Goal created!",
     "intro": "Marca el rumbo. Pequeñas victorias que se van sumando.",
     "started": "Iniciado",
-    "due": "Fecha límite"
+    "due": "Fecha límite",
+    "markDone": "Hecho",
+    "markDoneA11y": "Marcar {title} como hecho",
+    "completed": "Completado",
+    "completedToast": "Buen trabajo. Objetivo completado.",
+    "completeError": "No se pudo completar el objetivo. Inténtalo de nuevo."
   },
   "gamification": {
     "level": "Level {level}",

@@ -99,7 +99,12 @@
     "created": "Goal created!",
     "intro": "Set the direction. Small, repeatable wins that add up.",
     "started": "Started",
-    "due": "Due"
+    "due": "Due",
+    "markDone": "Done",
+    "markDoneA11y": "Mark {title} done",
+    "completed": "Completed",
+    "completedToast": "Nice work. Goal completed.",
+    "completeError": "Could not complete the goal. Please try again."
   },
   "gamification": {
     "level": "Level {level}",

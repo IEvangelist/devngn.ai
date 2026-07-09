@@ -84,7 +84,12 @@
     "created": "Goal created!",
     "intro": "定好方向。小小的坚持，日积月累。",
     "started": "开始于",
-    "due": "截止"
+    "due": "截止",
+    "markDone": "完成",
+    "markDoneA11y": "将 {title} 标记为完成",
+    "completed": "已完成",
+    "completedToast": "干得好，目标已完成。",
+    "completeError": "无法完成目标，请重试。"
   },
   "gamification": {
     "level": "Level {level}",

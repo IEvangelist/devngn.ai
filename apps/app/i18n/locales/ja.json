@@ -84,7 +84,12 @@
     "created": "Goal created!",
     "intro": "方向を決めよう。小さな達成が積み重なっていきます。",
     "started": "開始",
-    "due": "期限"
+    "due": "期限",
+    "markDone": "完了",
+    "markDoneA11y": "{title} を完了にする",
+    "completed": "完了しました",
+    "completedToast": "お見事です。目標を達成しました。",
+    "completeError": "目標を完了できませんでした。もう一度お試しください。"
   },
   "gamification": {
     "level": "Level {level}",

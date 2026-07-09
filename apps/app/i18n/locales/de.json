@@ -84,7 +84,12 @@
     "created": "Goal created!",
     "intro": "Gib die Richtung vor. Kleine Erfolge, die sich summieren.",
     "started": "Begonnen",
-    "due": "Fällig"
+    "due": "Fällig",
+    "markDone": "Fertig",
+    "markDoneA11y": "{title} als erledigt markieren",
+    "completed": "Erledigt",
+    "completedToast": "Gut gemacht. Ziel erreicht.",
+    "completeError": "Ziel konnte nicht abgeschlossen werden. Bitte versuche es erneut."
   },
   "gamification": {
     "level": "Level {level}",
