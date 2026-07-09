@@ -16,20 +16,20 @@
       <slot name="trigger" />
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
-      <DropdownMenuContent class="menu" :align="align" :side-offset="6">
-        <DropdownMenuLabel v-if="label" class="menu__label">
+      <DropdownMenuContent class="brut-menu" :align="align" :side-offset="6">
+        <DropdownMenuLabel v-if="label" class="brut-menu__label">
           {{ label }}
         </DropdownMenuLabel>
         <template v-for="item in items" :key="item.key">
-          <DropdownMenuSeparator v-if="item.separatorBefore" class="menu__sep" />
+          <DropdownMenuSeparator v-if="item.separatorBefore" class="brut-menu__sep" />
           <DropdownMenuItem
-            class="menu__item"
-            :class="{ 'menu__item--danger': item.danger }"
+            class="brut-menu__item"
+            :class="{ 'brut-menu__item--danger': item.danger }"
             :disabled="item.disabled"
             @select="item.onSelect"
           >
-            <span v-if="item.icon" class="menu__icon" aria-hidden="true">{{ item.icon }}</span>
-            <span class="menu__text">{{ item.label }}</span>
+            <span v-if="item.icon" class="brut-menu__icon" aria-hidden="true">{{ item.icon }}</span>
+            <span class="brut-menu__text">{{ item.label }}</span>
           </DropdownMenuItem>
         </template>
       </DropdownMenuContent>
@@ -68,17 +68,25 @@ withDefaults(
 );
 </script>
 
-<style scoped>
-.menu {
+<!--
+  NOTE: reka-ui renders DropdownMenuContent through a Portal, so the popover
+  lands OUTSIDE this component's scoped-style boundary and never receives the
+  data-v attribute. Scoped rules silently don't apply (transparent background,
+  no border, no shadow — the menu blends into whatever sits behind it). These
+  styles therefore live in a plain, non-scoped block and are namespaced with
+  `brut-menu` to avoid leaking.
+-->
+<style>
+.brut-menu {
   z-index: 300;
   min-width: 11rem;
   padding: 0.3rem;
   background: var(--surface);
-  border: var(--border);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
 }
-.menu__label {
+.brut-menu__label {
   padding: 0.35rem 0.55rem 0.25rem;
   font-size: 0.72rem;
   font-weight: 600;
@@ -86,12 +94,12 @@ withDefaults(
   color: var(--muted);
   text-transform: uppercase;
 }
-.menu__sep {
+.brut-menu__sep {
   height: 1px;
   margin: 0.3rem 0;
   background: var(--line);
 }
-.menu__item {
+.brut-menu__item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -103,29 +111,34 @@ withDefaults(
   user-select: none;
   outline: none;
 }
-.menu__item[data-highlighted] {
+.brut-menu__item[data-highlighted] {
   background: var(--surface-2);
 }
-.menu__item[data-disabled] {
+.brut-menu__item[data-disabled] {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.menu__item--danger {
+.brut-menu__item--danger {
   color: var(--danger);
 }
-.menu__item--danger[data-highlighted] {
+.brut-menu__item--danger[data-highlighted] {
   background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
-.menu__icon {
+.brut-menu__icon {
   width: 1.1rem;
   text-align: center;
   flex: 0 0 auto;
 }
-.menu[data-state="open"] {
-  animation: menu-in 0.12s ease;
+.brut-menu[data-state="open"] {
+  animation: brut-menu-in 0.12s ease;
 }
-@keyframes menu-in {
+@keyframes brut-menu-in {
   from { opacity: 0; transform: translateY(-4px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brut-menu[data-state="open"] {
+    animation: none;
+  }
 }
 </style>
