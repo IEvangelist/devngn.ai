@@ -23,37 +23,31 @@
 
         <div class="settings-rows">
           <div class="setting-row">
-            <label class="setting-row__label" for="theme-select">{{ $t("settings.theme") }}</label>
-            <div class="setting-row__control">
-              <select
-                id="theme-select"
-                class="brut-select"
-                :value="themeChoice"
-                @change="setTheme(($event.target as HTMLSelectElement).value as ThemeChoice)"
-              >
-                <option value="system">{{ $t("settings.themeSystem") }}</option>
-                <option value="light">{{ $t("settings.themeLight") }}</option>
-                <option value="dark">{{ $t("settings.themeDark") }}</option>
-              </select>
+              <label class="setting-row__label" for="theme-select">{{ $t("settings.theme") }}</label>
+              <div class="setting-row__control setting-row__control--select">
+                <BrutSelect
+                  id="theme-select"
+                  :model-value="themeChoice"
+                  :options="themeOptions"
+                  :aria-label="$t('settings.theme')"
+                  @update:model-value="setTheme"
+                />
+              </div>
             </div>
-          </div>
 
-          <!-- Language -->
-          <div class="setting-row">
-            <label class="setting-row__label" for="lang-select">{{ $t("settings.language") }}</label>
-            <div class="setting-row__control">
-              <select
-                id="lang-select"
-                class="brut-select"
-                :value="locale"
-                @change="setLocale(($event.target as HTMLSelectElement).value as 'en' | 'es' | 'fr' | 'de' | 'pt' | 'ja' | 'zh-Hans')"
-              >
-                <option v-for="loc in locales" :key="loc.code" :value="loc.code">
-                  {{ loc.name }}
-                </option>
-              </select>
+            <!-- Language -->
+            <div class="setting-row">
+              <label class="setting-row__label" for="lang-select">{{ $t("settings.language") }}</label>
+              <div class="setting-row__control setting-row__control--select">
+                <BrutSelect
+                  id="lang-select"
+                  :model-value="locale"
+                  :options="localeOptions"
+                  :aria-label="$t('settings.language')"
+                  @update:model-value="setLocale"
+                />
+              </div>
             </div>
-          </div>
         </div>
       </BrutPanel>
 
@@ -140,6 +134,7 @@
 
 <script setup lang="ts">
 import type { ThemeChoice } from "~/composables/useTheme";
+import type { SelectOption } from "~/components/ui/BrutSelect.vue";
 
 const { choice: themeChoice, set: setTheme } = useTheme();
 const { locale, locales, setLocale } = useI18n();
@@ -150,6 +145,17 @@ const { settings } = storeToRefs(notifStore);
 const isTauri = useTauri();
 const toast = useToast();
 const { t } = useI18n();
+
+type LocaleCode = typeof locale.value;
+
+const themeOptions = computed<SelectOption<ThemeChoice>[]>(() => [
+  { value: "system", label: t("settings.themeSystem") },
+  { value: "light", label: t("settings.themeLight") },
+  { value: "dark", label: t("settings.themeDark") },
+]);
+const localeOptions = computed<SelectOption<LocaleCode>[]>(() =>
+  locales.value.map((loc) => ({ value: loc.code as LocaleCode, label: loc.name ?? loc.code })),
+);
 
 type UpdateStatus = "idle" | "checking" | "available" | "installing";
 const updateStatus = ref<UpdateStatus>("idle");
@@ -234,6 +240,7 @@ async function installUpdate(): Promise<void> {
 .setting-row:last-child { border-bottom: none; }
 .setting-row__label { font-weight: 600; flex: 1; }
 .setting-row__control { flex: 0 0 auto; }
+.setting-row__control--select { width: 12rem; }
 .setting-time { width: 9rem; }
 .settings-updates {
   margin-top: 1rem;

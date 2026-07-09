@@ -28,32 +28,42 @@
       <div class="field-grid">
         <div class="form-field">
           <label class="field-label" for="pf-baseline">{{ $t("profile.fitnessBaseline") }}</label>
-          <select id="pf-baseline" v-model="form.fitnessBaseline" class="brut-select">
-            <option v-for="b in baselines" :key="b" :value="b">{{ $t(`profile.baseline.${b}`) }}</option>
-          </select>
+          <BrutSelect
+            id="pf-baseline"
+            v-model="form.fitnessBaseline"
+            :options="baselineOptions"
+            :aria-label="$t('profile.fitnessBaseline')"
+          />
         </div>
 
         <div class="form-field">
           <label class="field-label" for="pf-intensity">{{ $t("profile.preferredIntensity") }}</label>
-          <select id="pf-intensity" v-model="form.preferredIntensity" class="brut-select">
-            <option v-for="i in intensities" :key="i" :value="i">{{ $t(`profile.intensity.${i}`) }}</option>
-          </select>
+          <BrutSelect
+            id="pf-intensity"
+            v-model="form.preferredIntensity"
+            :options="intensityOptions"
+            :aria-label="$t('profile.preferredIntensity')"
+          />
         </div>
 
         <div class="form-field">
           <label class="field-label" for="pf-age">{{ $t("profile.ageRange") }}</label>
-          <select id="pf-age" v-model="ageRangeModel" class="brut-select">
-            <option value="">{{ $t("profile.notSet") }}</option>
-            <option v-for="a in ageRanges" :key="a" :value="a">{{ a }}</option>
-          </select>
+          <BrutSelect
+            id="pf-age"
+            v-model="ageRangeModel"
+            :options="ageOptions"
+            :aria-label="$t('profile.ageRange')"
+          />
         </div>
 
         <div class="form-field">
           <label class="field-label" for="pf-time">{{ $t("profile.timeOfDay") }}</label>
-          <select id="pf-time" v-model="timeOfDayModel" class="brut-select">
-            <option value="">{{ $t("profile.notSet") }}</option>
-            <option v-for="tp in timePreferences" :key="tp" :value="tp">{{ $t(`profile.time.${tp}`) }}</option>
-          </select>
+          <BrutSelect
+            id="pf-time"
+            v-model="timeOfDayModel"
+            :options="timeOptions"
+            :aria-label="$t('profile.timeOfDay')"
+          />
         </div>
 
         <div class="form-field">
@@ -110,6 +120,7 @@
 
 <script setup lang="ts">
 import type { FitnessBaseline, IntensityLevel } from "~/types/wellness";
+import type { SelectOption } from "~/components/ui/BrutSelect.vue";
 
 const { t } = useI18n();
 const toast = useToast();
@@ -121,6 +132,24 @@ const intensities: IntensityLevel[] = ["Low", "Medium", "High"];
 const ageRanges = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
 const timePreferences = ["Morning", "Afternoon", "Evening", "Anytime"];
 
+// reka-ui Select forbids empty-string item values, so "not set" uses a sentinel.
+const NONE = "none";
+
+const baselineOptions = computed<SelectOption<FitnessBaseline>[]>(() =>
+  baselines.map((b) => ({ value: b, label: t(`profile.baseline.${b}`) })),
+);
+const intensityOptions = computed<SelectOption<IntensityLevel>[]>(() =>
+  intensities.map((i) => ({ value: i, label: t(`profile.intensity.${i}`) })),
+);
+const ageOptions = computed<SelectOption[]>(() => [
+  { value: NONE, label: t("profile.notSet") },
+  ...ageRanges.map((a) => ({ value: a, label: a })),
+]);
+const timeOptions = computed<SelectOption[]>(() => [
+  { value: NONE, label: t("profile.notSet") },
+  ...timePreferences.map((tp) => ({ value: tp, label: t(`profile.time.${tp}`) })),
+]);
+
 const form = reactive({
   fitnessBaseline: "Unspecified" as FitnessBaseline,
   preferredIntensity: "Medium" as IntensityLevel,
@@ -131,14 +160,14 @@ const form = reactive({
   limitations: null as string | null,
 });
 
-// v-model bridges: empty string in the UI maps to null on the wire.
+// v-model bridges: the "none" sentinel in the UI maps to null on the wire.
 const ageRangeModel = computed({
-  get: () => form.ageRange ?? "",
-  set: (v: string) => (form.ageRange = v || null),
+  get: () => form.ageRange ?? NONE,
+  set: (v: string) => (form.ageRange = v === NONE ? null : v),
 });
 const timeOfDayModel = computed({
-  get: () => form.timeOfDayPreference ?? "",
-  set: (v: string) => (form.timeOfDayPreference = v || null),
+  get: () => form.timeOfDayPreference ?? NONE,
+  set: (v: string) => (form.timeOfDayPreference = v === NONE ? null : v),
 });
 const heightModel = computed({
   get: () => (form.heightCm == null ? "" : String(form.heightCm)),

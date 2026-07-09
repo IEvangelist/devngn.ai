@@ -45,7 +45,7 @@
               <BrutAvatar
                 :src="user.avatarUrl ?? undefined"
                 :alt="user.displayName ?? user.login ?? 'You'"
-                size="2rem"
+                :size="sidebarCollapsed ? '1.85rem' : '2rem'"
               />
               <span v-if="!sidebarCollapsed" class="sidebar-user__meta">
                 <span class="sidebar-user__name">{{ user.displayName ?? user.login }}</span>
@@ -280,17 +280,24 @@ watch(isAuthenticated, (val) => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1.25rem 0.75rem;
+  padding: 0 0.75rem 1.25rem;
   background: var(--paper-2);
   border-right: var(--border);
   overflow-x: hidden;
   overflow-y: auto;
   transition: width 0.15s ease;
 }
+.shell--collapsed .shell__sidebar {
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+}
+/* Brand shares the statusbar's band height so the logo lines up across the divider. */
 .shell__brand {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 0.2rem;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.15rem;
@@ -298,6 +305,10 @@ watch(isAuthenticated, (val) => {
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
+}
+.shell--collapsed .shell__brand {
+  justify-content: center;
+  padding: 0;
 }
 .shell__logo {
   width: 1.4em;
@@ -343,8 +354,17 @@ watch(isAuthenticated, (val) => {
   outline-offset: 2px;
 }
 .sidebar-user--collapsed {
+  width: auto;
+  margin: 0 auto;
   justify-content: center;
-  padding: 0.4rem;
+  padding: 0.25rem;
+  border-color: transparent;
+  background: transparent;
+  border-radius: 50%;
+}
+.sidebar-user--collapsed:hover {
+  background: var(--surface-2);
+  border-color: transparent;
 }
 .sidebar-user__meta {
   display: flex;
