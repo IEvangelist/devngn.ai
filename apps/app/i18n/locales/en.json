@@ -157,7 +157,9 @@
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard.",
-    "intro": "See how your momentum stacks up against other developers."
+    "intro": "See how your momentum stacks up against other developers.",
+    "podiumLabel": "Top of the board",
+    "standingsLabel": "Standings"
   },
   "social": {
     "title": "Social",

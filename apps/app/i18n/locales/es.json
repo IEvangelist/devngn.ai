@@ -142,7 +142,9 @@
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard.",
-    "intro": "Mira cómo se compara tu progreso con el de otros desarrolladores."
+    "intro": "Mira cómo se compara tu progreso con el de otros desarrolladores.",
+    "podiumLabel": "Lo más alto de la tabla",
+    "standingsLabel": "Clasificación"
   },
   "social": {
     "title": "Social",

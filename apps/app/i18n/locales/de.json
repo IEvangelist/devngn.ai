@@ -142,7 +142,9 @@
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard.",
-    "intro": "Sieh, wie dein Schwung im Vergleich zu anderen Entwicklern steht."
+    "intro": "Sieh, wie dein Schwung im Vergleich zu anderen Entwicklern steht.",
+    "podiumLabel": "Spitze der Rangliste",
+    "standingsLabel": "Platzierungen"
   },
   "social": {
     "title": "Social",

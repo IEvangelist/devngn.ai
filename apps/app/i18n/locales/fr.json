@@ -142,7 +142,9 @@
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard.",
-    "intro": "Voyez comment votre élan se compare à celui des autres développeurs."
+    "intro": "Voyez comment votre élan se compare à celui des autres développeurs.",
+    "podiumLabel": "En tête du classement",
+    "standingsLabel": "Classement"
   },
   "social": {
     "title": "Social",

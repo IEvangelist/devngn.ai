@@ -142,7 +142,9 @@
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard.",
-    "intro": "Vê como o teu ritmo se compara ao de outros programadores."
+    "intro": "Vê como o teu ritmo se compara ao de outros programadores.",
+    "podiumLabel": "Topo da tabela",
+    "standingsLabel": "Classificação"
   },
   "social": {
     "title": "Social",

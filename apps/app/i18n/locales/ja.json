@@ -142,7 +142,9 @@
     "error": "Failed to load leaderboard.",
     "empty": "No entries yet.",
     "signIn": "Sign in to see the leaderboard.",
-    "intro": "あなたの勢いを、ほかの開発者と比べてみましょう。"
+    "intro": "あなたの勢いを、ほかの開発者と比べてみましょう。",
+    "podiumLabel": "ランキング上位",
+    "standingsLabel": "順位"
   },
   "social": {
     "title": "Social",
