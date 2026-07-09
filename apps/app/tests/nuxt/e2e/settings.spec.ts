@@ -2,7 +2,7 @@
 // Licensed under the MIT License. SPDX-License-Identifier: MIT
 
 /**
- * e2e: Settings — notification toggles, quiet hours, language switcher.
+ * e2e: Settings — notification toggles, working hours, language switcher.
  */
 
 import { test, expect } from "@playwright/test";
@@ -29,20 +29,20 @@ test.describe("Settings page", () => {
     await expect(toggle).toHaveAttribute("aria-checked", "true");
   });
 
-  test("quiet hours time inputs appear when notifications are enabled", async ({ page }) => {
-    // Default: notifications enabled → quiet hour inputs should be visible
-    await expect(page.locator("#qh-start")).toBeVisible();
-    await expect(page.locator("#qh-end")).toBeVisible();
+  test("working hours time inputs appear when notifications are enabled", async ({ page }) => {
+    // Default: notifications enabled → working-hour inputs should be visible
+    await expect(page.locator("#wh-start")).toBeVisible();
+    await expect(page.locator("#wh-end")).toBeVisible();
   });
 
-  test("quiet hours inputs hide when notifications toggle is turned off", async ({ page }) => {
+  test("working hours inputs hide when notifications toggle is turned off", async ({ page }) => {
     const toggle = page.locator('button[role="switch"]').first();
     // Turn off (click to toggle false)
     await toggle.click();
     // Wait for re-render
     await page.waitForTimeout(200);
-    // The conditional block v-if="settings.enabled" hides the quiet hour fields
-    await expect(page.locator("#qh-start")).not.toBeVisible();
+    // The conditional block v-if="settings.enabled" hides the working-hour fields
+    await expect(page.locator("#wh-start")).not.toBeVisible();
   });
 
   test("Save button is present and clickable", async ({ page }) => {

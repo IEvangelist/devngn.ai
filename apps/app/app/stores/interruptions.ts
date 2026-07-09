@@ -34,8 +34,13 @@ export const useInterruptionsStore = defineStore("interruptions", () => {
       onPrompt(prompt) {
         const idx = prompts.value.findIndex((p) => p.id === prompt.id);
         if (idx >= 0) {
+          // Always apply updates to prompts we're already tracking.
           prompts.value[idx] = prompt;
         } else {
+          // A brand-new interruption: only surface it when the user is on the
+          // clock. Outside working hours we drop it so nothing stacks up.
+          const notif = useNotificationsStore();
+          if (!notif.shouldAcceptInterruption()) return;
           prompts.value.unshift(prompt);
         }
         _maybeFireNotification(prompt);

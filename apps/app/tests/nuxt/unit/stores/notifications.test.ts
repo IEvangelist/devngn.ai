@@ -4,9 +4,11 @@
 /**
  * Unit tests for useNotificationsStore.
  *
- * Tests quiet-hours gating logic (including overnight ranges), channel gating,
- * enabled/disabled toggle, and web-path persistence via localStorage.
- * All timer-dependent tests use vi.useFakeTimers() for determinism.
+ * Tests working-hours gating logic (nudges only fire inside the window,
+ * including overnight and all-day windows), channel gating, enabled/disabled
+ * toggle, backlog acceptance, legacy quiet-hours migration, and web-path
+ * persistence via localStorage. All timer-dependent tests use
+ * vi.useFakeTimers() for determinism.
  */
 
 import { setActivePinia, createPinia } from "pinia";
@@ -35,8 +37,8 @@ describe("useNotificationsStore — settings update and persistence", () => {
 
   it("starts with default settings", () => {
     expect(store.settings.enabled).toBe(true);
-    expect(store.settings.quietHoursStart).toBe("22:00");
-    expect(store.settings.quietHoursEnd).toBe("07:00");
+    expect(store.settings.workingHoursStart).toBe("09:00");
+    expect(store.settings.workingHoursEnd).toBe("17:00");
     expect(store.settings.channels.wellness).toBe(true);
   });
 
@@ -47,10 +49,10 @@ describe("useNotificationsStore — settings update and persistence", () => {
     expect(store.settings.sound).toBe(true);
   });
 
-  it("update() can change quiet hour window", () => {
-    store.update({ quietHoursStart: "23:00", quietHoursEnd: "06:00" });
-    expect(store.settings.quietHoursStart).toBe("23:00");
-    expect(store.settings.quietHoursEnd).toBe("06:00");
+  it("update() can change the working-hours window", () => {
+    store.update({ workingHoursStart: "08:00", workingHoursEnd: "16:00" });
+    expect(store.settings.workingHoursStart).toBe("08:00");
+    expect(store.settings.workingHoursEnd).toBe("16:00");
   });
 
   it("save() writes settings to localStorage (web path, no Tauri)", async () => {
@@ -66,8 +68,8 @@ describe("useNotificationsStore — settings update and persistence", () => {
   it("init() loads settings from localStorage (web path)", async () => {
     const saved = {
       enabled: false,
-      quietHoursStart: "20:00",
-      quietHoursEnd: "08:00",
+      workingHoursStart: "10:00",
+      workingHoursEnd: "18:00",
       sound: false,
       channels: {
         wellness: false,
@@ -84,8 +86,32 @@ describe("useNotificationsStore — settings update and persistence", () => {
     await freshStore.init();
 
     expect(freshStore.settings.enabled).toBe(false);
-    expect(freshStore.settings.quietHoursStart).toBe("20:00");
+    expect(freshStore.settings.workingHoursStart).toBe("10:00");
+    expect(freshStore.settings.workingHoursEnd).toBe("18:00");
     expect(freshStore.settings.channels.wellness).toBe(false);
+  });
+
+  it("init() migrates legacy quiet-hours into the inverted working-hours window", async () => {
+    // Legacy shape: quiet 22:00–07:00 means awake/working 07:00–22:00.
+    const legacy = {
+      enabled: true,
+      quietHoursStart: "22:00",
+      quietHoursEnd: "07:00",
+      sound: true,
+      channels: { wellness: true, streak: true, badges: true, reminders: true },
+    };
+    localStorage.setItem("devngn_notification_settings", JSON.stringify(legacy));
+
+    setActivePinia(createPinia());
+    const freshStore = useNotificationsStore();
+    await freshStore.init();
+
+    expect(freshStore.settings.workingHoursStart).toBe("07:00");
+    expect(freshStore.settings.workingHoursEnd).toBe("22:00");
+    // Legacy keys are dropped from the normalized settings.
+    expect(
+      (freshStore.settings as Record<string, unknown>).quietHoursStart,
+    ).toBeUndefined();
   });
 
   it("init() falls back to defaults on invalid JSON in localStorage", async () => {
@@ -95,6 +121,92 @@ describe("useNotificationsStore — settings update and persistence", () => {
     await freshStore.init();
     // Falls back to defaults
     expect(freshStore.settings.enabled).toBe(true);
+    expect(freshStore.settings.workingHoursStart).toBe("09:00");
+  });
+});
+
+describe("useNotificationsStore — working-hours window logic", () => {
+  let store: ReturnType<typeof useNotificationsStore>;
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    store = useNotificationsStore();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("is within the default 09:00–17:00 window at midday", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T12:00:00"));
+    expect(store.isWithinWorkingHours()).toBe(true);
+  });
+
+  it("is outside the default window in the evening", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T21:00:00"));
+    expect(store.isWithinWorkingHours()).toBe(false);
+  });
+
+  it("is outside the default window before it opens", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T06:30:00"));
+    expect(store.isWithinWorkingHours()).toBe(false);
+  });
+
+  it("handles an overnight window (20:00–04:00 night shift)", () => {
+    store.update({ workingHoursStart: "20:00", workingHoursEnd: "04:00" });
+    vi.useFakeTimers();
+
+    vi.setSystemTime(new Date("2026-01-01T23:00:00"));
+    expect(store.isWithinWorkingHours()).toBe(true);
+
+    vi.setSystemTime(new Date("2026-01-01T02:00:00"));
+    expect(store.isWithinWorkingHours()).toBe(true);
+
+    vi.setSystemTime(new Date("2026-01-01T12:00:00"));
+    expect(store.isWithinWorkingHours()).toBe(false);
+  });
+
+  it("treats a zero-length window (start === end) as always on", () => {
+    store.update({ workingHoursStart: "00:00", workingHoursEnd: "00:00" });
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T03:17:00"));
+    expect(store.isWithinWorkingHours()).toBe(true);
+  });
+});
+
+describe("useNotificationsStore — shouldAcceptInterruption (backlog gating)", () => {
+  let store: ReturnType<typeof useNotificationsStore>;
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    store = useNotificationsStore();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("accepts new interruptions inside working hours", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T12:00:00"));
+    expect(store.shouldAcceptInterruption()).toBe(true);
+  });
+
+  it("rejects new interruptions outside working hours so nothing stacks up", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-01-01T22:00:00"));
+    expect(store.shouldAcceptInterruption()).toBe(false);
+  });
+
+  it("passes the raw stream through when notifications are disabled", () => {
+    store.update({ enabled: false });
+    vi.useFakeTimers();
+    // Outside the window, but with the feature off we don't filter.
+    vi.setSystemTime(new Date("2026-01-01T22:00:00"));
+    expect(store.shouldAcceptInterruption()).toBe(true);
   });
 });
 
@@ -112,6 +224,10 @@ describe("useNotificationsStore — fireForPrompt gating (web path)", () => {
     store = useNotificationsStore();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("does NOT fire when enabled is false", async () => {
     const NotifMock = makeNotificationMock();
     vi.stubGlobal("Notification", NotifMock);
@@ -124,36 +240,32 @@ describe("useNotificationsStore — fireForPrompt gating (web path)", () => {
     const NotifMock = makeNotificationMock();
     vi.stubGlobal("Notification", NotifMock);
     store.update({ channels: { ...store.settings.channels, wellness: false } });
-    // Time: 12:00 — outside quiet hours
+    // Time: 12:00 — inside working hours
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T12:00:00"));
     await store.fireForPrompt(mockPrompt);
     expect(NotifMock).not.toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
-  it("does NOT fire during overnight quiet hours (23:00 with 22:00–07:00 window)", async () => {
+  it("does NOT fire outside working hours (23:00 with 09:00–17:00 window)", async () => {
     const NotifMock = makeNotificationMock();
     vi.stubGlobal("Notification", NotifMock);
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T23:00:00"));
-    // Default quietHoursStart: "22:00", quietHoursEnd: "07:00"
     await store.fireForPrompt(mockPrompt);
     expect(NotifMock).not.toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
-  it("does NOT fire during early-morning quiet hours (06:30 with 22:00–07:00 window)", async () => {
+  it("does NOT fire before working hours open (06:30 with 09:00–17:00 window)", async () => {
     const NotifMock = makeNotificationMock();
     vi.stubGlobal("Notification", NotifMock);
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-01-01T06:30:00"));
     await store.fireForPrompt(mockPrompt);
     expect(NotifMock).not.toHaveBeenCalled();
-    vi.useRealTimers();
   });
 
-  it("DOES fire during active hours (12:00, outside 22:00–07:00 window)", async () => {
+  it("reaches the notification call site during working hours (12:00)", async () => {
     const NotifMock = makeNotificationMock("granted");
     vi.stubGlobal("Notification", NotifMock);
     vi.useFakeTimers();
@@ -161,29 +273,8 @@ describe("useNotificationsStore — fireForPrompt gating (web path)", () => {
     await store.fireForPrompt(mockPrompt);
     // happy-dom: Notification may or may not be constructable — we just check
     // the function reached the Notification call site (not blocked by gating).
-    // If Notification throws, store catches it. We verify it wasn't blocked earlier.
     expect(store.settings.enabled).toBe(true);
     expect(store.settings.channels.wellness).toBe(true);
-    vi.useRealTimers();
-  });
-
-  it("handles normal (same-day) quiet hour range: 09:00–17:00", async () => {
-    const NotifMock = makeNotificationMock();
-    vi.stubGlobal("Notification", NotifMock);
-    store.update({ quietHoursStart: "09:00", quietHoursEnd: "17:00" });
-
-    vi.useFakeTimers();
-    // 10:00 — inside the 09:00–17:00 range → quiet
-    vi.setSystemTime(new Date("2026-01-01T10:00:00"));
-    await store.fireForPrompt(mockPrompt);
-    expect(NotifMock).not.toHaveBeenCalled();
-
-    // 18:00 — outside the range → NOT quiet
-    vi.setSystemTime(new Date("2026-01-01T18:00:00"));
-    await store.fireForPrompt(mockPrompt);
-    // May or may not fire depending on Notification support; gating is NOT blocking it
-    // We can verify by checking that no "quiet hour" logic blocked it:
-    // The mock being called (or not) depends on the `'Notification' in window` check.
-    vi.useRealTimers();
+    expect(store.isWithinWorkingHours()).toBe(true);
   });
 });

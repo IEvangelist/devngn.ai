@@ -79,25 +79,33 @@
               </div>
             </div>
 
-            <div class="setting-row">
-              <label class="setting-row__label" for="qh-start">{{ $t("settings.quietHoursFrom") }}</label>
-              <input
-                id="qh-start"
-                type="time"
-                class="brut-input setting-time"
-                :value="settings.quietHoursStart"
-                @change="updateSetting('quietHoursStart', ($event.target as HTMLInputElement).value)"
-              />
-            </div>
-            <div class="setting-row">
-              <label class="setting-row__label" for="qh-end">{{ $t("settings.quietHoursTo") }}</label>
-              <input
-                id="qh-end"
-                type="time"
-                class="brut-input setting-time"
-                :value="settings.quietHoursEnd"
-                @change="updateSetting('quietHoursEnd', ($event.target as HTMLInputElement).value)"
-              />
+            <div class="setting-group">
+              <div class="setting-group__head">
+                <span class="setting-row__label">{{ $t("settings.workingHours") }}</span>
+                <div class="setting-group__times">
+                  <div class="setting-time-field">
+                    <label class="setting-time-field__label" for="wh-start">{{ $t("settings.workingHoursFrom") }}</label>
+                    <input
+                      id="wh-start"
+                      type="time"
+                      class="brut-input setting-time"
+                      :value="settings.workingHoursStart"
+                      @change="updateSetting('workingHoursStart', ($event.target as HTMLInputElement).value)"
+                    />
+                  </div>
+                  <div class="setting-time-field">
+                    <label class="setting-time-field__label" for="wh-end">{{ $t("settings.workingHoursTo") }}</label>
+                    <input
+                      id="wh-end"
+                      type="time"
+                      class="brut-input setting-time"
+                      :value="settings.workingHoursEnd"
+                      @change="updateSetting('workingHoursEnd', ($event.target as HTMLInputElement).value)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <p class="setting-group__help">{{ $t("settings.workingHoursHelp") }}</p>
             </div>
           </template>
         </div>
@@ -242,6 +250,41 @@ async function installUpdate(): Promise<void> {
 .setting-row__control { flex: 0 0 auto; }
 .setting-row__control--select { width: 12rem; }
 .setting-time { width: 9rem; }
+.setting-group {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.setting-group:last-child { border-bottom: none; }
+.setting-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.setting-group__times {
+  display: flex;
+  gap: 0.75rem;
+}
+.setting-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.setting-time-field__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.setting-group__help {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  max-width: 34rem;
+}
 .settings-updates {
   margin-top: 1rem;
   display: flex;
