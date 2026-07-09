@@ -28,7 +28,7 @@
             :disabled="item.disabled"
             @select="item.onSelect"
           >
-            <span v-if="item.icon" class="brut-menu__icon" aria-hidden="true">{{ item.icon }}</span>
+            <span v-if="item.icon" class="brut-menu__icon" aria-hidden="true"><AppIcon :name="item.icon" /></span>
             <span class="brut-menu__text">{{ item.label }}</span>
           </DropdownMenuItem>
         </template>
@@ -125,8 +125,11 @@ withDefaults(
   background: color-mix(in srgb, var(--danger) 12%, transparent);
 }
 .brut-menu__icon {
-  width: 1.1rem;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  font-size: 1.05rem;
   flex: 0 0 auto;
 }
 .brut-menu[data-state="open"] {

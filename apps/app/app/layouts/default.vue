@@ -197,13 +197,13 @@ const accountMenuItems = computed<MenuItem[]>(() => [
   {
     key: "settings",
     label: t("nav.settings"),
-    icon: "⚙",
+    icon: "gear",
     onSelect: () => router.push("/settings"),
   },
   {
     key: "signout",
     label: t("common.signOut"),
-    icon: "⏻",
+    icon: "sign-out",
     danger: true,
     separatorBefore: true,
     onSelect: () => auth.signOut(),
@@ -214,14 +214,14 @@ const sidebarCollapsed = ref(false);
 const mobileMenuOpen = ref(false);
 
 const navItems = [
-  { to: "/", icon: "☀", labelKey: "nav.today" },
-  { to: "/interruptions", icon: "⏱", labelKey: "nav.interruptions" },
-  { to: "/goals", icon: "◎", labelKey: "nav.goals" },
-  { to: "/badges", icon: "★", labelKey: "nav.badges" },
-  { to: "/milestones", icon: "◈", labelKey: "nav.milestones" },
-  { to: "/leaderboard", icon: "▲", labelKey: "nav.leaderboard" },
-  { to: "/social", icon: "◐", labelKey: "nav.social" },
-  { to: "/settings", icon: "⚙", labelKey: "nav.settings" },
+  { to: "/", icon: "sun", labelKey: "nav.today" },
+  { to: "/interruptions", icon: "bell", labelKey: "nav.interruptions" },
+  { to: "/goals", icon: "target", labelKey: "nav.goals" },
+  { to: "/badges", icon: "medal", labelKey: "nav.badges" },
+  { to: "/milestones", icon: "flag", labelKey: "nav.milestones" },
+  { to: "/leaderboard", icon: "trophy", labelKey: "nav.leaderboard" },
+  { to: "/social", icon: "users", labelKey: "nav.social" },
+  { to: "/settings", icon: "gear", labelKey: "nav.settings" },
 ];
 
 const statusLabel = computed(() => {

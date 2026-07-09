@@ -10,7 +10,7 @@
     :aria-label="collapsed ? label : undefined"
     :title="collapsed ? label : undefined"
   >
-    <span class="nav-item__icon" aria-hidden="true">{{ icon }}</span>
+    <span class="nav-item__icon" aria-hidden="true"><AppIcon :name="icon" /></span>
     <span v-if="!collapsed" class="nav-item__label">{{ label }}</span>
   </NuxtLink>
 </template>
@@ -52,10 +52,12 @@ defineProps<{
   color: var(--accent-strong);
 }
 .nav-item__icon {
-  width: 1.4rem;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
   flex: 0 0 auto;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
 }
 .nav-item--collapsed {
   justify-content: center;
