@@ -147,6 +147,9 @@
     "standingsLabel": "Platzierungen"
   },
   "social": {
+    "public": "Public",
+    "private": "Private",
+    "editProfile": "Edit profile",
     "title": "Social",
     "feed": "Activity Feed",
     "following": "Following",
