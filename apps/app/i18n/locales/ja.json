@@ -57,7 +57,10 @@
     "greetEvening": "こんばんは",
     "orient": "一日の中の静かな場所。ちょうど必要なときに、小さなリセットを。",
     "rightNow": "今このとき",
-    "clearTitle": "今は落ち着いています"
+    "clearTitle": "今は落ち着いています",
+    "dayStreak": "日連続",
+    "totalXp": "累計XP",
+    "statsUnavailable": "統計情報は読み込み後に表示されます。"
   },
   "interruptions": {
     "title": "Interruptions",
@@ -91,7 +94,8 @@
     "xpProgress": "{into} / {forNext} XP",
     "streak": "{days}-day streak",
     "rank": "{rank}",
-    "rankTier": "{tier}"
+    "rankTier": "{tier}",
+    "bestStreak": "最高 {days}"
   },
   "badges": {
     "title": "Badges",
@@ -249,6 +253,7 @@
     "now": "今",
     "inMinutes": "{n} 分後",
     "inHours": "{n} 時間後",
-    "inDays": "{n} 日後"
+    "inDays": "{n} 日後",
+    "surprise": "サプライズ"
   }
 }

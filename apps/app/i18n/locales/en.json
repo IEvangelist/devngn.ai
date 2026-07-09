@@ -72,7 +72,10 @@
     "greetEvening": "Good evening",
     "orient": "Your calm corner of the workday. Small resets, right when they help.",
     "rightNow": "Right now",
-    "clearTitle": "You're clear right now"
+    "clearTitle": "You're clear right now",
+    "dayStreak": "day streak",
+    "totalXp": "total XP",
+    "statsUnavailable": "Your stats will appear once they load."
   },
   "interruptions": {
     "title": "Interruptions",
@@ -106,7 +109,8 @@
     "xpProgress": "{into} / {forNext} XP",
     "streak": "{days}-day streak",
     "rank": "{rank}",
-    "rankTier": "{tier}"
+    "rankTier": "{tier}",
+    "bestStreak": "best {days}"
   },
   "badges": {
     "title": "Badges",
@@ -264,6 +268,7 @@
     "now": "Now",
     "inMinutes": "in {n} min",
     "inHours": "in {n} h",
-    "inDays": "in {n} d"
+    "inDays": "in {n} d",
+    "surprise": "Surprise"
   }
 }

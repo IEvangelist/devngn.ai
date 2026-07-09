@@ -57,7 +57,10 @@
     "greetEvening": "Buenas noches",
     "orient": "Tu rincón de calma en la jornada. Pequeñas pausas justo cuando ayudan.",
     "rightNow": "Ahora mismo",
-    "clearTitle": "Ahora estás libre"
+    "clearTitle": "Ahora estás libre",
+    "dayStreak": "días seguidos",
+    "totalXp": "XP total",
+    "statsUnavailable": "Tus estadísticas aparecerán cuando se carguen."
   },
   "interruptions": {
     "title": "Interruptions",
@@ -91,7 +94,8 @@
     "xpProgress": "{into} / {forNext} XP",
     "streak": "{days}-day streak",
     "rank": "{rank}",
-    "rankTier": "{tier}"
+    "rankTier": "{tier}",
+    "bestStreak": "mejor {days}"
   },
   "badges": {
     "title": "Badges",
@@ -249,6 +253,7 @@
     "now": "Ahora",
     "inMinutes": "en {n} min",
     "inHours": "en {n} h",
-    "inDays": "en {n} d"
+    "inDays": "en {n} d",
+    "surprise": "Sorpresa"
   }
 }

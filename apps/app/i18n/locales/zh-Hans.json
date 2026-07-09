@@ -57,7 +57,10 @@
     "greetEvening": "晚上好",
     "orient": "工作日中的宁静角落。在最需要的时候，来点小小的放松。",
     "rightNow": "此刻",
-    "clearTitle": "现在很清净"
+    "clearTitle": "现在很清净",
+    "dayStreak": "天连续",
+    "totalXp": "总经验",
+    "statsUnavailable": "统计数据加载后将显示。"
   },
   "interruptions": {
     "title": "Interruptions",
@@ -91,7 +94,8 @@
     "xpProgress": "{into} / {forNext} XP",
     "streak": "{days}-day streak",
     "rank": "{rank}",
-    "rankTier": "{tier}"
+    "rankTier": "{tier}",
+    "bestStreak": "最佳 {days}"
   },
   "badges": {
     "title": "Badges",
@@ -249,6 +253,7 @@
     "now": "现在",
     "inMinutes": "{n} 分钟后",
     "inHours": "{n} 小时后",
-    "inDays": "{n} 天后"
+    "inDays": "{n} 天后",
+    "surprise": "惊喜"
   }
 }
