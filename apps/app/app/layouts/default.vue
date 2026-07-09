@@ -27,21 +27,43 @@
         />
       </nav>
 
+      <!-- User anchored to the foot of the sidebar -->
       <div class="shell__sidebar-foot">
-        <BrutTooltip
-          :text="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')"
-          side="right"
+        <BrutMenu
+          v-if="isAuthenticated && user"
+          :items="accountMenuItems"
+          :label="user.login ?? undefined"
+          align="start"
         >
-          <button
-            type="button"
-            class="brut-btn brut-btn--ghost brut-btn--sm sidebar-collapse-btn"
-            :aria-label="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')"
-            @click="sidebarCollapsed = !sidebarCollapsed"
-          >
-            {{ sidebarCollapsed ? "▶" : "◀" }}
-          </button>
-        </BrutTooltip>
-        <ThemeToggle v-if="!sidebarCollapsed" />
+          <template #trigger>
+            <button
+              type="button"
+              class="sidebar-user"
+              :class="{ 'sidebar-user--collapsed': sidebarCollapsed }"
+              :aria-label="$t('common.account')"
+            >
+              <BrutAvatar
+                :src="user.avatarUrl ?? undefined"
+                :alt="user.displayName ?? user.login ?? 'You'"
+                size="2rem"
+              />
+              <span v-if="!sidebarCollapsed" class="sidebar-user__meta">
+                <span class="sidebar-user__name">{{ user.displayName ?? user.login }}</span>
+                <span class="sidebar-user__hint">{{ $t("common.account") }}</span>
+              </span>
+              <span v-if="!sidebarCollapsed" class="sidebar-user__more" aria-hidden="true">⋯</span>
+            </button>
+          </template>
+        </BrutMenu>
+        <BrutButton
+          v-else
+          size="sm"
+          variant="accent"
+          class="sidebar-signin"
+          @click="auth.signIn()"
+        >
+          {{ $t("common.signIn") }}
+        </BrutButton>
       </div>
     </aside>
 
@@ -60,6 +82,34 @@
         >
           ☰
         </button>
+
+        <!-- Sidebar collapse / expand (desktop) -->
+        <BrutTooltip :text="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')">
+          <button
+            type="button"
+            class="brut-btn brut-btn--ghost sidebar-toggle-btn"
+            :aria-label="sidebarCollapsed ? $t('nav.expand') : $t('nav.collapse')"
+            :aria-expanded="!sidebarCollapsed"
+            @click="sidebarCollapsed = !sidebarCollapsed"
+          >
+            <svg
+              class="panel-icon"
+              viewBox="0 0 24 24"
+              width="19"
+              height="19"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+              <path :d="sidebarCollapsed ? 'M14 9l3 3-3 3' : 'M16 15l-3-3 3-3'" />
+            </svg>
+          </button>
+        </BrutTooltip>
 
         <!-- Stream status indicator — role="status" permits aria-label (ARIA 1.2) -->
         <span
@@ -97,31 +147,8 @@
           </template>
         </div>
 
-        <!-- Auth avatar / sign-in -->
-        <div class="statusbar__auth">
-          <template v-if="isAuthenticated && user">
-            <BrutMenu :items="accountMenuItems" :label="user.login ?? undefined">
-              <template #trigger>
-                <button
-                  type="button"
-                  class="avatar-trigger"
-                  :aria-label="$t('common.account')"
-                >
-                  <BrutAvatar
-                    :src="user.avatarUrl ?? undefined"
-                    :alt="user.login ?? 'You'"
-                    size="2rem"
-                  />
-                </button>
-              </template>
-            </BrutMenu>
-          </template>
-          <template v-else>
-            <BrutButton size="sm" variant="accent" @click="auth.signIn()">
-              {{ $t("common.signIn") }}
-            </BrutButton>
-          </template>
-        </div>
+        <!-- Theme toggle: icon only, top right -->
+        <ThemeToggle class="statusbar__theme" />
       </header>
 
       <!-- Mobile nav overlay -->
@@ -291,8 +318,61 @@ watch(isAuthenticated, (val) => {
   gap: 0.5rem;
   align-items: stretch;
 }
-.sidebar-collapse-btn {
-  align-self: flex-start;
+
+/* User anchored to the sidebar foot */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.sidebar-user:hover {
+  background: var(--surface-2);
+  border-color: var(--accent-line);
+}
+.sidebar-user:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.sidebar-user--collapsed {
+  justify-content: center;
+  padding: 0.4rem;
+}
+.sidebar-user__meta {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.2;
+}
+.sidebar-user__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-user__hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.sidebar-user__more {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.sidebar-signin {
+  width: 100%;
 }
 
 /* ── Content area ────────────────────── */
@@ -315,19 +395,24 @@ watch(isAuthenticated, (val) => {
   min-height: 3rem;
 }
 .statusbar__spacer { flex: 1; }
-.statusbar__auth { display: flex; align-items: center; gap: 0.5rem; }
-.avatar-trigger {
+
+/* Sidebar collapse / expand control, left of the status indicator */
+.sidebar-toggle-btn {
   display: inline-flex;
-  padding: 0;
-  border: none;
-  background: none;
-  border-radius: 50%;
-  cursor: pointer;
-  outline: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  min-width: 2.3rem;
+  color: var(--muted);
 }
-.avatar-trigger:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+.sidebar-toggle-btn:hover {
+  color: var(--ink);
+}
+.panel-icon {
+  display: block;
+}
+.statusbar__theme {
+  flex: 0 0 auto;
 }
 .statusbar__xp { display: flex; align-items: center; gap: 0.4rem; }
 
@@ -417,6 +502,9 @@ watch(isAuthenticated, (val) => {
   }
   .mobile-menu-btn {
     display: flex;
+  }
+  .sidebar-toggle-btn {
+    display: none;
   }
 }
 </style>

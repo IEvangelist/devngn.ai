@@ -6,11 +6,11 @@
   <BrutTooltip :text="label">
     <button
       type="button"
-      class="brut-btn brut-btn--sm theme-toggle"
+      class="brut-btn brut-btn--ghost theme-toggle"
       :aria-label="label"
       @click="toggle"
     >
-      <span aria-hidden="true">{{ glyph }}</span>
+      <span class="theme-toggle__glyph" aria-hidden="true">{{ glyph }}</span>
     </button>
   </BrutTooltip>
 </template>
@@ -28,6 +28,18 @@ const label = computed(() => `Theme: ${choice.value}`);
 
 <style scoped>
 .theme-toggle {
-  min-width: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.3rem;
+  padding: 0.35rem;
+  color: var(--muted);
+}
+.theme-toggle:hover {
+  color: var(--ink);
+}
+.theme-toggle__glyph {
+  font-size: 1.15rem;
+  line-height: 1;
 }
 </style>

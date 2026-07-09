@@ -28,14 +28,15 @@ defineProps<{
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.5rem 0.7rem;
+  gap: 0.7rem;
+  padding: 0.55rem 0.7rem;
   font-weight: 500;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   color: var(--muted);
   text-decoration: none;
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 .nav-item:hover {
   background: var(--surface-2);
@@ -43,6 +44,7 @@ defineProps<{
 }
 .nav-item.router-link-active {
   background: var(--accent-tint);
+  border-color: var(--accent-line);
   color: var(--accent-strong);
   font-weight: 600;
 }
@@ -50,13 +52,13 @@ defineProps<{
   color: var(--accent-strong);
 }
 .nav-item__icon {
-  width: 1.2rem;
+  width: 1.4rem;
   text-align: center;
   flex: 0 0 auto;
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 .nav-item--collapsed {
   justify-content: center;
-  padding: 0.5rem;
+  padding: 0.55rem;
 }
 </style>
