@@ -19,54 +19,80 @@
     </div>
 
     <template v-else>
+      <!-- Collection progress -->
+      <div v-if="totalCount > 0" class="collection-summary reveal reveal--0">
+        <div class="collection-summary__head">
+          <span class="section-label">{{ $t("badges.collectionLabel") }}</span>
+          <span class="collection-summary__count">
+            {{ $t("badges.progress", { done: earnedBadges.length, total: totalCount }) }}
+          </span>
+        </div>
+        <div
+          class="collection-meter"
+          role="progressbar"
+          :aria-valuenow="earnedBadges.length"
+          aria-valuemin="0"
+          :aria-valuemax="totalCount"
+          :aria-label="$t('badges.progress', { done: earnedBadges.length, total: totalCount })"
+        >
+          <span class="collection-meter__fill" :style="{ width: `${progressPct}%` }" />
+        </div>
+      </div>
+
       <!-- Earned badges -->
       <h2 class="section-label">{{ $t("badges.earned") }} ({{ earnedBadges.length }})</h2>
 
       <p v-if="earnedBadges.length === 0" class="state-msg">{{ $t("badges.empty") }}</p>
 
-      <div v-else class="badge-grid" role="list">
-        <div
-          v-for="badge in earnedBadges"
+      <ul v-else class="badge-grid" role="list">
+        <li
+          v-for="(badge, idx) in earnedBadges"
           :key="badge.key"
-          class="badge-tile badge-tile--earned badge-tile--reveal"
+          class="badge-tile badge-tile--earned"
           :data-category="badge.category"
+          :style="{ '--i': idx }"
           role="listitem"
           tabindex="0"
           :aria-label="`${badge.name}: ${badge.description}. ${$t('badges.earnedOn', { date: badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : '' })}`"
         >
-          <span class="badge-tile__icon" aria-hidden="true">{{ badge.icon }}</span>
+          <span class="badge-medallion" aria-hidden="true">{{ badge.icon }}</span>
           <span class="badge-tile__name">{{ badge.name }}</span>
-          <BrutChip color="teal" class="badge-tile__earned-chip">
-            ✓ {{ badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : $t("badges.earned") }}
-          </BrutChip>
-          <span class="badge-tile__category brut-eyebrow">{{ badge.category }}</span>
-        </div>
-      </div>
+          <span class="badge-tile__earned">
+            <AppIcon name="check-circle" class="badge-tile__earned-icon" />
+            {{ badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : $t("badges.earned") }}
+          </span>
+          <span class="badge-tile__cat brut-eyebrow">{{ badge.category }}</span>
+        </li>
+      </ul>
 
       <!-- Locked / hidden badges -->
-      <h2 class="section-label">{{ $t("badges.locked") }} ({{ lockedBadges.length }})</h2>
+      <template v-if="lockedBadges.length > 0">
+        <h2 class="section-label">{{ $t("badges.locked") }} ({{ lockedBadges.length }})</h2>
 
-      <div v-if="lockedBadges.length > 0" class="badge-grid" role="list">
-        <div
-          v-for="badge in lockedBadges"
-          :key="badge.key"
-          class="badge-tile"
-          :class="badge.isHidden ? 'badge-tile--hidden' : 'badge-tile--locked'"
-          role="listitem"
-          tabindex="0"
-          :aria-label="badge.isHidden ? $t('badges.hiddenBadge') : `${badge.name}: ${badge.description}`"
-        >
-          <span class="badge-tile__icon" aria-hidden="true">
-            {{ badge.isHidden ? "❓" : badge.icon }}
-          </span>
-          <span class="badge-tile__name">
-            {{ badge.isHidden ? $t("badges.hiddenBadge") : badge.name }}
-          </span>
-          <span v-if="!badge.isHidden" class="badge-tile__category brut-eyebrow">
-            {{ badge.category }}
-          </span>
-        </div>
-      </div>
+        <ul class="badge-grid" role="list">
+          <li
+            v-for="badge in lockedBadges"
+            :key="badge.key"
+            class="badge-tile"
+            :class="badge.isHidden ? 'badge-tile--hidden' : 'badge-tile--locked'"
+            :data-category="badge.category"
+            role="listitem"
+            tabindex="0"
+            :aria-label="badge.isHidden ? $t('badges.hiddenBadge') : `${badge.name}: ${badge.description}`"
+          >
+            <span class="badge-medallion" aria-hidden="true">
+              <AppIcon v-if="badge.isHidden" name="lock" />
+              <template v-else>{{ badge.icon }}</template>
+            </span>
+            <span class="badge-tile__name">
+              {{ badge.isHidden ? $t("badges.hiddenBadge") : badge.name }}
+            </span>
+            <span v-if="!badge.isHidden" class="badge-tile__cat brut-eyebrow">
+              {{ badge.category }}
+            </span>
+          </li>
+        </ul>
+      </template>
     </template>
   </section>
 </template>
@@ -74,6 +100,13 @@
 <script setup lang="ts">
 const store = useGamificationStore();
 const { earnedBadges, lockedBadges, loadingBadges, errorBadges } = storeToRefs(store);
+
+const totalCount = computed(() => earnedBadges.value.length + lockedBadges.value.length);
+const progressPct = computed(() =>
+  totalCount.value === 0
+    ? 0
+    : Math.round((earnedBadges.value.length / totalCount.value) * 100),
+);
 
 onMounted(() => store.fetchBadges());
 </script>
@@ -93,79 +126,144 @@ onMounted(() => store.fetchBadges());
 }
 .state-msg--error { color: var(--danger); }
 
+/* ── Collection progress ──────────────────────────────────────────────────── */
+.collection-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1.25rem 0 0.35rem;
+}
+.collection-summary__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.collection-summary .section-label { margin: 0; }
+.collection-summary__count {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.collection-meter {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.collection-meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--success),
+    color-mix(in srgb, var(--success) 78%, var(--accent))
+  );
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Badge grid ───────────────────────────────────────────────────────────── */
 .badge-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
+
+/* Category accent, resolved once and reused by the medallion + earned border. */
+.badge-tile { --cat: var(--accent-3); }
+.badge-tile[data-category="streak"]    { --cat: var(--accent);   }
+.badge-tile[data-category="wellness"]  { --cat: var(--success);  }
+.badge-tile[data-category="social"]    { --cat: var(--accent-5); }
+.badge-tile[data-category="milestone"] { --cat: var(--accent-3); }
+.badge-tile[data-category="special"]   { --cat: var(--accent-4); }
+
 .badge-tile {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  padding: 1rem 0.75rem;
-  border: var(--border);
-  background: var(--surface-bg);
-  box-shadow: var(--shadow-sm);
+  gap: 0.5rem;
+  padding: 1.1rem 0.85rem;
   text-align: center;
-  cursor: default;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .badge-tile:hover,
 .badge-tile:focus-visible {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  outline: none;
 }
-/* Category-tinted borders for earned badges */
-.badge-tile--earned[data-category="streak"]    { border-color: var(--accent);   background: color-mix(in srgb, var(--accent) 10%, var(--surface-bg)); }
-.badge-tile--earned[data-category="wellness"]  { border-color: var(--success);  background: color-mix(in srgb, var(--success) 10%, var(--surface-bg)); }
-.badge-tile--earned[data-category="social"]    { border-color: var(--accent-5); background: color-mix(in srgb, var(--accent-5) 10%, var(--surface-bg)); }
-.badge-tile--earned[data-category="milestone"] { border-color: var(--accent-3); background: color-mix(in srgb, var(--accent-3) 10%, var(--surface-bg)); }
-.badge-tile--earned[data-category="special"]   { border-color: var(--accent-4); background: color-mix(in srgb, var(--accent-4) 10%, var(--surface-bg)); }
-/* Locked badge: apply reduced opacity only to the icon so that text keeps
-   full contrast (WCAG AA requires ≥4.5:1; child opacity cannot override parent). */
-.badge-tile--locked { opacity: 1; }
-.badge-tile--locked .badge-tile__icon { opacity: 0.55; }
-.badge-tile--locked .badge-tile__name { color: var(--muted); }
-.badge-tile--locked .badge-tile__category { display: none; }
-.badge-tile--hidden {
-  background: var(--paper-2);
-  opacity: 0.5;
-  filter: blur(0.5px);
+.badge-tile:focus-visible { border-color: var(--accent); }
+.badge-tile--earned {
+  border-color: color-mix(in srgb, var(--cat) 30%, var(--line));
 }
-.badge-tile__icon {
-  font-size: 2.5rem;
+
+/* Medallion holds the badge glyph. */
+.badge-medallion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  font-size: 1.7rem;
   line-height: 1;
-  filter: drop-shadow(0 2px 0 rgba(0,0,0,0.12));
+  background: var(--surface-2);
+  border: 1px solid var(--line);
 }
+.badge-tile--earned .badge-medallion {
+  background: color-mix(in srgb, var(--cat) 14%, var(--surface));
+  border-color: color-mix(in srgb, var(--cat) 40%, var(--line));
+}
+.badge-tile--locked .badge-medallion {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+.badge-tile--hidden .badge-medallion {
+  border-style: dashed;
+  color: var(--muted);
+  font-size: 1.35rem;
+}
+
 .badge-tile__name {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  color: var(--ink);
 }
-.badge-tile__earned-chip { font-size: 0.65rem; }
-.badge-tile__category {
+.badge-tile--locked .badge-tile__name,
+.badge-tile--hidden .badge-tile__name { color: var(--muted); }
+
+.badge-tile__earned {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--success);
+}
+.badge-tile__earned-icon { font-size: 0.85rem; }
+
+.badge-tile__cat {
   font-size: 0.6rem;
   color: var(--muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
-/* Hidden badge name: opacity:0.5 on the parent tile makes text fail contrast.
-   The parent aria-label provides the accessible name; the visual text is
-   redundant and is hidden to pass WCAG AA color-contrast. */
-.badge-tile--hidden .badge-tile__name { display: none; }
-
-/* Animated reveal on earned badges */
+/* Staggered reveal on earned tiles, motion-gated (mirrors sibling pages). */
 @media (prefers-reduced-motion: no-preference) {
-  .badge-tile--reveal {
-    animation: badge-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  .badge-tile--earned {
+    animation: app-reveal 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: min(calc(var(--i, 0) * 45ms), 400ms);
   }
-}
-@keyframes badge-pop {
-  from { transform: scale(0.8); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
 }
 </style>

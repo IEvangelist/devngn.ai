@@ -58,10 +58,10 @@ test.describe("Gamification — Badges page", () => {
   test("renders hidden badges as mystery tiles (shows '???')", async ({ page }) => {
     const hiddenTiles = page.locator(".badge-tile--hidden");
     await expect(hiddenTiles).toHaveCount(hiddenCount);
-    // Hidden tile text is visually hidden (display:none) so axe skips it;
-    // the tile itself and its ❓ icon are visible and confirm the mystery-tile pattern.
+    // Hidden tiles reveal nothing about the badge: a locked medallion (a lock
+    // glyph, not the real emoji) plus a masked "???" name confirm the pattern.
     await expect(hiddenTiles.first()).toBeVisible();
-    await expect(hiddenTiles.first().locator(".badge-tile__icon")).toBeVisible();
+    await expect(hiddenTiles.first().locator(".badge-medallion .app-icon")).toBeVisible();
   });
 
   test("earned badge tile is focusable (tabindex=0)", async ({ page }) => {

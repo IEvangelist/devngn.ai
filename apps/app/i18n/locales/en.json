@@ -121,6 +121,8 @@
     "bestStreak": "best {days}"
   },
   "badges": {
+    "collectionLabel": "Your collection",
+    "progress": "{done} of {total} unlocked",
     "title": "Badges",
     "earned": "Earned",
     "locked": "Locked",
