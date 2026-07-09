@@ -3,58 +3,9 @@
   Licensed under the MIT License. SPDX-License-Identifier: MIT
 -->
 <template>
-  <!-- Unauthenticated: sign-in gate -->
-  <section v-if="!isAuthenticated" class="signin">
-    <p class="brut-eyebrow">{{ $t("app.name") }}</p>
-    <h1>{{ $t("today.title") }}</h1>
-
-    <BrutPanel>
-      <p>{{ $t("auth.subtitle") }}</p>
-      <BrutButton
-        variant="accent"
-        :loading="auth.isSigningIn"
-        :disabled="auth.isSigningIn"
-        @click="auth.signIn()"
-      >
-        {{ $t("auth.githubButton") }}
-      </BrutButton>
-
-      <!-- Sign-in error surface -->
-      <div v-if="auth.signInError" class="auth-error" role="alert">
-        <p class="auth-error__title">{{ $t("auth.errorTitle") }}</p>
-        <p class="auth-error__detail">{{ auth.signInError }}</p>
-        <p class="auth-error__hint">{{ $t("auth.errorHint") }}</p>
-      </div>
-
-      <!-- Dev-only sign-in bypass (compiled out of production builds) -->
-      <div v-if="isDev" class="auth-dev">
-        <BrutButton
-          variant="ghost"
-          size="sm"
-          :disabled="auth.isSigningIn"
-          @click="auth.devSignIn()"
-        >
-          {{ $t("auth.devButton") }}
-        </BrutButton>
-        <span class="auth-dev__hint">{{ $t("auth.devHint") }}</span>
-      </div>
-
-      <!-- Device flow modal -->
-      <BrutModal
-        :open="!!auth.deviceFlow"
-        :title="$t('auth.title')"
-        :close-on-backdrop="false"
-        @close="() => {}"
-      >
-        <p class="brut-eyebrow">{{ $t("auth.deviceInstruction", { url: auth.deviceFlow?.verificationUri }) }}</p>
-        <p class="device-code">{{ auth.deviceFlow?.userCode }}</p>
-        <p>{{ $t("auth.waiting") }}</p>
-      </BrutModal>
-    </BrutPanel>
-  </section>
-
-  <!-- Authenticated: the daily hub -->
-  <section v-else class="today">
+  <!-- The daily hub. The signed-out sign-in gate lives in the layout (AuthGate),
+       so this page only ever renders for an authenticated user. -->
+  <section class="today">
     <!-- Player hero: who you are today + your standing, in a single glance.
          Replaces the old greeting + duplicate level line (the status bar
          already carries a compact level/XP/streak pill). -->
@@ -225,9 +176,6 @@ const { t } = useI18n();
 
 const auth = useAuthStore();
 const { isAuthenticated, user } = storeToRefs(auth);
-// Dev-only sign-in bypass button visibility; `import.meta.dev` is statically
-// replaced at build time, so the branch is tree-shaken out of production.
-const isDev = import.meta.dev;
 
 const interruptions = useInterruptionsStore();
 const { activePrompts } = storeToRefs(interruptions);
@@ -711,52 +659,5 @@ function relativeTo(iso: string): string {
     width: 100%;
   }
   .today__next { grid-template-columns: 1fr; gap: 0.6rem; }
-}
-
-/* ── Sign-in gate (unauthenticated) ──────────────────────────────────────── */
-.device-code {
-  font-family: var(--font-mono);
-  font-size: 2rem;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  text-align: center;
-  border: var(--border);
-  padding: 0.5rem 1rem;
-  margin: 0.75rem 0;
-}
-.auth-error {
-  margin-top: 1rem;
-  padding: 0.85rem 1rem;
-  border: var(--border);
-  border-left-width: 6px;
-  border-left-color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 8%, var(--paper-2));
-}
-.auth-error__title {
-  font-weight: 800;
-  margin: 0 0 0.25rem;
-}
-.auth-error__detail {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  margin: 0 0 0.35rem;
-}
-.auth-error__hint {
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin: 0;
-}
-.auth-dev {
-  margin-top: 1rem;
-  padding-top: 0.85rem;
-  border-top: 1px dashed var(--border-color, var(--muted));
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-}
-.auth-dev__hint {
-  font-size: 0.8rem;
-  color: var(--muted);
 }
 </style>

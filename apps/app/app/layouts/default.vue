@@ -3,7 +3,28 @@
   Licensed under the MIT License. SPDX-License-Identifier: MIT
 -->
 <template>
-  <div class="shell" :class="{ 'shell--collapsed': sidebarCollapsed }">
+  <!-- Auth routes (e.g. the OAuth callback) render bare: they must mount and
+       process their token even while signed out, so the gate must not cover
+       them. -->
+  <div v-if="isAuthRoute" class="shell-plain">
+    <slot />
+  </div>
+
+  <!-- Restoring a persisted session: a neutral splash instead of a sign-in
+       flash before init() resolves. -->
+  <div v-else-if="!authReady" class="auth-splash" role="status" aria-busy="true">
+    <svg class="auth-splash__logo" viewBox="0 0 32 32" role="img" :aria-label="$t('app.name')">
+      <rect x="1.5" y="1.5" width="29" height="29" fill="#ff5a1f" stroke="#16130d" stroke-width="3" />
+      <path d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z" fill="#16130d" stroke="#16130d" stroke-width="1.5" stroke-linejoin="miter" />
+    </svg>
+    <span class="auth-splash__label">{{ $t("app.name") }}</span>
+  </div>
+
+  <!-- Signed out: one focused sign-in screen for every route. -->
+  <AuthGate v-else-if="!isAuthenticated" />
+
+  <!-- Signed in: the full application shell. -->
+  <div v-else class="shell" :class="{ 'shell--collapsed': sidebarCollapsed }">
     <a class="skip-link brut-btn brut-btn--sm" href="#main">{{ $t("common.skipToContent") }}</a>
 
     <!-- ── Sidebar ─────────────────────────────────────── -->
@@ -27,10 +48,12 @@
         />
       </nav>
 
-      <!-- User anchored to the foot of the sidebar -->
+      <!-- User anchored to the foot of the sidebar. The shell only renders when
+           authenticated, so the account menu is always available here; signing
+           in happens on the dedicated AuthGate, not from the sidebar. -->
       <div class="shell__sidebar-foot">
         <BrutMenu
-          v-if="isAuthenticated && user"
+          v-if="user"
           :items="accountMenuItems"
           :label="user.login ?? undefined"
           align="start"
@@ -55,15 +78,6 @@
             </button>
           </template>
         </BrutMenu>
-        <BrutButton
-          v-else
-          size="sm"
-          variant="accent"
-          class="sidebar-signin"
-          @click="auth.signIn()"
-        >
-          {{ $t("common.signIn") }}
-        </BrutButton>
       </div>
     </aside>
 
@@ -192,6 +206,15 @@ const { playerState } = storeToRefs(gamification);
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
+
+// Auth routes (the OAuth callback) render bare, outside the gate, so they can
+// mount and finish processing their token while the user is still signed out.
+const isAuthRoute = computed(() => route.path.startsWith("/auth"));
+
+// Gates the sign-in screen until the persisted session has been restored, so a
+// returning user never sees a flash of the sign-in gate before init() resolves.
+const authReady = ref(false);
 
 const accountMenuItems = computed<MenuItem[]>(() => [
   {
@@ -235,11 +258,15 @@ const statusLabel = computed(() => {
 
 // Init stores on mount
 onMounted(async () => {
-  await auth.init();
-  await useNotificationsStore().init();
-  if (auth.isAuthenticated) {
-    interruptions.startStream();
-    gamification.fetchPlayerState();
+  try {
+    await auth.init();
+    await useNotificationsStore().init();
+    if (auth.isAuthenticated) {
+      interruptions.startStream();
+      gamification.fetchPlayerState();
+    }
+  } finally {
+    authReady.value = true;
   }
 });
 
@@ -255,6 +282,40 @@ watch(isAuthenticated, (val) => {
 </script>
 
 <style scoped>
+/* Bare wrapper for auth routes (OAuth callback) and the restore splash: no
+   sidebar chrome, just a centered surface on the app background. */
+.shell-plain,
+.auth-splash {
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+}
+.auth-splash {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+}
+.auth-splash__logo {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+.auth-splash__label {
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .auth-splash__logo {
+    animation: auth-splash-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes auth-splash-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+}
+
 .shell {
   display: grid;
   grid-template-columns: 240px 1fr;
@@ -390,9 +451,6 @@ watch(isAuthenticated, (val) => {
   color: var(--muted);
   font-size: 1.1rem;
   line-height: 1;
-}
-.sidebar-signin {
-  width: 100%;
 }
 
 /* ── Content area ────────────────────── */
