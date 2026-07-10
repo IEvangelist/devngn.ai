@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl: "https://localhost:7107",
       appChannel: "app",
+      appVersion: "0.0.1-alpha.420",
     },
   },
   i18n: {

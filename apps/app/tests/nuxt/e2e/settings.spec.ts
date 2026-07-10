@@ -91,4 +91,15 @@ test.describe("Settings page", () => {
     const pwaNotice = page.getByText(/pwa updates automatically/i);
     await expect(pwaNotice).toBeVisible();
   });
+
+  test("About section shows the app version", async ({ page }) => {
+    const version = page.getByTestId("app-version");
+    await expect(version).toBeVisible();
+    // Rendered as `v<semver>` from the build-time app version (web/PWA mode).
+    await expect(version).toHaveText(/^v\d+\.\d+\.\d+/);
+  });
+
+  test("About section reports the runtime as Web (PWA) in the browser", async ({ page }) => {
+    await expect(page.getByText(/web \(pwa\)/i)).toBeVisible();
+  });
 });

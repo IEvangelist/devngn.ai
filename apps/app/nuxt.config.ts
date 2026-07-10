@@ -3,11 +3,21 @@
 // SPDX-License-Identifier: MIT
 
 import { defineNuxtConfig } from "nuxt/config";
+import { readFileSync } from "node:fs";
 
 // Tauri expects a fixed dev port and a static build it can bundle. When running
 // inside `tauri dev`, TAURI_DEV_HOST may be set so the webview can reach the
 // Vite dev server from the platform's WebView process.
 const host = process.env.TAURI_DEV_HOST;
+
+// Single source of truth for the app version is the Tauri config; the desktop
+// binary reports the same value via `getVersion()`. Bake it into the SPA so the
+// PWA/web build (which has no Tauri API) can display it too. Overridable via env.
+const appVersion =
+  process.env.NUXT_PUBLIC_APP_VERSION ??
+  (JSON.parse(
+    readFileSync(new URL("./src-tauri/tauri.conf.json", import.meta.url), "utf-8"),
+  ).version as string);
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -62,6 +72,9 @@ export default defineNuxtConfig({
       // and the desktop build defaults to the hosted API.
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? "https://localhost:7107",
       appChannel: process.env.NUXT_PUBLIC_APP_CHANNEL ?? "app",
+      // Displayed in Settings → About. In the desktop build the installed
+      // binary's version (getVersion()) takes precedence at runtime.
+      appVersion,
     },
   },
 

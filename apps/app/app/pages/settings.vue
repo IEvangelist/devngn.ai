@@ -132,6 +132,50 @@
         </div>
       </BrutPanel>
 
+      <!-- About -->
+      <BrutPanel class="reveal reveal--5">
+        <h2 class="section-label">{{ $t("settings.about") }}</h2>
+        <div class="settings-about">
+          <div class="settings-about__head">
+            <p class="settings-about__name">{{ $t("settings.aboutName") }}</p>
+            <p class="settings-about__tagline">{{ $t("settings.aboutTagline") }}</p>
+          </div>
+
+          <div class="settings-rows">
+            <div class="setting-row">
+              <span class="setting-row__label">{{ $t("settings.version") }}</span>
+              <span class="setting-row__value" data-testid="app-version">v{{ appVersion }}</span>
+            </div>
+            <div class="setting-row">
+              <span class="setting-row__label">{{ $t("settings.runtime") }}</span>
+              <span class="setting-row__value">
+                {{ isTauri ? $t("settings.runtimeDesktop") : $t("settings.runtimeWeb") }}
+              </span>
+            </div>
+            <div v-if="platformLabel" class="setting-row">
+              <span class="setting-row__label">{{ $t("settings.platform") }}</span>
+              <span class="setting-row__value">{{ platformLabel }}</span>
+            </div>
+          </div>
+
+          <div class="settings-about__links">
+            <BrutButton size="sm" @click="openExternal(links.website)">
+              {{ $t("settings.website") }}
+            </BrutButton>
+            <BrutButton size="sm" @click="openExternal(links.source)">
+              {{ $t("settings.sourceCode") }}
+            </BrutButton>
+            <BrutButton size="sm" @click="openExternal(links.issues)">
+              {{ $t("settings.reportIssue") }}
+            </BrutButton>
+          </div>
+
+          <p class="settings-about__legal">
+            {{ $t("settings.copyright", { year: copyrightYear }) }} · {{ $t("settings.license") }}
+          </p>
+        </div>
+      </BrutPanel>
+
       <!-- Save -->
       <div class="settings__actions reveal reveal--5">
         <BrutButton variant="accent" @click="save">{{ $t("common.save") }}</BrutButton>
@@ -167,6 +211,56 @@ const localeOptions = computed<SelectOption<LocaleCode>[]>(() =>
 
 type UpdateStatus = "idle" | "checking" | "available" | "installing";
 const updateStatus = ref<UpdateStatus>("idle");
+
+// About / version info. In the desktop build the installed binary's version
+// (getVersion()) is authoritative; the web/PWA build falls back to the value
+// baked in at build time from tauri.conf.json (runtimeConfig.public.appVersion).
+const appVersion = ref<string>(
+  (useRuntimeConfig().public.appVersion as string) ?? "0.0.0",
+);
+const platformLabel = ref("");
+const copyrightYear = new Date().getFullYear();
+const links = {
+  website: "https://devngn.ai",
+  source: "https://github.com/IEvangelist/devngn.ai",
+  issues: "https://github.com/IEvangelist/devngn.ai/issues",
+} as const;
+
+// Open external links through the OS shell inside Tauri (a plain anchor would
+// navigate the app's own webview); fall back to a new browser tab on the web.
+async function openExternal(url: string): Promise<void> {
+  if (isTauri) {
+    try {
+      const { openUrl } = await import("@tauri-apps/plugin-opener");
+      await openUrl(url);
+      return;
+    } catch (e) {
+      console.error("[about] openUrl failed:", e);
+    }
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+onMounted(async () => {
+  if (!isTauri) return;
+  try {
+    const { getVersion } = await import("@tauri-apps/api/app");
+    appVersion.value = await getVersion();
+  } catch (e) {
+    console.error("[about] getVersion failed:", e);
+  }
+  try {
+    const os = await import("@tauri-apps/plugin-os");
+    const [platform, arch, osVersion] = await Promise.all([
+      Promise.resolve(os.platform()),
+      Promise.resolve(os.arch()),
+      Promise.resolve(os.version()),
+    ]);
+    platformLabel.value = `${platform} ${osVersion} (${arch})`;
+  } catch (e) {
+    console.error("[about] os info failed:", e);
+  }
+});
 
 async function toggleNotifications(val: boolean): Promise<void> {
   if (val) {
@@ -294,5 +388,26 @@ async function installUpdate(): Promise<void> {
 }
 .settings-updates__text { margin: 0; color: var(--muted); font-size: 0.92rem; }
 .update-available { display: flex; align-items: center; gap: 1rem; }
+.settings-about {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.settings-about__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.settings-about__name { margin: 0; font-weight: 800; font-size: 1.1rem; }
+.settings-about__tagline { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.settings-about .settings-rows { margin-top: 0; }
+.setting-row__value {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.settings-about__links { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.settings-about__legal { margin: 0; color: var(--muted); font-size: 0.82rem; }
 .settings__actions { display: flex; gap: 0.75rem; }
 </style>
