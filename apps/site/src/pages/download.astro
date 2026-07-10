@@ -17,10 +17,10 @@ const repoUrl = `https://github.com/${repo}`;
 const releasesUrl = `${repoUrl}/releases`;
 
 // Desktop installers are stable-named assets on the latest *published* GitHub
-// release, produced by the desktop app's workflow (app-release.yml). Those
-// `releases/latest/download/…` URLs 404 until a release is published, so we
-// only render a button once release-info confirms the asset actually exists —
-// the page self-heals on the next build after a release ships.
+// release, produced by the desktop app's workflow (app-release.yml). This
+// build-time pass is the fail-safe baseline (works with JS disabled and for
+// crawlers); a client-side pass then re-resolves against the live GitHub API on
+// load, so the page reflects the real latest release without a redeploy.
 const platforms: DesktopPlatform[] = [
   {
     icon: "apple",
@@ -76,74 +76,71 @@ const hasDesktopDownloads = anyDownloadAvailable(resolvedPlatforms);
       Free and open source under the MIT license. Nothing personal is stored until you opt in, and
       you can delete all of it whenever you want.
     </p>
-    {
-      !hasDesktopDownloads && (
-        <div class="dev-banner" role="status">
-          <span class="dev-banner-icon">
-            <Icon name="rocket" size={22} stroke={2.6} />
-          </span>
-          <div class="dev-banner-body">
-            <strong>Desktop builds are still on the workbench.</strong>
-            <p>
-              The native app is being built in the open and there's no public installer yet. Rather
-              than hand you a download that 404s, we'll light these buttons up the moment the first
-              release ships. Want the ping? Watch the repo's releases.
-            </p>
-            <div class="actions">
-              <a class="btn primary" href={releasesUrl} rel="noopener" target="_blank">
-                <Icon name="bell" size={18} stroke={2.6} />
-                Watch releases
-              </a>
-              <a class="btn" href="/getting-started/">
-                <Icon name="braces" size={18} stroke={2.6} />
-                Build from source
-              </a>
-            </div>
-          </div>
+    <div class="dev-banner" role="status" data-dev-banner hidden={hasDesktopDownloads}>
+      <span class="dev-banner-icon">
+        <Icon name="rocket" size={22} stroke={2.6} />
+      </span>
+      <div class="dev-banner-body">
+        <strong>Desktop builds are still on the workbench.</strong>
+        <p>
+          The native app is being built in the open and there's no public installer yet. Rather
+          than hand you a download that 404s, we'll light these buttons up the moment the first
+          release ships. Want the ping? Watch the repo's releases.
+        </p>
+        <div class="actions">
+          <a class="btn primary" href={releasesUrl} rel="noopener" target="_blank">
+            <Icon name="bell" size={18} stroke={2.6} />
+            Watch releases
+          </a>
+          <a class="btn" href="/getting-started/">
+            <Icon name="braces" size={18} stroke={2.6} />
+            Build from source
+          </a>
         </div>
-      )
-    }
+      </div>
+    </div>
     <div class="grid">
       {
         resolvedPlatforms.map((p) => (
           <article
-            class:list={["card platform", { "is-pending": !p.available }]}
+            class="card platform"
             data-os={p.os.toLowerCase()}
+            data-platform-card
+            data-primary-asset={p.primary.asset}
+            data-available={String(p.available)}
           >
             <div class="card-head">
               <span class="card-icon">
                 <Icon name={p.icon} size={26} stroke={2.4} />
               </span>
               <h3>{p.os}</h3>
-              {p.available ? (
-                <span class="platform-badge">Your platform</span>
-              ) : (
-                <span class="platform-badge soon">Coming soon</span>
-              )}
+              <span class="platform-badge" data-badge-available>
+                Your platform
+              </span>
+              <span class="platform-badge soon" data-badge-soon>
+                Coming soon
+              </span>
             </div>
             <p class="platform-note">{p.note}</p>
-            {p.available ? (
-              <a class="btn primary platform-btn" href={p.primary.href}>
-                <Icon name="download" size={18} stroke={2.6} />
-                {p.primary.label}
-              </a>
-            ) : (
-              <span class="btn platform-btn is-disabled" aria-disabled="true">
-                <Icon name="clock" size={18} stroke={2.6} />
-                Not yet available
-              </span>
-            )}
-            {p.secondary.some((s) => s.available) && (
-              <ul class="platform-alt">
-                {p.secondary
-                  .filter((s) => s.available)
-                  .map((s) => (
-                    <li>
-                      <a href={s.href}>{s.label}</a>
-                    </li>
-                  ))}
-              </ul>
-            )}
+            <a class="btn primary platform-btn" data-primary-link href={p.primary.href}>
+              <Icon name="download" size={18} stroke={2.6} />
+              {p.primary.label}
+            </a>
+            <span class="btn platform-btn is-disabled" data-primary-disabled aria-disabled="true">
+              <Icon name="clock" size={18} stroke={2.6} />
+              Not yet available
+            </span>
+            <ul
+              class="platform-alt"
+              data-secondary
+              hidden={!p.secondary.some((s) => s.available)}
+            >
+              {p.secondary.map((s) => (
+                <li data-asset={s.asset} hidden={!s.available}>
+                  <a href={s.href}>{s.label}</a>
+                </li>
+              ))}
+            </ul>
           </article>
         ))
       }
@@ -235,17 +232,33 @@ devngn patterns recognize</code></pre>
   .platform.is-detected {
     box-shadow: var(--shadow);
   }
-  .platform.is-detected .platform-badge {
+  /* "Your platform" badge: only for the visitor's OS when it's downloadable. */
+  .platform.is-detected[data-available="true"] .platform-badge[data-badge-available] {
     display: inline-block;
   }
   .platform-badge.soon {
-    display: inline-block;
     color: var(--ink);
     background: var(--accent-3);
   }
-  .platform.is-pending {
+  /* "Coming soon" badge: whenever that platform has no downloadable installer. */
+  .platform[data-available="false"] .platform-badge[data-badge-soon] {
+    display: inline-block;
+  }
+  .platform[data-available="false"] {
     border-top-color: var(--muted);
     opacity: 0.92;
+  }
+  /* Show exactly one primary control based on live availability. */
+  .platform[data-available="false"] [data-primary-link] {
+    display: none;
+  }
+  .platform[data-available="true"] [data-primary-disabled] {
+    display: none;
+  }
+  /* Honor the `hidden` attribute even when author rules set `display`. */
+  .dev-banner[hidden],
+  .platform-alt[hidden] {
+    display: none;
   }
   .platform-btn.is-disabled {
     cursor: not-allowed;
@@ -359,8 +372,11 @@ devngn patterns recognize</code></pre>
 </style>
 
 <script>
+  import { parseReleaseAvailability } from "../lib/release-info";
+
+  const REPO = "IEvangelist/devngn.ai";
+
   // Progressive enhancement: highlight the visitor's platform card.
-  // Re-runs after Astro view transitions via astro:page-load.
   const detectPlatform = () => {
     const ua = navigator.userAgent;
     let os: string | null = null;
@@ -371,5 +387,77 @@ devngn patterns recognize</code></pre>
       el.classList.toggle("is-detected", el.dataset.os === os);
     });
   };
-  document.addEventListener("astro:page-load", detectPlatform);
+
+  // Reconcile the build-time snapshot with what the latest *published* release
+  // actually exposes right now, so the page is always current without waiting
+  // for a site rebuild. Every download link/button state is already in the DOM;
+  // this only flips which ones are shown.
+  const applyAvailability = (assets: Set<string>) => {
+    let anyAvailable = false;
+
+    document
+      .querySelectorAll<HTMLElement>("[data-platform-card]")
+      .forEach((card) => {
+        const primary = card.dataset.primaryAsset ?? "";
+        const available = assets.has(primary);
+        card.dataset.available = String(available);
+        if (available) anyAvailable = true;
+
+        let anySecondary = false;
+        card
+          .querySelectorAll<HTMLLIElement>("[data-secondary] li[data-asset]")
+          .forEach((li) => {
+            const ok = assets.has(li.dataset.asset ?? "");
+            li.hidden = !ok;
+            if (ok) anySecondary = true;
+          });
+
+        const secondary = card.querySelector<HTMLElement>("[data-secondary]");
+        if (secondary) secondary.hidden = !anySecondary;
+      });
+
+    const banner = document.querySelector<HTMLElement>("[data-dev-banner]");
+    if (banner) banner.hidden = anyAvailable;
+  };
+
+  // Fail safe: any state we cannot positively verify (offline, rate-limited,
+  // malformed JSON) leaves the build-time render untouched. A 404 is the one
+  // case we *can* trust — it means no published release exists yet.
+  const refreshAvailability = async () => {
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://api.github.com/repos/${REPO}/releases/latest`,
+        {
+          headers: {
+            accept: "application/vnd.github+json",
+            "x-github-api-version": "2022-11-28",
+          },
+        },
+      );
+    } catch {
+      return;
+    }
+
+    if (response.status === 404) {
+      applyAvailability(new Set());
+      return;
+    }
+    if (!response.ok) return;
+
+    try {
+      const data = await response.json();
+      applyAvailability(parseReleaseAvailability(data).assets);
+    } catch {
+      // Malformed payload — keep the build-time state.
+    }
+  };
+
+  const enhance = () => {
+    detectPlatform();
+    void refreshAvailability();
+  };
+
+  // Re-runs on first load and after each Astro view transition.
+  document.addEventListener("astro:page-load", enhance);
 </script>
