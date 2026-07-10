@@ -1,17 +1,24 @@
 ---
 /*
- * Cross-browser scroll-reveal driver for the marketing shell.
+ * Motion driver for the marketing shell. Rendered early in <head> (via
+ * MarketingLayout) so the `motion` flag lands on <html> before first paint:
+ * every hidden pre-animation state in marketing.css is gated behind
+ * `html.motion`, so no-JS and reduced-motion visitors always see fully
+ * rendered content and nothing can get stuck invisible.
  *
- * Rendered early in <head> (via MarketingLayout) so the `motion` flag lands on
- * <html> before first paint: retro reveal styles in marketing.css only hide
- * content while `html.motion` is present, so no-JS and reduced-motion visitors
- * always see fully rendered content and nothing can get stuck invisible.
+ * Responsibilities:
+ *   - Scroll reveal (robust: scroll-math primary + IntersectionObserver +
+ *     failsafe, so below-fold blocks always appear even in embedded webviews).
+ *   - Scroll-progress bar (writes 0..1 to --sp on <html>).
+ *   - Hero parallax on the live-proof card (via the `translate` property, which
+ *     composes with the entrance `transform` animation).
+ *   - Count-up on the hero live-proof numbers.
+ *   - Magnetic buttons + card tilt (pointer:fine only).
  *
  * Works with Astro's <ClientRouter />:
  *   - `astro:after-swap` re-adds the flag pre-paint (Astro wipes <html> classes
  *     on navigation, same as the theme attribute).
- *   - `astro:page-load` (re)observes the new page's blocks and reveals the ones
- *     already in view, so every navigation re-plays the entrance.
+ *   - `astro:page-load` re-runs everything for the freshly swapped page.
  */
 ---
 
@@ -19,6 +26,7 @@
   (() => {
     const root = document.documentElement;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const fine = window.matchMedia("(pointer: fine)");
 
     // Set the pre-paint flag (also called on nav via astro:after-swap).
     const setFlag = () => root.classList.toggle("motion", !reduce.matches);
@@ -32,41 +40,185 @@
     const SELECTOR = ".shell-main > *, .lp > *:not(.lp-hero):not(.lp-works)";
     const reveal = (el) => el.classList.add("in-view");
 
-    const run = () => {
-      const blocks = document.querySelectorAll(SELECTOR);
-      // Reduced motion or no observer support: show everything immediately.
-      if (reduce.matches || !("IntersectionObserver" in window)) {
-        blocks.forEach(reveal);
+    /* ---- Scroll reveal ---------------------------------------------------- *
+     * Robust by design: a plain scroll/resize math check is the primary
+     * driver (works in any embedded webview), with IntersectionObserver as a
+     * bonus and a short failsafe. Anything at/above the fold is shown on init,
+     * so content can never get stuck invisible. */
+    let pending = [];
+    let io = null;
+    const vh = () => window.innerHeight || root.clientHeight;
+    const drop = (el) => {
+      pending = pending.filter((e) => e !== el);
+      if (io) io.unobserve(el);
+    };
+    const revealInView = () => {
+      if (reduce.matches) {
+        pending.forEach(reveal);
+        pending = [];
         return;
       }
-      const io = new IntersectionObserver(
-        (entries, obs) => {
-          for (const entry of entries) {
-            // Reveal when entering the viewport, or if the page jumped past it
-            // (deep link / scrollbar drag) so it sits above the viewport — it
-            // must never stay hidden once the reader has reached it.
-            if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
-              reveal(entry.target);
-              obs.unobserve(entry.target);
-            }
-          }
-        },
-        { rootMargin: "0px 0px -6% 0px", threshold: 0.05 },
-      );
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      blocks.forEach((el) => {
-        if (el.classList.contains("in-view")) return;
-        // Anything already at or above the fold (incl. content scrolled past on
-        // a deep-link load) is shown right away; only below-fold blocks wait to
-        // animate in on scroll.
-        if (el.getBoundingClientRect().top < vh * 0.9) {
+      for (const el of pending.slice()) {
+        if (el.getBoundingClientRect().top < vh() * 0.92) {
           reveal(el);
-        } else {
-          io.observe(el);
+          drop(el);
+        }
+      }
+    };
+
+    /* ---- Scroll progress (0..1 written to --sp on <html>) ----------------- */
+    const updateProgress = () => {
+      const max = root.scrollHeight - root.clientHeight;
+      const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      root.style.setProperty("--sp", p.toFixed(4));
+    };
+
+    /* ---- Hero parallax (translate composes with the entrance transform) --- */
+    let heroArt = null;
+    const parallax = () => {
+      if (!heroArt || reduce.matches) return;
+      const y = Math.min(window.scrollY, 700);
+      heroArt.style.translate = "0 " + (y * 0.07).toFixed(1) + "px";
+    };
+
+    let sTick = false;
+    const onScroll = () => {
+      if (sTick) return;
+      sTick = true;
+      requestAnimationFrame(() => {
+        sTick = false;
+        revealInView();
+        updateProgress();
+        parallax();
+      });
+    };
+
+    /* ---- Count-up on the hero live-proof numbers -------------------------- */
+    const countUp = (el, target) => {
+      const dur = 950;
+      const t0 = performance.now();
+      const tick = (now) => {
+        const t = Math.min(1, (now - t0) / dur);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = Math.round(target * eased).toString();
+        if (t < 1) requestAnimationFrame(tick);
+        else el.textContent = target.toString();
+      };
+      requestAnimationFrame(tick);
+    };
+    const initCounts = () => {
+      if (reduce.matches) return;
+      document.querySelectorAll(".lp-proof-card dd").forEach((dd) => {
+        const raw = (dd.textContent || "").trim();
+        if (/^\d+$/.test(raw) && !dd.dataset.counted) {
+          dd.dataset.counted = "1";
+          dd.textContent = "0";
+          countUp(dd, parseInt(raw, 10));
         }
       });
     };
 
+    /* ---- Magnetic buttons (translate; pointer:fine only) ------------------ */
+    const bindMagnetic = (btn) => {
+      const pull = 12;
+      btn.addEventListener("pointermove", (e) => {
+        const r = btn.getBoundingClientRect();
+        const mx = (e.clientX - (r.left + r.width / 2)) / r.width;
+        const my = (e.clientY - (r.top + r.height / 2)) / r.height;
+        btn.style.translate =
+          (mx * pull).toFixed(1) + "px " + (my * pull).toFixed(1) + "px";
+      });
+      const reset = () => (btn.style.translate = "0 0");
+      btn.addEventListener("pointerleave", reset);
+      btn.addEventListener("blur", reset);
+    };
+    const initMagnetic = () => {
+      if (!fine.matches || reduce.matches) return;
+      document
+        .querySelectorAll(".lp-hero .actions .btn, .cta-band .btn")
+        .forEach((b) => {
+          if (!b.dataset.mag) {
+            b.dataset.mag = "1";
+            bindMagnetic(b);
+          }
+        });
+    };
+
+    /* ---- Tilt the hero proof card toward the cursor ----------------------- */
+    const bindTilt = (card) => {
+      const max = 7;
+      // The entrance animation (fill: both) owns `transform`; release it so the
+      // hover tilt can take over once the intro has played.
+      const release = () => (card.style.animation = "none");
+      card.addEventListener("animationend", release, { once: true });
+      setTimeout(release, 1200);
+      card.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform =
+          "perspective(900px) rotateX(" +
+          (-py * max).toFixed(2) +
+          "deg) rotateY(" +
+          (px * max).toFixed(2) +
+          "deg)";
+      });
+      const reset = () => (card.style.transform = "perspective(900px)");
+      card.addEventListener("pointerleave", reset);
+    };
+    const initTilt = () => {
+      if (!fine.matches || reduce.matches) return;
+      document.querySelectorAll(".lp-proof-card").forEach((c) => {
+        if (!c.dataset.tilt) {
+          c.dataset.tilt = "1";
+          bindTilt(c);
+        }
+      });
+    };
+
+    const run = () => {
+      // (Re)collect reveal targets for the freshly swapped page.
+      pending = [...document.querySelectorAll(SELECTOR)].filter(
+        (el) => !el.classList.contains("in-view"),
+      );
+      if (!reduce.matches && "IntersectionObserver" in window) {
+        io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
+                reveal(entry.target);
+                drop(entry.target);
+              }
+            }
+          },
+          { rootMargin: "0px 0px -6% 0px", threshold: 0.05 },
+        );
+        pending.forEach((el) => io.observe(el));
+      }
+      revealInView();
+
+      heroArt = document.querySelector(".lp-proof-card");
+      updateProgress();
+      parallax();
+      initCounts();
+      initMagnetic();
+      initTilt();
+
+      // Failsafe: never leave the initial viewport blank if a callback misfires.
+      setTimeout(revealInView, 1000);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener(
+      "resize",
+      () => {
+        revealInView();
+        updateProgress();
+        parallax();
+      },
+      { passive: true },
+    );
+    window.addEventListener("load", revealInView);
     document.addEventListener("astro:after-swap", setFlag);
     document.addEventListener("astro:page-load", run);
     reduce.addEventListener?.("change", setFlag);

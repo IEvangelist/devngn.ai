@@ -247,7 +247,7 @@ h2.section-title {
     will-change: opacity, transform;
   }
   html.motion .shell-main > *.in-view,
-  html.motion .lp > *.in-view {
+  html.motion .lp > *.in-view:not(.lp-hero):not(.lp-works) {
     opacity: 1;
     transform: none;
   }
@@ -404,5 +404,93 @@ h2.section-title {
     50% {
       opacity: 1;
     }
+  }
+}
+
+/* ==========================================================================
+ * Ambient + interactive motion (round 2)
+ * Aurora backdrop, scroll-progress bar, hero parallax/tilt and magnetic
+ * buttons. Everything here is gated behind `html.motion` and
+ * `prefers-reduced-motion: no-preference`, so reduced-motion / no-JS visitors
+ * get a completely static, fully legible page.
+ * ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* ---- Aurora: slow-drifting brand glows behind the content -------------- *
+   * Painted on the persistent <body> (survives view-transition swaps) at
+   * z-index -1: above the page background, behind every content block.        */
+  html.motion body.has-shell::before {
+    content: "";
+    position: fixed;
+    inset: -12vmax;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        36vmax 36vmax at 14% 6%,
+        rgba(236, 28, 139, 0.24),
+        transparent 60%
+      ),
+      radial-gradient(
+        32vmax 32vmax at 86% 16%,
+        rgba(17, 179, 163, 0.22),
+        transparent 62%
+      ),
+      radial-gradient(
+        30vmax 30vmax at 62% 96%,
+        rgba(255, 207, 46, 0.14),
+        transparent 60%
+      );
+    filter: blur(26px);
+    opacity: 0.55;
+    animation: aurora-drift 28s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  /* The light theme surface is bright, so keep the wash gentle there. */
+  html.motion[data-theme="light"] body.has-shell::before {
+    opacity: 0.3;
+  }
+  @keyframes aurora-drift {
+    0% {
+      transform: translate3d(-3%, -2%, 0) scale(1.05) rotate(0deg);
+    }
+    50% {
+      transform: translate3d(2%, 3%, 0) scale(1.13) rotate(4deg);
+    }
+    100% {
+      transform: translate3d(3%, -3%, 0) scale(1.06) rotate(-3deg);
+    }
+  }
+
+  /* ---- Scroll-progress bar ---------------------------------------------- *
+   * `--sp` (0..1) is written to <html> by Motion.astro on scroll. Painted on
+   * the persistent <body> so it survives navigations.                         */
+  html.motion body.has-shell::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 1200;
+    pointer-events: none;
+    transform: scaleX(var(--sp, 0));
+    transform-origin: 0 50%;
+    background: var(--accent-2);
+  }
+
+  /* ---- Hero live-proof card: parallax (translate) + hover tilt ---------- */
+  html.motion .lp-proof-card {
+    transition: transform 0.2s ease-out;
+    transform-style: preserve-3d;
+    will-change: transform, translate;
+  }
+
+  /* ---- Magnetic buttons: smooth the cursor-follow translate ------------- */
+  html.motion .lp-hero .actions .btn,
+  html.motion .cta-band .btn {
+    transition:
+      translate 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.16s ease,
+      background 0.16s ease;
   }
 }
