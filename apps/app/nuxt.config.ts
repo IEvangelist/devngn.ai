@@ -132,6 +132,24 @@ export default defineNuxtConfig({
   vite: {
     // Tauri needs a stable dev server; don't fall back to a random port.
     clearScreen: false,
+    // Pre-bundle the Tauri API/plugin entrypoints (and reka-ui) so Vite never
+    // discovers them at runtime. Runtime discovery forces a full dep re-optimize
+    // and page reload, which races the Tauri webview during `tauri dev` and can
+    // crash it (devngn.exe exits). Listing them here keeps the dev session stable.
+    optimizeDeps: {
+      include: [
+        "@tauri-apps/api/core",
+        "@tauri-apps/api/event",
+        "@tauri-apps/api/app",
+        "@tauri-apps/plugin-store",
+        "@tauri-apps/plugin-opener",
+        "@tauri-apps/plugin-notification",
+        "@tauri-apps/plugin-os",
+        "@tauri-apps/plugin-process",
+        "@tauri-apps/plugin-updater",
+        "reka-ui",
+      ],
+    },
     server: {
       strictPort: true,
       hmr: host
