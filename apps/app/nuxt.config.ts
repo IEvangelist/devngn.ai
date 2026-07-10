@@ -60,7 +60,7 @@ export default defineNuxtConfig({
           content:
             "devngn — gamified, social wellness interruptions for developers.",
         },
-        { name: "theme-color", content: "#ff5a1f" },
+        { name: "theme-color", content: "#ec1c8b" },
       ],
       link: [{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }],
     },
@@ -106,7 +106,7 @@ export default defineNuxtConfig({
       short_name: "devngn",
       description:
         "Gamified, social wellness interruptions for developers.",
-      theme_color: "#ff5a1f",
+      theme_color: "#ec1c8b",
       background_color: "#fdf3df",
       display: "standalone",
       start_url: "/",

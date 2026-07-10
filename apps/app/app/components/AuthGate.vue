@@ -18,7 +18,9 @@
     <main class="authgate__inner">
       <div class="authgate__brand">
         <svg class="authgate__logo" viewBox="0 0 32 32" role="img" :aria-label="$t('app.name')">
-          <rect x="1.5" y="1.5" width="29" height="29" fill="#ff5a1f" stroke="#16130d" stroke-width="3" />
+          <rect x="1.5" y="1.5" width="14.5" height="29" fill="#ec1c8b" />
+          <rect x="16" y="1.5" width="14.5" height="29" fill="#11b3a3" />
+          <rect x="1.5" y="1.5" width="29" height="29" fill="none" stroke="#16130d" stroke-width="3" />
           <path d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z" fill="#16130d" stroke="#16130d" stroke-width="1.5" stroke-linejoin="miter" />
         </svg>
         <span class="authgate__wordmark">{{ $t("app.name") }}</span>

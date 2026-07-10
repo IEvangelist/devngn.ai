@@ -5,7 +5,7 @@
  * energy, built to convert. The app is a different job — a daily-use wellness
  * companion whose whole purpose is to help you decompress. So the app runs its
  * own quiet, focused visual language: soft corners, hairline borders, gentle
- * shadows, a humane sans, and a single restrained orange accent drawn from the
+ * shadows, a humane sans, and a single restrained fuchsia accent drawn from the
  * devngn brand. It is deliberately decoupled from the site's retro tokens.
  *
  * Class names (.brut-*) are kept for compatibility with existing markup; only
@@ -16,24 +16,24 @@
 
 :root {
   /* ── Brand accent (single hue, same-hue ramp) ──────────────────────────
-   * --accent        bright brand orange — non-text uses: focus rings,
+   * --accent        bright brand fuchsia — non-text uses: focus rings,
    *                 progress fills, active indicators, small marks.
    * --accent-strong deeper shade — passes WCAG AA (5.2:1) with white text, so
    *                 it is used anywhere text sits on the accent (buttons, links).
    * --accent-tint*  soft washes for selected/active/hover surfaces.
    */
-  --accent: #e35411;
-  --accent-strong: #c2410c;
-  --accent-hover: #a8380a;
+  --accent: #ec1c8b;
+  --accent-strong: #b81272;
+  --accent-hover: #9c0f61;
   --accent-ink: #ffffff;
-  --accent-tint: #fff3ec;
-  --accent-tint-strong: #ffe4d6;
-  --accent-line: #f4d3c3;
+  --accent-tint: #fdeef6;
+  --accent-tint-strong: #fbd9ec;
+  --accent-line: #f4c3dd;
 
   /* Secondary hues — used sparingly as soft category tints (badges, feed,
    * leaderboard). Desaturated so they read calm, never carnival. */
   --accent-2: #0d9488; /* teal   */
-  --accent-3: #d97706; /* amber  */
+  --accent-3: #9a4f08; /* amber (AA-normal as text on light surfaces; dark theme keeps brighter #d97706) */
   --accent-4: #6366f1; /* indigo */
   --accent-5: #e11d48; /* rose   */
   --accent-6: #2563eb; /* blue   */
@@ -93,13 +93,14 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --accent: #ff6a35;
-  --accent-strong: #ff7a45;
-  --accent-hover: #ff8f61;
-  --accent-ink: #1a0f08;
-  --accent-tint: #2a1a10;
-  --accent-tint-strong: #3a2113;
-  --accent-line: #4a2c1a;
+  --accent-3: #d97706; /* amber reads brighter on dark surfaces (AA-normal) */
+  --accent: #ff5cae;
+  --accent-strong: #ff74ba;
+  --accent-hover: #ff92cb;
+  --accent-ink: #23101a;
+  --accent-tint: #241019;
+  --accent-tint-strong: #331523;
+  --accent-line: #4a1f31;
 
   --paper: #0f1013;
   --paper-2: #17181c;
@@ -124,13 +125,14 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
     color-scheme: dark;
-    --accent: #ff6a35;
-    --accent-strong: #ff7a45;
-    --accent-hover: #ff8f61;
-    --accent-ink: #1a0f08;
-    --accent-tint: #2a1a10;
-    --accent-tint-strong: #3a2113;
-    --accent-line: #4a2c1a;
+    --accent-3: #d97706; /* amber reads brighter on dark surfaces (AA-normal) */
+    --accent: #ff5cae;
+    --accent-strong: #ff74ba;
+    --accent-hover: #ff92cb;
+    --accent-ink: #23101a;
+    --accent-tint: #241019;
+    --accent-tint-strong: #331523;
+    --accent-line: #4a1f31;
 
     --paper: #0f1013;
     --paper-2: #17181c;

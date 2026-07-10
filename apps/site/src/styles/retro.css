@@ -11,15 +11,15 @@
   --surface: #ffffff;
   --ink: #16130d;
   --ink-soft: #574f3c;
-  --accent: #ff5a1f; /* orange */
+  --accent: #ec1c8b; /* fuchsia */
   --accent-ink: #16130d;
   --accent-2: #11b3a3; /* teal */
   --accent-3: #ffcf2e; /* yellow */
   --accent-4: #6c4cf1; /* purple */
-  --accent-5: #ff4d8d; /* pink */
+  --accent-5: #ff7ac0; /* pink */
   --accent-6: #2f6bff; /* blue */
-  --brand-ngn: var(--accent); /* wordmark: brand orange */
-  --brand-ai: var(--accent-2); /* wordmark: brand teal */
+  --brand-ngn: var(--accent); /* wordmark: brand fuchsia */
+  --brand-ai: #0c7d72; /* wordmark: deep teal (AA-normal on light surfaces) */
 
   /* Block geometry */
   --border-w: 3px;
@@ -81,9 +81,9 @@
   --sl-color-gray-7: #f6eed6;
 
   --sl-color-accent: var(--accent);
-  --sl-color-accent-low: #ffd9c2;
-  --sl-color-accent-high: #ad3409;
-  --sl-color-text-accent: #ad3409;
+  --sl-color-accent-low: #ffd9ec;
+  --sl-color-accent-high: #a81166;
+  --sl-color-text-accent: #a81166;
 
   --sl-color-hairline: var(--ink);
   --sl-color-hairline-light: var(--ink);
@@ -101,6 +101,8 @@
 
   --sl-font: var(--font-body);
   --sl-font-mono: var(--font-mono);
+
+  --brand-ai: #11b3a3; /* wordmark teal reads bright on dark bg (7:1) */
 
   --sl-color-bg: #17130c;
   --sl-color-bg-nav: #17130c;
@@ -120,9 +122,9 @@
   --sl-color-gray-7: #221c12;
 
   --sl-color-accent: var(--accent);
-  --sl-color-accent-low: #5a2a14;
-  --sl-color-accent-high: #ffd9c2;
-  --sl-color-text-accent: #ff8a5c;
+  --sl-color-accent-low: #5a1436;
+  --sl-color-accent-high: #ffd9ec;
+  --sl-color-text-accent: #ff8ac4;
 
   --sl-color-hairline: var(--ink);
   --sl-color-hairline-light: var(--ink);
