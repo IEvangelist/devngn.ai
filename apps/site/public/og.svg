@@ -23,8 +23,8 @@
   <text x="70" y="576" font-family="Arial Black, Arial, sans-serif" font-size="96" font-weight="900" fill="#16130d" letter-spacing="-2">first.</text>
 
   <!-- energy tile, top-right -->
-  <rect x="946" y="120" width="91" height="182" fill="#ec1c8b" />
-  <rect x="1037" y="120" width="91" height="182" fill="#11b3a3" />
+  <path d="M946 120H1052V150L1018 302H946Z" fill="#ec1c8b" />
+  <path d="M1052 120H1128V302H1018L1052 150Z" fill="#11b3a3" />
   <rect x="946" y="120" width="182" height="182" fill="none" stroke="#16130d" stroke-width="6" />
   <path d="M1052 150 990 240h40l-12 62 70 -92h-46z" fill="#16130d" stroke="#16130d" stroke-width="4" stroke-linejoin="miter" />
 
