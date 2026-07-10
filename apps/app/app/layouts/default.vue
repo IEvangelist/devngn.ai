@@ -356,13 +356,20 @@ watch(isAuthenticated, (val) => {
   padding-left: 0.4rem;
   padding-right: 0.4rem;
 }
-/* Brand shares the statusbar's band height so the logo lines up across the divider. */
+/* Brand shares the statusbar's band height so the logo lines up across the
+   divider. Horizontal padding + gap + logo box mirror NavItem (0.7rem padding,
+   0.7rem gap, 1.5rem icon column, 1px border) so the mark's left edge lines up
+   pixel-perfect with the nav symbols and the wordmark with their labels. The
+   dashed bottom border sits at the 3rem band edge, so it lines up with the
+   statusbar's solid bottom border across the sidebar divider. */
 .shell__brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.7rem;
   min-height: 3rem;
-  padding: 0 0.2rem;
+  padding: 0 0.7rem;
+  border: 1px solid transparent;
+  border-bottom: var(--border-w) dashed var(--line);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.15rem;
@@ -376,8 +383,8 @@ watch(isAuthenticated, (val) => {
   padding: 0;
 }
 .shell__logo {
-  width: 1.4em;
-  height: 1.4em;
+  width: 1.5rem;
+  height: 1.5rem;
   flex: 0 0 auto;
   display: block;
 }
