@@ -105,7 +105,10 @@ const ext = (l: FooterLink) =>
 
     <div class="footer-bottom">
       <span class="site-footer-license">
-        MIT · Copyright © 2026-Present David Pine
+        MIT · Copyright © 2026-Present <a
+          href="https://davidpine.dev"
+          rel="noopener"
+          target="_blank">David Pine</a>
       </span>
       <span class="footer-note">Built to put the human first.</span>
     </div>
@@ -250,5 +253,17 @@ const ext = (l: FooterLink) =>
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--muted);
+  }
+  .site-footer-license a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    font-weight: 700;
+    transition: color 0.15s ease;
+  }
+  .site-footer-license a:hover,
+  .site-footer-license a:focus-visible {
+    color: var(--accent-2);
   }
 </style>

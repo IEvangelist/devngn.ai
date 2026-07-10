@@ -469,7 +469,15 @@ starlight-theme-select,
 
 body.has-shell {
   margin: 0;
-  background: var(--bg);
+  /* Faint dot-grid texture over the flat surface. `--ink` flips per theme, so
+   * color-mix keeps the dots subtle on both paper (dark dots) and dark (cream
+   * dots). Static — no reduced-motion gate needed. */
+  background-color: var(--bg);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--ink) 6%, transparent) 1px,
+    transparent 1.6px
+  );
+  background-size: 22px 22px;
   color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;

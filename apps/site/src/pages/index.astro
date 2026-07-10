@@ -358,7 +358,13 @@ const description =
 
   .lp-proof-card {
     border: var(--border);
-    background: var(--surface-bg);
+    background:
+      repeating-linear-gradient(
+        45deg,
+        transparent 0 22px,
+        rgba(17, 179, 163, 0.08) 22px 23px
+      ),
+      var(--surface-bg);
     box-shadow: var(--shadow);
     padding: 1.4rem 1.5rem;
   }
