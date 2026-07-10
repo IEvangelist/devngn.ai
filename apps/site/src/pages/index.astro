@@ -95,7 +95,7 @@ const description =
     <!-- Hero: asymmetric split, dual hook + live proof aside -->
     <section class="lp-hero">
       <div class="lp-hero-copy">
-        <span class="eyebrow">Open source · desktop app + CLI</span>
+        <span class="eyebrow">Open source · free forever · desktop app + CLI</span>
         <h1>
           Ground your <span class="nb"><span class="hl a">AI</span>.</span><br />
           Protect the <span class="nb"><span class="hl b">human</span>.</span>
@@ -882,33 +882,12 @@ const description =
     font-size: 0.92rem;
   }
 
-  /* ---- Motion: gentle scroll reveal ------------------------------------- *
-   * Gated behind @supports so browsers without scroll-driven animations
-   * (Safari, older engines) always render content fully visible. Supporting
-   * browsers reveal each section as it scrolls into view. Reduced-motion off.  */
+  /* ---- Motion: hero entrance ------------------------------------------- *
+   * Scroll-reveal for the sections below the hero now lives in the shared,
+   * cross-browser Motion system (Motion.astro + marketing.css). This block
+   * keeps only the landing hero's on-load entrance, which plays everywhere
+   * (including on view-transition navigations back to home).                  */
   @media (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: view()) {
-      .lp-duo,
-      .lp-blind,
-      .lp-band,
-      .lp-row,
-      .lp-flow {
-        animation: lp-rise linear both;
-        animation-timeline: view();
-        animation-range: entry 2% cover 24%;
-      }
-      @keyframes lp-rise {
-        from {
-          opacity: 0;
-          transform: translateY(26px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    }
-
     /* Hero entrance: staggered rise on load and on view-transition into home.
      * Pure CSS so it also runs without scroll-driven support; collapses to
      * static under reduced-motion (the whole block is skipped). */

@@ -10,6 +10,7 @@
  */
 import { ClientRouter } from "astro:transitions";
 import ThemeInit from "../components/ThemeInit.astro";
+import Motion from "../components/Motion.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteSidebar from "../components/SiteSidebar.astro";
 import PageToc from "../components/PageToc.astro";
@@ -55,6 +56,7 @@ const ogImage = new URL(image, Astro.site).toString();
 <html lang="en">
   <head>
     <ThemeInit />
+    <Motion />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 

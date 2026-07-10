@@ -1,0 +1,74 @@
+---
+/*
+ * Cross-browser scroll-reveal driver for the marketing shell.
+ *
+ * Rendered early in <head> (via MarketingLayout) so the `motion` flag lands on
+ * <html> before first paint: retro reveal styles in marketing.css only hide
+ * content while `html.motion` is present, so no-JS and reduced-motion visitors
+ * always see fully rendered content and nothing can get stuck invisible.
+ *
+ * Works with Astro's <ClientRouter />:
+ *   - `astro:after-swap` re-adds the flag pre-paint (Astro wipes <html> classes
+ *     on navigation, same as the theme attribute).
+ *   - `astro:page-load` (re)observes the new page's blocks and reveals the ones
+ *     already in view, so every navigation re-plays the entrance.
+ */
+---
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    // Set the pre-paint flag (also called on nav via astro:after-swap).
+    const setFlag = () => root.classList.toggle("motion", !reduce.matches);
+    setFlag();
+
+    if (window.__motionBound) return;
+    window.__motionBound = true;
+
+    // Top-level content blocks. Landing hero + its works strip run their own
+    // on-load entrance, so they are excluded here (matches marketing.css).
+    const SELECTOR = ".shell-main > *, .lp > *:not(.lp-hero):not(.lp-works)";
+    const reveal = (el) => el.classList.add("in-view");
+
+    const run = () => {
+      const blocks = document.querySelectorAll(SELECTOR);
+      // Reduced motion or no observer support: show everything immediately.
+      if (reduce.matches || !("IntersectionObserver" in window)) {
+        blocks.forEach(reveal);
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries, obs) => {
+          for (const entry of entries) {
+            // Reveal when entering the viewport, or if the page jumped past it
+            // (deep link / scrollbar drag) so it sits above the viewport — it
+            // must never stay hidden once the reader has reached it.
+            if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
+              reveal(entry.target);
+              obs.unobserve(entry.target);
+            }
+          }
+        },
+        { rootMargin: "0px 0px -6% 0px", threshold: 0.05 },
+      );
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      blocks.forEach((el) => {
+        if (el.classList.contains("in-view")) return;
+        // Anything already at or above the fold (incl. content scrolled past on
+        // a deep-link load) is shown right away; only below-fold blocks wait to
+        // animate in on scroll.
+        if (el.getBoundingClientRect().top < vh * 0.9) {
+          reveal(el);
+        } else {
+          io.observe(el);
+        }
+      });
+    };
+
+    document.addEventListener("astro:after-swap", setFlag);
+    document.addEventListener("astro:page-load", run);
+    reduce.addEventListener?.("change", setFlag);
+  })();
+</script>

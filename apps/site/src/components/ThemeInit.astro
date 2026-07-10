@@ -4,22 +4,39 @@
  * Resolves the stored Starlight preference (or the OS setting) and sets
  * `data-theme` on <html> before first paint so retro.css token flips apply
  * with no flash. Must be rendered as early as possible in <head>.
+ *
+ * Also reapplies the theme on `astro:after-swap`. Astro's <ClientRouter />
+ * replaces the <html> element's attributes with the freshly-fetched page's on
+ * every client-side navigation, and the server never renders `data-theme`
+ * (it's chosen client-side). Without this the attribute is wiped on navigation
+ * and the page falls back to the OS/dark default, ignoring the user's choice.
+ * `astro:after-swap` fires after the DOM swap but before paint, so restoring it
+ * here is flash-free.
  */
 ---
 
 <script is:inline>
   (() => {
-    const root = document.documentElement;
-    let t;
-    try {
-      const s = localStorage.getItem("starlight-theme");
-      t = s === "light" || s === "dark" ? s : null;
-    } catch {}
-    if (!t) {
-      t = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const resolveTheme = () => {
+      try {
+        const s = localStorage.getItem("starlight-theme");
+        if (s === "light" || s === "dark") return s;
+      } catch {}
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
+    };
+    const applyTheme = () => {
+      document.documentElement.dataset.theme = resolveTheme();
+    };
+
+    // Pre-paint on the initial full load.
+    applyTheme();
+
+    // Re-apply after every view-transition swap (bind once).
+    if (!window.__retroThemeSwapBound) {
+      window.__retroThemeSwapBound = true;
+      document.addEventListener("astro:after-swap", applyTheme);
     }
-    root.dataset.theme = t;
   })();
 </script>

@@ -1,6 +1,6 @@
 /*
  * Reusable marketing building blocks for the standalone pages
- * (Features, Download, Pricing). Mirrors the neo-brutalist language established
+ * (Features, Download). Mirrors the neo-brutalist language established
  * on the landing page: chunky borders, hard offset shadows, mono labels,
  * display headings. Imported once via MarketingLayout so every marketing page
  * shares the exact same components.
@@ -222,4 +222,187 @@ h2.section-title {
 }
 .cta-band .pop {
   color: var(--accent-3);
+}
+
+/* ==========================================================================
+ * Motion
+ * Progressive enhancement: every hidden/pre-animation state is gated behind
+ * BOTH `@media (prefers-reduced-motion: no-preference)` and `html.motion`
+ * (a flag set by Motion.astro only when JS runs and motion is allowed). So
+ * visitors without JS, or who ask for reduced motion, always get fully
+ * rendered, static content — nothing can get stuck invisible.
+ * ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* ---- Scroll reveal: top-level content blocks -------------------------- *
+   * Motion.astro observes these and adds `.in-view` as they enter the
+   * viewport. The landing hero + its compatibility strip are excluded because
+   * they run their own on-load entrance (see index.astro `lp-hero-in`).       */
+  html.motion .shell-main > *,
+  html.motion .lp > *:not(.lp-hero):not(.lp-works) {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  html.motion .shell-main > *.in-view,
+  html.motion .lp > *.in-view {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ---- Staggered cascade for item grids inside a revealed block --------- *
+   * The grid/list itself is not observed; its children cascade off the
+   * nearest revealed ancestor (`.in-view`), so a whole card grid ripples in
+   * together with its section. Both share the same trigger instant, so the
+   * nested transforms read as one smooth motion.                              */
+  html.motion
+    :where(
+      .grid,
+      .ft-surface-grid,
+      .ft-bento,
+      .ft-rows,
+      .lp-flow-steps,
+      .lp-blind-list,
+      .lp-band-figs,
+      .lp-provlist,
+      .lp-chiplist
+    )
+    > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  html.motion
+    .in-view
+    :where(
+      .grid,
+      .ft-surface-grid,
+      .ft-bento,
+      .ft-rows,
+      .lp-flow-steps,
+      .lp-blind-list,
+      .lp-band-figs,
+      .lp-provlist,
+      .lp-chiplist
+    )
+    > * {
+    opacity: 1;
+    transform: none;
+  }
+  html.motion .in-view :where(.grid, .ft-surface-grid, .ft-bento, .ft-rows, .lp-flow-steps, .lp-blind-list, .lp-band-figs, .lp-provlist, .lp-chiplist) > *:nth-child(1) { transition-delay: 0.04s; }
+  html.motion .in-view :where(.grid, .ft-surface-grid, .ft-bento, .ft-rows, .lp-flow-steps, .lp-blind-list, .lp-band-figs, .lp-provlist, .lp-chiplist) > *:nth-child(2) { transition-delay: 0.1s; }
+  html.motion .in-view :where(.grid, .ft-surface-grid, .ft-bento, .ft-rows, .lp-flow-steps, .lp-blind-list, .lp-band-figs, .lp-provlist, .lp-chiplist) > *:nth-child(3) { transition-delay: 0.16s; }
+  html.motion .in-view :where(.grid, .ft-surface-grid, .ft-bento, .ft-rows, .lp-flow-steps, .lp-blind-list, .lp-band-figs, .lp-provlist, .lp-chiplist) > *:nth-child(4) { transition-delay: 0.22s; }
+  html.motion .in-view :where(.grid, .ft-surface-grid, .ft-bento, .ft-rows, .lp-flow-steps, .lp-blind-list, .lp-band-figs, .lp-provlist, .lp-chiplist) > *:nth-child(5) { transition-delay: 0.28s; }
+  html.motion .in-view :where(.grid, .ft-surface-grid, .ft-bento, .ft-rows, .lp-flow-steps, .lp-blind-list, .lp-band-figs, .lp-provlist, .lp-chiplist) > *:nth-child(6) { transition-delay: 0.34s; }
+  html.motion .in-view :where(.grid, .ft-surface-grid, .ft-bento, .ft-rows, .lp-flow-steps, .lp-blind-list, .lp-band-figs, .lp-provlist, .lp-chiplist) > *:nth-child(n + 7) { transition-delay: 0.4s; }
+
+  /* ---- Hero headline highlight sweeps in on load ------------------------ */
+  .page-hero .hl,
+  .lp-hero .hl {
+    animation: hl-sweep 0.85s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes hl-sweep {
+    from {
+      background-size: 0% 0.92em;
+    }
+    to {
+      background-size: 100% 0.92em;
+    }
+  }
+}
+
+/* ---- Micro-interactions -------------------------------------------------- *
+ * Colour/opacity hovers are safe under reduced motion; transform-based ones
+ * are additionally gated below so they collapse to a static state.           */
+
+/* Button: keep the retro offset-shadow press, add a light sheen sweep. */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.32) 50%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn:hover::after {
+  transform: translateX(120%);
+}
+
+/* Nav links: smooth the state change and lift a touch on hover. */
+.site-navlink {
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+}
+
+/* Brand mark reacts to a hover of the wordmark. */
+.site-brand-mark {
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.35s ease;
+}
+
+/* Card icon "pops" when its card is hovered. */
+.card-icon,
+.lp-col-icon,
+.lp-flow-icon {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s ease;
+}
+
+/* Inline "read more" arrows nudge forward on hover. */
+.lp-col-link svg,
+.ft-surface-link svg {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-navlink:hover {
+    transform: translateY(-1px);
+  }
+  .site-brand:hover .site-brand-mark {
+    transform: rotate(-6deg) scale(1.06);
+  }
+  .card:hover .card-icon {
+    transform: rotate(-8deg) scale(1.1);
+  }
+  .lp-col:hover .lp-col-icon {
+    transform: translateY(-2px) rotate(-6deg);
+  }
+  .lp-col-link:hover svg,
+  .ft-surface-link:hover svg {
+    transform: translateX(4px);
+  }
+  /* Live-proof "on your machine" heading gets a soft breathing pulse. */
+  .lp-proof-title {
+    animation: proof-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes proof-pulse {
+    0%,
+    100% {
+      opacity: 0.75;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }
