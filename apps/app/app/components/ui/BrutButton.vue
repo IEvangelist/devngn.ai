@@ -17,7 +17,7 @@
     :aria-busy="loading"
     v-bind="$attrs"
   >
-    <span v-if="loading" class="brut-btn__spinner" aria-hidden="true">⋯</span>
+    <span v-if="loading" class="brut-btn__spinner" aria-hidden="true"></span>
     <slot v-else />
   </component>
 </template>
@@ -39,8 +39,15 @@ withDefaults(
 
 <style scoped>
 .brut-btn__spinner {
-  animation: spin 0.8s linear infinite;
+  width: 1em;
+  height: 1em;
+  border: 2.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
   display: inline-block;
+  vertical-align: -0.15em;
+  box-sizing: border-box;
 }
 @keyframes spin {
   to { transform: rotate(360deg); }
