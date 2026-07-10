@@ -82,6 +82,12 @@
             </button>
           </template>
         </BrutMenu>
+        <span
+          v-if="!sidebarCollapsed"
+          class="shell__version"
+          :title="$t('settings.version')"
+          >v{{ appVersion }}</span
+        >
       </div>
     </aside>
 
@@ -239,6 +245,11 @@ const accountMenuItems = computed<MenuItem[]>(() => [
 
 const sidebarCollapsed = ref(false);
 const mobileMenuOpen = ref(false);
+
+// Tiny build version shown at the foot of the sidebar. Baked from
+// tauri.conf.json at build time; the Settings → About page remains the
+// authoritative source (it also resolves the installed binary version).
+const appVersion = useRuntimeConfig().public.appVersion as string;
 
 const navItems = [
   { to: "/", icon: "sun", labelKey: "nav.today" },
@@ -400,6 +411,17 @@ watch(isAuthenticated, (val) => {
   flex-direction: column;
   gap: 0.5rem;
   align-items: stretch;
+}
+.shell__version {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
 }
 
 /* User anchored to the sidebar foot */
