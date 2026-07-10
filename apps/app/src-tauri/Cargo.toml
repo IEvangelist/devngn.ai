@@ -1,6 +1,6 @@
 [package]
 name = "devngn"
-version = "0.0.0"
+version = "0.0.1-alpha.420"
 description = "devngn: gamified, social wellness interruptions for developers"
 authors = ["David Pine"]
 license = "MIT"
