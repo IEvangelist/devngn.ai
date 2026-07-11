@@ -469,12 +469,12 @@ starlight-theme-select,
 
 body.has-shell {
   margin: 0;
-  /* Faint dot-grid texture over the flat surface. `--ink` flips per theme, so
-   * color-mix keeps the dots subtle on both paper (dark dots) and dark (cream
-   * dots). Static — no reduced-motion gate needed. */
+  /* Faint brand-fuchsia dot-grid texture over the flat surface. Kept low-alpha
+   * so it reads as a tint, not polka dots; the cursor aura (marketing.css)
+   * makes it bloom near the pointer. Static — no reduced-motion gate needed. */
   background-color: var(--bg);
   background-image: radial-gradient(
-    color-mix(in srgb, var(--ink) 6%, transparent) 1px,
+    color-mix(in srgb, var(--accent) 13%, transparent) 1px,
     transparent 1.6px
   );
   background-size: 22px 22px;

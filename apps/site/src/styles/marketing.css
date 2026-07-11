@@ -461,6 +461,69 @@ h2.section-title {
     }
   }
 
+  /* ---- Cursor aura: brand gradient pooling toward the pointer ------------ *
+   * Motion.astro writes viewport-space --mx/--my (px) and toggles --aura
+   * (0/1) as the pointer moves / leaves the window. Painted on the persistent
+   * <body> at z-index -1 (above the dotted background, below every content
+   * block), so a heavier fuchsia glow only shines through the dotted gaps
+   * around the cursor. A gentle brightness flicker gives it a living shimmer. */
+  /* ---- Cursor aura: a fluid brand blob that trails the pointer ---------- *
+   * Motion.astro renders #cursor-aura and drives its transform (spring toward
+   * the cursor, squash/stretch, bounce off content) plus --aura-mix, a 0..100%
+   * that fades the single hue from fuchsia (viewport left) to teal (right).
+   * Painted at z-index -1 so the glow only shows through the dotted gaps. A
+   * soft blur + morphing radius keep it organic; a gentle brightness flicker
+   * gives it life.                                                            */
+  #cursor-aura {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 24rem;
+    height: 22rem;
+    margin: -11rem 0 0 -12rem;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--aura, 0);
+    transition: opacity 0.5s ease;
+    --aura-c: color-mix(
+      in srgb,
+      var(--accent-2) var(--aura-mix, 50%),
+      var(--accent)
+    );
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--aura-c) 30%, transparent),
+      transparent 74%
+    );
+    border-radius: 46% 54% 58% 42% / 52% 46% 54% 48%;
+    filter: blur(16px) brightness(0.95);
+    animation:
+      aura-flicker 3.4s ease-in-out infinite,
+      aura-morph 9s ease-in-out infinite;
+    will-change: transform, opacity, filter;
+  }
+  @keyframes aura-flicker {
+    0%,
+    100% {
+      filter: blur(16px) brightness(0.95);
+    }
+    30% {
+      filter: blur(16px) brightness(1.08);
+    }
+    65% {
+      filter: blur(16px) brightness(1);
+    }
+  }
+  @keyframes aura-morph {
+    0%,
+    100% {
+      border-radius: 46% 54% 58% 42% / 52% 46% 54% 48%;
+    }
+    50% {
+      border-radius: 58% 42% 46% 54% / 44% 56% 44% 56%;
+    }
+  }
+
   /* ---- Scroll-progress bar ---------------------------------------------- *
    * `--sp` (0..1) is written to <html> by Motion.astro on scroll. Painted as
    * the sticky header's own bottom edge: the teal fills in over the header's

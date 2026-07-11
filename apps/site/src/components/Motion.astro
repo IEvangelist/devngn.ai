@@ -176,6 +176,179 @@
       });
     };
 
+    /* ---- Cursor aura: a fluid two-tone blob that trails the pointer -------- *
+     * A soft fuchsia(left)/teal(right) gradient blob (#cursor-aura, styled in
+     * marketing.css at z-index -1 so it only shows through the dotted gaps)
+     * springs toward the cursor, squashes & stretches with its own velocity,
+     * and bounces off the major content blocks + viewport edges it runs into —
+     * so it reads as a living pool of brand colour, never a rigid circle.
+     * Pointer:fine + no-reduced-motion only.                                   */
+    let auraEl = null;
+    const auraTarget = { x: 0, y: 0 };
+    const auraPos = { x: 0, y: 0 };
+    const auraVel = { x: 0, y: 0 };
+    let auraObstacles = [];
+    let auraRAF = 0;
+    let auraSeen = false;
+    const AURA_R = 96; // collision radius (px)
+    const REST = 0.7; // restitution (bounciness)
+
+    const ensureAura = () => {
+      auraEl = document.getElementById("cursor-aura");
+      if (!auraEl) {
+        auraEl = document.createElement("div");
+        auraEl.id = "cursor-aura";
+        auraEl.setAttribute("aria-hidden", "true");
+        document.body.appendChild(auraEl);
+      }
+      return auraEl;
+    };
+    const gatherObstacles = () => {
+      // Only genuinely "boxed" components (a border or solid/painted bg) act as
+      // walls — transparent text wrappers like the hero copy are skipped so the
+      // blob glides behind them instead of getting trapped. Page-tall wrappers
+      // are excluded too.
+      const sel =
+        ".site-topbar, .lp-proof-card, .lp-works, .lp-band, .art-grounding, " +
+        ".art-readiness, .cta-band, .lp-band-figs > *, [class*='card'], " +
+        "[class*='panel'], figure, .sl-markdown-content pre, " +
+        ".sl-markdown-content table, .sl-markdown-content blockquote";
+      const vw = window.innerWidth;
+      auraObstacles = [...document.querySelectorAll(sel)]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.width < 48 || r.height < 32) return false;
+          if (r.width > vw * 0.92 && r.height > 900) return false;
+          const cs = getComputedStyle(el);
+          const bordered =
+            parseFloat(cs.borderTopWidth) > 0 && cs.borderTopStyle !== "none";
+          const bg = cs.backgroundColor;
+          const solidBg = !!bg && !bg.endsWith(", 0)") && bg !== "transparent";
+          return bordered || solidBg || cs.backgroundImage !== "none";
+        })
+        .slice(0, 36);
+    };
+
+    // Circle-vs-rect: eject the blob from any block it overlaps, then bounce.
+    const collide = (rect) => {
+      const cx = Math.max(rect.left, Math.min(auraPos.x, rect.right));
+      const cy = Math.max(rect.top, Math.min(auraPos.y, rect.bottom));
+      let nx = auraPos.x - cx;
+      let ny = auraPos.y - cy;
+      const d2 = nx * nx + ny * ny;
+      if (d2 > AURA_R * AURA_R) return;
+      if (d2 > 0.0001) {
+        const d = Math.sqrt(d2);
+        nx /= d;
+        ny /= d;
+        const overlap = AURA_R - d;
+        auraPos.x += nx * overlap;
+        auraPos.y += ny * overlap;
+      } else {
+        // Centre is inside the block: eject through the nearest edge.
+        const dl = auraPos.x - rect.left;
+        const dr = rect.right - auraPos.x;
+        const dt = auraPos.y - rect.top;
+        const db = rect.bottom - auraPos.y;
+        const m = Math.min(dl, dr, dt, db);
+        nx = m === dl ? -1 : m === dr ? 1 : 0;
+        ny = m === dt ? -1 : m === db ? 1 : 0;
+        auraPos.x += nx * (m + AURA_R);
+        auraPos.y += ny * (m + AURA_R);
+      }
+      const dot = auraVel.x * nx + auraVel.y * ny;
+      if (dot < 0) {
+        auraVel.x -= (1 + REST) * dot * nx;
+        auraVel.y -= (1 + REST) * dot * ny;
+      }
+    };
+
+    const auraStep = () => {
+      auraRAF = 0;
+      // Spring toward the cursor for a fluid, trailing follow.
+      auraVel.x = (auraVel.x + (auraTarget.x - auraPos.x) * 0.08) * 0.82;
+      auraVel.y = (auraVel.y + (auraTarget.y - auraPos.y) * 0.08) * 0.82;
+      auraPos.x += auraVel.x;
+      auraPos.y += auraVel.y;
+
+      const vw = window.innerWidth;
+      const vh2 = vh();
+      // Bounce off nearby content blocks (broad-phase cull by viewport first).
+      for (const el of auraObstacles) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -40 || r.top > vh2 + 40 || r.right < 0 || r.left > vw)
+          continue;
+        collide(r);
+      }
+      // Keep it on screen.
+      if (auraPos.x < 0) {
+        auraPos.x = 0;
+        auraVel.x = Math.abs(auraVel.x) * REST;
+      } else if (auraPos.x > vw) {
+        auraPos.x = vw;
+        auraVel.x = -Math.abs(auraVel.x) * REST;
+      }
+      if (auraPos.y < 0) {
+        auraPos.y = 0;
+        auraVel.y = Math.abs(auraVel.y) * REST;
+      } else if (auraPos.y > vh2) {
+        auraPos.y = vh2;
+        auraVel.y = -Math.abs(auraVel.y) * REST;
+      }
+
+      // Velocity-driven squash & stretch + a slight lean into the motion.
+      const sp = Math.hypot(auraVel.x, auraVel.y);
+      const s = Math.min(sp * 0.012, 0.22);
+      const sx = (1 + s).toFixed(3);
+      const sy = (1 - s * 0.7).toFixed(3);
+      const rot = Math.max(-16, Math.min(16, auraVel.x * 0.6)).toFixed(2);
+      if (auraEl) {
+        auraEl.style.transform =
+          "translate3d(" +
+          auraPos.x.toFixed(1) +
+          "px," +
+          auraPos.y.toFixed(1) +
+          "px,0) rotate(" +
+          rot +
+          "deg) scale(" +
+          sx +
+          "," +
+          sy +
+          ")";
+        // Single hue that shifts with the pointer's horizontal position:
+        // fuchsia on the left of the viewport, blending to teal on the right.
+        const t = Math.max(0, Math.min(1, auraTarget.x / vw));
+        auraEl.style.setProperty("--aura-mix", (t * 100).toFixed(1) + "%");
+      }
+      // Keep animating while it still has energy or is chasing the cursor.
+      const restless =
+        sp > 0.15 ||
+        Math.abs(auraTarget.x - auraPos.x) > 0.5 ||
+        Math.abs(auraTarget.y - auraPos.y) > 0.5;
+      if (restless) auraRAF = requestAnimationFrame(auraStep);
+    };
+    const kickAura = () => {
+      if (!auraRAF) auraRAF = requestAnimationFrame(auraStep);
+    };
+    const onAura = (e) => {
+      auraTarget.x = e.clientX;
+      auraTarget.y = e.clientY;
+      if (!auraSeen) {
+        auraSeen = true;
+        auraPos.x = e.clientX;
+        auraPos.y = e.clientY;
+      }
+      root.style.setProperty("--aura", "1");
+      kickAura();
+    };
+    const auraOff = () => root.style.setProperty("--aura", "0");
+    const initAura = () => {
+      if (!fine.matches || reduce.matches) return;
+      window.addEventListener("pointermove", onAura, { passive: true });
+      document.addEventListener("pointerleave", auraOff);
+      window.addEventListener("blur", auraOff);
+    };
+
     const run = () => {
       // (Re)collect reveal targets for the freshly swapped page.
       pending = [...document.querySelectorAll(SELECTOR)].filter(
@@ -203,6 +376,8 @@
       initCounts();
       initMagnetic();
       initTilt();
+      ensureAura();
+      gatherObstacles();
 
       // Failsafe: never leave the initial viewport blank if a callback misfires.
       setTimeout(revealInView, 1000);
@@ -215,10 +390,12 @@
         revealInView();
         updateProgress();
         parallax();
+        gatherObstacles();
       },
       { passive: true },
     );
     window.addEventListener("load", revealInView);
+    initAura();
     document.addEventListener("astro:after-swap", setFlag);
     document.addEventListener("astro:page-load", run);
     reduce.addEventListener?.("change", setFlag);
