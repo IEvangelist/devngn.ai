@@ -28,15 +28,9 @@
   "bundle": {
     "active": true,
     "createUpdaterArtifacts": true,
-    "targets": [
-      "deb",
-      "rpm",
-      "appimage",
-      "app",
-      "dmg",
-      "msi",
-      "nsis"
-    ],
+    "publisher": "devngn.ai",
+    "homepage": "https://devngn.ai",
+    "targets": ["deb", "rpm", "appimage", "app", "dmg", "msi", "nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -45,7 +39,23 @@
       "icons/icon.ico"
     ],
     "category": "Productivity",
-    "shortDescription": "Gamified wellness interruptions for developers"
+    "shortDescription": "Gamified wellness interruptions for developers",
+    "windows": {
+      "signCommand": {
+        "cmd": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "scripts/windows-sign.ps1",
+          "%1"
+        ]
+      }
+    },
+    "macOS": {
+      "hardenedRuntime": true
+    }
   },
   "plugins": {
     "deep-link": {
