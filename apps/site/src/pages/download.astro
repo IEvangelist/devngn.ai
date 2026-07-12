@@ -18,9 +18,8 @@ const releasesUrl = `${repoUrl}/releases`;
 
 // Desktop installers are stable-named assets on the latest *published* GitHub
 // release, produced by the desktop app's workflow (app-release.yml). This
-// build-time pass is the fail-safe baseline (works with JS disabled and for
-// crawlers); a client-side pass then re-resolves against the live GitHub API on
-// load, so the page reflects the real latest release without a redeploy.
+// build-time pass is the fail-safe source of truth (works with JS disabled and
+// for crawlers) and avoids sending visitors to assets we cannot verify.
 const platforms: DesktopPlatform[] = [
   {
     icon: "apple",
@@ -388,10 +387,9 @@ devngn patterns recognize</code></pre>
     });
   };
 
-  // Reconcile the build-time snapshot with what the latest *published* release
-  // actually exposes right now, so the page is always current without waiting
-  // for a site rebuild. Every download link/button state is already in the DOM;
-  // this only flips which ones are shown.
+  // Reconcile a positive build-time snapshot with what the latest *published*
+  // release actually exposes right now. Every download link/button state is
+  // already in the DOM; this only flips which ones are shown.
   const applyAvailability = (assets: Set<string>) => {
     let anyAvailable = false;
 
@@ -421,9 +419,16 @@ devngn patterns recognize</code></pre>
   };
 
   // Fail safe: any state we cannot positively verify (offline, rate-limited,
-  // malformed JSON) leaves the build-time render untouched. A 404 is the one
-  // case we *can* trust — it means no published release exists yet.
+  // malformed JSON) leaves the build-time render untouched. When the build-time
+  // render found no public desktop installer, skip the live GitHub probe
+  // entirely; otherwise a private repo or "no release yet" state produces a
+  // noisy browser 404 even though the UI already shows the safe coming-soon
+  // state.
   const refreshAvailability = async () => {
+    if (document.querySelector("[data-platform-card][data-available='true']") === null) {
+      return;
+    }
+
     let response: Response;
     try {
       response = await fetch(

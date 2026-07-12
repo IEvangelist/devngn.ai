@@ -11,8 +11,17 @@ import { siteSidebar, normalizePath } from "./site-nav";
 import { navLinks } from "./nav-links";
 
 const current = normalizePath(Astro.url.pathname);
+const groupedSidebarPaths = new Set(
+  siteSidebar.flatMap((group) =>
+    group.items
+      .filter((item) => !item.external)
+      .map((item) => normalizePath(item.href)),
+  ),
+);
 const isActive = (href: string, external?: boolean) =>
   !external && normalizePath(href) === current;
+const isPrimaryActive = (href: string, external?: boolean) =>
+  isActive(href, external) && !groupedSidebarPaths.has(normalizePath(href));
 ---
 
 <nav class="site-sidebar" aria-label="Site">
@@ -27,7 +36,7 @@ const isActive = (href: string, external?: boolean) =>
               href={item.href}
               class="sidebar-link"
               data-path={item.external ? undefined : normalizePath(item.href)}
-              aria-current={isActive(item.href, item.external) ? "page" : undefined}
+              aria-current={isPrimaryActive(item.href, item.external) ? "page" : undefined}
               {...(item.external ? { rel: "noopener", target: "_blank" } : {})}
             >
               <span class="sidebar-link-main">
@@ -76,9 +85,22 @@ const isActive = (href: string, external?: boolean) =>
   (() => {
     const sync = () => {
       const path = location.pathname.replace(/(.)\/$/, "$1");
+      const groupedPaths = new Set(
+        Array.from(
+          document.querySelectorAll(
+            "[data-site-sidebar] .sidebar-group:not(.sidebar-primary) a[data-path]",
+          ),
+        ).map((a) => a.getAttribute("data-path")),
+      );
       document.querySelectorAll("[data-site-sidebar] a[data-path]").forEach((a) => {
-        if (a.getAttribute("data-path") === path) a.setAttribute("aria-current", "page");
-        else a.removeAttribute("aria-current");
+        const linkPath = a.getAttribute("data-path");
+        const duplicatePrimary =
+          a.closest(".sidebar-primary") !== null && groupedPaths.has(linkPath);
+        if (linkPath === path && !duplicatePrimary) {
+          a.setAttribute("aria-current", "page");
+        } else {
+          a.removeAttribute("aria-current");
+        }
       });
     };
     document.addEventListener("astro:page-load", sync);

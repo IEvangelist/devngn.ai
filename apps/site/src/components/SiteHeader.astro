@@ -79,11 +79,24 @@ const { active } = Astro.props;
       "/getting-started": "docs",
       "/registry": "docs",
     };
+    const MOBILE_SIDEBAR = window.matchMedia("(max-width: 860px)");
+    const syncSidebarA11y = (open = document.body.classList.contains("sidebar-open")) => {
+      const sidebar = document.querySelector(".site-sidebar");
+      if (!sidebar) return;
+      if (!MOBILE_SIDEBAR.matches) {
+        sidebar.inert = false;
+        sidebar.removeAttribute("aria-hidden");
+        return;
+      }
+      sidebar.inert = !open;
+      sidebar.setAttribute("aria-hidden", String(!open));
+    };
     const closeSidebar = () => {
       document.body.classList.remove("sidebar-open");
       document
         .querySelector("[data-sidebar-toggle]")
         ?.setAttribute("aria-expanded", "false");
+      syncSidebarA11y(false);
     };
     const syncActive = () => {
       const path = location.pathname.replace(/(.)\/$/, "$1");
@@ -107,6 +120,7 @@ const { active } = Astro.props;
       if (btn) {
         const open = document.body.classList.toggle("sidebar-open");
         btn.setAttribute("aria-expanded", String(open));
+        syncSidebarA11y(open);
         return;
       }
       // Tapping outside the open sidebar closes it.
@@ -122,6 +136,11 @@ const { active } = Astro.props;
       if (e.key === "Escape") closeSidebar();
     });
 
+    MOBILE_SIDEBAR.addEventListener("change", () => {
+      if (!MOBILE_SIDEBAR.matches) document.body.classList.remove("sidebar-open");
+      syncSidebarA11y();
+    });
     document.addEventListener("astro:page-load", syncActive);
+    syncActive();
   })();
 </script>

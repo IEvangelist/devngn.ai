@@ -5,11 +5,13 @@
   "description": "devngn.ai marketing, docs, account, and registry site.",
   "type": "module",
   "scripts": {
+    "build:deps": "pnpm --filter \"@devngn/site^...\" build",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "lint": "astro check",
-    "test": "vitest run"
+    "test": "vitest run src",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/netlify": "^6.6.5",
@@ -24,6 +26,7 @@
     "astro": "^5.16.4"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4"
+    "@astrojs/check": "^0.9.4",
+    "@playwright/test": "^1.61.1"
   }
 }
