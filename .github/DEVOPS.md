@@ -13,7 +13,9 @@ Desktop releases are tag-driven.  The `app-release.yml` workflow fires automatic
 # 1. Ensure main is clean and all PRs are merged.
 # 2. Decide the version (SemVer, e.g. 1.2.3).
 # 3. Update the version field in apps/app/src-tauri/tauri.conf.json and
-#    apps/app/src-tauri/Cargo.toml to match, commit, and push to main.
+#    apps/app/src-tauri/Cargo.toml to match, commit, and push to main. Use
+#    normal SemVer (for example, 1.2.3) when building MSI installers; WiX/MSI
+#    rejects text prerelease identifiers such as alpha.420.
 # 4. Push the tag:
 git tag app-v1.2.3
 git push origin app-v1.2.3
@@ -54,8 +56,8 @@ each installer to the same release. The marketing site links to these durable UR
 | Linux (Debian/Ubuntu) | `devngn-linux-amd64.deb`     | `…/releases/latest/download/devngn-linux-amd64.deb` |
 
 > `releases/latest/download/…` resolves only against the newest **published** (non-draft,
-> non-prerelease) release — so remember to publish the draft. No macOS *universal* dmg,
-> Windows `.zip`, or Linux `.rpm` is produced; use the six assets above.
+> non-prerelease) release — so remember to publish the draft. No macOS *universal*
+> dmg, Windows `.zip`, or Linux `.rpm` is produced; use the six assets above.
 >
 > **The marketing Download page fails safe.** At build time it asks the GitHub API which
 > assets the latest *published* release actually exposes (see `apps/site/src/lib/release-info.ts`).

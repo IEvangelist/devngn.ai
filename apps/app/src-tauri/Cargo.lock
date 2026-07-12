@@ -745,7 +745,7 @@ dependencies = [
 
 [[package]]
 name = "devngn"
-version = "0.0.1-alpha.420"
+version = "0.0.1"
 dependencies = [
  "serde",
  "serde_json",

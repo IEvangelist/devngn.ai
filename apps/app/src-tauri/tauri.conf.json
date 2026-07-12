@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "devngn",
-  "version": "0.0.1-alpha.420",
-  "identifier": "ai.devngn.app",
+  "version": "0.0.1",
+  "identifier": "ai.devngn.desktop",
   "build": {
     "beforeDevCommand": "pnpm --filter @devngn/app dev",
     "beforeBuildCommand": "pnpm --filter @devngn/app generate",
@@ -34,6 +34,7 @@
       "appimage",
       "app",
       "dmg",
+      "msi",
       "nsis"
     ],
     "icon": [
