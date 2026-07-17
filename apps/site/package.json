@@ -23,6 +23,7 @@
     "@devngn/research": "workspace:*",
     "@devngn/vendors": "workspace:*",
     "@devngn/wellness-types": "workspace:*",
+    "@netlify/database": "^1.1.0",
     "astro": "^5.16.4",
     "bad-words": "^4.0.0"
   },
