@@ -1,0 +1,25 @@
+{
+  "name": "@devngn/wellness-functions",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Netlify Functions implementation of the devngn.ai Wellness API (Node 24 ESM TypeScript).",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup index.ts --format esm --dts --sourcemap --clean",
+    "test": "vitest run",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@netlify/database": "^1.1.0",
+    "@netlify/functions": "^4.2.0",
+    "bad-words": "^4.0.0"
+  }
+}

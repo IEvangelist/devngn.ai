@@ -8,7 +8,6 @@ import type {
   DeviceFlowStartResponse,
   PromptResponse,
 } from "@devngn/wellness-types";
-import { SseDecoder } from "./sse.js";
 
 /** Reason a long-lived stream stopped without the caller asking it to. */
 export type StreamStopReason = "unauthorized" | "forbidden";
@@ -35,13 +34,17 @@ export interface StreamOptions {
   readonly timeZone: string;
   /** Delivery channel query value; defaults to `vscode`. */
   readonly channel?: string;
+  /** Milliseconds between successful empty polls. Default 15 minutes. */
+  readonly pollIntervalMs?: number;
+  /** Per-request timeout for a prompt poll. Default 30 seconds. */
+  readonly requestTimeoutMs?: number;
+  /** Upper bound on reconnect backoff after transient failures. Default 30s. */
+  readonly backoffCapMs?: number;
   /**
-   * Abort + reconnect if no bytes (data OR heartbeat) arrive within this window.
-   * Guards against a half-open connection that never resolves a read. Default 90s.
+   * @deprecated Use {@link pollIntervalMs}. Retained for compatibility with
+   * callers that configured the former SSE heartbeat watchdog.
    */
   readonly heartbeatTimeoutMs?: number;
-  /** Upper bound on reconnect backoff. Default 30s. */
-  readonly backoffCapMs?: number;
 }
 
 /** Result of a single device-flow poll, normalized from the API's status codes. */
@@ -64,7 +67,7 @@ export class WellnessAuthError extends Error {
 }
 
 export interface WellnessClientConfig {
-  /** API origin, e.g. `http://localhost:5000`. */
+  /** API origin, e.g. `https://devngn.ai`. */
   readonly baseUrl: string;
   /** Returns the current bearer token, or `undefined` when signed out / expired. */
   readonly getToken: () => string | undefined;
@@ -74,9 +77,9 @@ export interface WellnessClientConfig {
 
 /**
  * Thin, dependency-free HTTP client for the devngn.ai Wellness API. Owns the
- * Server-Sent Events subscription (with auth-aware reconnect and a dead-connection
- * watchdog) plus the prompt-lifecycle and GitHub device-flow REST calls. All typing
- * flows from the generated `@devngn/wellness-types` package.
+ * polling-based prompt subscription (with auth-aware reconnect and capped
+ * exponential backoff) plus the prompt-lifecycle and GitHub device-flow REST
+ * calls. All typing flows from the generated `@devngn/wellness-types` package.
  */
 export class WellnessClient {
   private readonly baseUrl: string;
@@ -94,47 +97,83 @@ export class WellnessClient {
   }
 
   // -----------------------------------------------------------------------
-  // Streaming
+  // Streaming (polling transport)
 
   /**
-   * Subscribes to `GET /v1/prompts/stream`. Returns a function that stops the
-   * subscription — aborting any in-flight request, cancelling a pending reconnect
-   * sleep, and guaranteeing no further reconnects. Transient failures reconnect
-   * with capped exponential backoff; `401`/`403` stop permanently via
-   * {@link StreamHandlers.onStop}.
+   * Polls `POST /v1/prompts/next` on a recurring schedule, surfacing each new
+   * prompt via {@link StreamHandlers.onPrompt}. Returns a stop function that
+   * cancels any in-flight request, clears the pending sleep, and guarantees no
+   * further polls. Transient failures reconnect with capped exponential backoff;
+   * `401`/`403` stop permanently via {@link StreamHandlers.onStop}.
+   *
+   * The same pending prompt is deduplicated within a session: consecutive polls
+   * that return the same prompt ID (before the user acts on it) are suppressed.
+   * The dedup state resets on a 204 response (no pending prompt), ensuring the
+   * next arriving prompt is always surfaced.
    */
   streamPrompts(handlers: StreamHandlers, options: StreamOptions): () => void {
     const controller = new AbortController();
-    const heartbeatTimeoutMs = options.heartbeatTimeoutMs ?? 90_000;
-    const backoffCapMs = options.backoffCapMs ?? 30_000;
+    const pollIntervalMs = Math.max(
+      1,
+      options.pollIntervalMs ?? options.heartbeatTimeoutMs ?? 15 * 60_000,
+    );
+    const requestTimeoutMs = Math.max(1, options.requestTimeoutMs ?? 30_000);
+    const backoffCapMs = Math.max(1, options.backoffCapMs ?? 30_000);
     let stopped = false;
     let sleepTimer: ReturnType<typeof setTimeout> | undefined;
 
     const abortableSleep = (ms: number): Promise<void> =>
       new Promise((resolve) => {
-        if (stopped) {
+        if (stopped || controller.signal.aborted) {
           resolve();
           return;
         }
-        sleepTimer = setTimeout(resolve, ms);
-        controller.signal.addEventListener(
-          "abort",
-          () => {
-            if (sleepTimer !== undefined) {
-              clearTimeout(sleepTimer);
+
+        let settled = false;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const settle = (): void => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          if (timer !== undefined) {
+            clearTimeout(timer);
+            if (sleepTimer === timer) {
               sleepTimer = undefined;
             }
-            resolve();
-          },
-          { once: true },
-        );
+          }
+          controller.signal.removeEventListener("abort", onAbort);
+          resolve();
+        };
+        const onAbort = (): void => {
+          settle();
+        };
+
+        controller.signal.addEventListener("abort", onAbort, { once: true });
+        if (controller.signal.aborted) {
+          settle();
+          return;
+        }
+        timer = setTimeout(settle, ms);
+        sleepTimer = timer;
       });
 
     const run = async (): Promise<void> => {
       let attempt = 0;
+      // Tracks the most recently delivered prompt ID so consecutive polls that
+      // return the same pending prompt do not call onPrompt redundantly.
+      // Reset when the server returns 204 (prompt was handled elsewhere).
+      let lastPromptId: string | undefined;
+      // Tracks whether we have reached "open" state so that repeated successful
+      // polls do not re-emit "connecting"/"open" on every cycle.
+      let isOpen = false;
+      let requestId = createRequestId();
+
       while (!stopped) {
         try {
-          handlers.onStatus?.(attempt === 0 ? "connecting" : "reconnecting");
+          if (!isOpen) {
+            handlers.onStatus?.(attempt === 0 ? "connecting" : "reconnecting");
+          }
 
           const token = this.getToken();
           if (token === undefined) {
@@ -142,18 +181,24 @@ export class WellnessClient {
             return;
           }
 
-          const url = this.url("/v1/prompts/stream", {
+          const url = this.url("/v1/prompts/next", {
             channel: options.channel ?? "vscode",
             tz: options.timeZone,
           });
-          const response = await this.fetchImpl(url, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "text/event-stream",
+          const response = await fetchWithTimeout(
+            this.fetchImpl,
+            url,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+                "Idempotency-Key": requestId,
+              },
             },
-            signal: controller.signal,
-          });
-
+            controller.signal,
+            requestTimeoutMs,
+          );
           if (response.status === 401) {
             handlers.onStop?.("unauthorized");
             return;
@@ -162,21 +207,53 @@ export class WellnessClient {
             handlers.onStop?.("forbidden");
             return;
           }
-          if (!response.ok || response.body === null) {
-            throw new Error(`Prompt stream failed: HTTP ${response.status}`);
+
+          if (response.status === 204) {
+            if (!isOpen) {
+              handlers.onStatus?.("open");
+              isOpen = true;
+            }
+            attempt = 0;
+            requestId = createRequestId();
+            lastPromptId = undefined;
+            const retryAfterSeconds = parseRetryAfter(
+              response.headers.get("Retry-After"),
+            );
+            await abortableSleep(
+              retryAfterSeconds === undefined
+                ? pollIntervalMs
+                : Math.max(1, retryAfterSeconds * 1_000),
+            );
+            continue;
           }
 
-          handlers.onStatus?.("open");
+          if (!response.ok) {
+            throw new Error(`Prompt poll failed: HTTP ${response.status}`);
+          }
+
+          const prompt = (await response.json()) as PromptResponse;
+          if (!isOpen) {
+            handlers.onStatus?.("open");
+            isOpen = true;
+          }
           attempt = 0;
-          await this.readStream(
-            response.body,
-            controller.signal,
-            heartbeatTimeoutMs,
-            handlers.onPrompt,
+          requestId = createRequestId();
+          // Suppress re-delivery of the same pending prompt across polls.
+          if (prompt.id !== lastPromptId) {
+            lastPromptId = prompt.id;
+            handlers.onPrompt(prompt);
+          }
+          const retryAfterSeconds = parseRetryAfter(
+            response.headers.get("Retry-After"),
           );
-          // A normal end of stream (server closed / watchdog cancelled) falls
-          // through to the reconnect backoff below.
+          await abortableSleep(
+            retryAfterSeconds === undefined
+              ? pollIntervalMs
+              : Math.max(1, retryAfterSeconds * 1_000),
+          );
+          continue;
         } catch (error) {
+          isOpen = false;
           if (stopped || controller.signal.aborted) {
             break;
           }
@@ -214,74 +291,6 @@ export class WellnessClient {
     };
   }
 
-  /**
-   * Drains a response body as SSE, invoking `onPrompt` for each `prompt` event.
-   * A watchdog cancels the reader (ending the loop so the caller can reconnect)
-   * if no bytes arrive within `heartbeatTimeoutMs`; it is reset on every read,
-   * including heartbeat comments.
-   */
-  private async readStream(
-    body: ReadableStream<Uint8Array>,
-    signal: AbortSignal,
-    heartbeatTimeoutMs: number,
-    onPrompt: (prompt: PromptResponse) => void,
-  ): Promise<void> {
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    const sse = new SseDecoder();
-    let watchdog: ReturnType<typeof setTimeout> | undefined;
-
-    const armWatchdog = (): void => {
-      if (heartbeatTimeoutMs <= 0) {
-        return;
-      }
-      if (watchdog !== undefined) {
-        clearTimeout(watchdog);
-      }
-      watchdog = setTimeout(() => {
-        reader.cancel().catch(() => undefined);
-      }, heartbeatTimeoutMs);
-    };
-
-    // Cancelling the reader resolves any pending read() with done=true, so an
-    // abort unwinds the loop even for body streams that don't observe the signal.
-    const onAbort = (): void => {
-      reader.cancel().catch(() => undefined);
-    };
-    signal.addEventListener("abort", onAbort, { once: true });
-
-    try {
-      armWatchdog();
-      while (!signal.aborted) {
-        const { value, done } = await reader.read();
-        if (done) {
-          break;
-        }
-        armWatchdog();
-
-        const text = decoder.decode(value, { stream: true });
-        for (const event of sse.push(text)) {
-          if (event.event !== "prompt" || event.data === "") {
-            continue;
-          }
-          let prompt: PromptResponse;
-          try {
-            prompt = JSON.parse(event.data) as PromptResponse;
-          } catch {
-            continue;
-          }
-          onPrompt(prompt);
-        }
-      }
-    } finally {
-      signal.removeEventListener("abort", onAbort);
-      if (watchdog !== undefined) {
-        clearTimeout(watchdog);
-      }
-      reader.releaseLock();
-    }
-  }
-
   // -----------------------------------------------------------------------
   // Prompt lifecycle (authenticated)
 
@@ -312,9 +321,12 @@ export class WellnessClient {
   ): Promise<PromptResponse | undefined> {
     const response = await this.authedFetch(
       this.url("/v1/prompts/next", { channel, tz: timeZone }),
-      { method: "POST" },
+      {
+        method: "POST",
+        headers: { "Idempotency-Key": createRequestId() },
+      },
     );
-    if (response.status === 204 || response.status === 404) {
+    if (response.status === 204) {
       return undefined;
     }
     if (response.status === 401) {
@@ -381,9 +393,10 @@ export class WellnessClient {
    * returns a first-party token for a synthetic local user. The endpoint only exists
    * when the API runs in the Development environment; a 404 here means it's disabled.
    */
-  async devLogin(
-    identity?: { login?: string; displayName?: string },
-  ): Promise<AccessTokenResponse> {
+  async devLogin(identity?: {
+    login?: string;
+    displayName?: string;
+  }): Promise<AccessTokenResponse> {
     const response = await this.fetchImpl(this.url("/v1/auth/dev/login"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -473,6 +486,45 @@ export class WellnessClient {
 
 function ensureTrailingSlash(value: string): string {
   return value.endsWith("/") ? value : `${value}/`;
+}
+
+function createRequestId(): string {
+  return globalThis.crypto.randomUUID();
+}
+
+async function fetchWithTimeout(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  parentSignal: AbortSignal,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const abortFromParent = (): void => {
+    controller.abort(parentSignal.reason);
+  };
+
+  if (parentSignal.aborted) {
+    abortFromParent();
+  } else {
+    parentSignal.addEventListener("abort", abortFromParent, { once: true });
+  }
+
+  const timeout = setTimeout(() => {
+    controller.abort(
+      new DOMException(
+        `Prompt poll timed out after ${timeoutMs}ms.`,
+        "TimeoutError",
+      ),
+    );
+  }, timeoutMs);
+
+  try {
+    return await fetchImpl(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+    parentSignal.removeEventListener("abort", abortFromParent);
+  }
 }
 
 function parseRetryAfter(value: string | null): number | undefined {

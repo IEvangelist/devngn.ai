@@ -16,7 +16,10 @@ const host = process.env.TAURI_DEV_HOST;
 const appVersion =
   process.env.NUXT_PUBLIC_APP_VERSION ??
   (JSON.parse(
-    readFileSync(new URL("./src-tauri/tauri.conf.json", import.meta.url), "utf-8"),
+    readFileSync(
+      new URL("./src-tauri/tauri.conf.json", import.meta.url),
+      "utf-8",
+    ),
   ).version as string);
 
 export default defineNuxtConfig({
@@ -28,12 +31,7 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
-  modules: [
-    "@pinia/nuxt",
-    "@vueuse/nuxt",
-    "@nuxtjs/i18n",
-    "@vite-pwa/nuxt",
-  ],
+  modules: ["@pinia/nuxt", "@vueuse/nuxt", "@nuxtjs/i18n", "@vite-pwa/nuxt"],
 
   // Register components WITHOUT the subdirectory path-prefix so that
   // <BrutButton> resolves instead of <UiBrutButton>.
@@ -68,9 +66,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // Overridable at runtime; the Aspire AppHost injects service discovery,
-      // and the desktop build defaults to the hosted API.
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? "https://localhost:7107",
+      // Installed builds use the Netlify API by default. Local API development
+      // can opt in with NUXT_PUBLIC_API_BASE_URL.
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? "https://devngn.ai",
       appChannel: process.env.NUXT_PUBLIC_APP_CHANNEL ?? "app",
       // Displayed in Settings → About. In the desktop build the installed
       // binary's version (getVersion()) takes precedence at runtime.
@@ -90,7 +88,12 @@ export default defineNuxtConfig({
       { code: "de", language: "de-DE", file: "de.json", name: "Deutsch" },
       { code: "pt", language: "pt-BR", file: "pt.json", name: "Português" },
       { code: "ja", language: "ja-JP", file: "ja.json", name: "日本語" },
-      { code: "zh-Hans", language: "zh-Hans", file: "zh-Hans.json", name: "简体中文" },
+      {
+        code: "zh-Hans",
+        language: "zh-Hans",
+        file: "zh-Hans.json",
+        name: "简体中文",
+      },
     ],
     detectBrowserLanguage: {
       useCookie: true,
@@ -104,8 +107,7 @@ export default defineNuxtConfig({
     manifest: {
       name: "devngn",
       short_name: "devngn",
-      description:
-        "Gamified, social wellness interruptions for developers.",
+      description: "Gamified, social wellness interruptions for developers.",
       theme_color: "#ec1c8b",
       background_color: "#fdf3df",
       display: "standalone",
@@ -152,9 +154,7 @@ export default defineNuxtConfig({
     },
     server: {
       strictPort: true,
-      hmr: host
-        ? { protocol: "ws", host, port: 3001 }
-        : undefined,
+      hmr: host ? { protocol: "ws", host, port: 3001 } : undefined,
       watch: {
         // Rust rebuilds are driven by Tauri, not Vite.
         ignored: ["**/src-tauri/**"],

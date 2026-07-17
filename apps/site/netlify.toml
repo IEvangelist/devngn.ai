@@ -1,17 +1,10 @@
-# Netlify build config for the devngn.ai site (apps/site).
-#
-# This file lives inside the site package (not the repo root) so that the
-# @astrojs/netlify local dev emulation does not try to resolve a monorepo
-# `base` relative to the Astro root. When connecting the repo in Netlify,
-# set "Base directory" = apps/site in the UI; Netlify then reads this file.
-#
-# The build command uses `pnpm --filter @devngn/site... build` (note the
-# trailing `...`) so the workspace packages the site depends on are built,
-# in topological order, before the site itself.
-
 [build]
   command = "pnpm --filter @devngn/site... build"
-  publish = "dist"
+  publish = "apps/site/dist"
 
 [build.environment]
   NODE_VERSION = "24"
+
+[functions]
+  directory = "apps/site/netlify/functions"
+  node_bundler = "esbuild"

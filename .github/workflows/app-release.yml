@@ -5,6 +5,11 @@ name: App Release
 # platform bundles (NSIS/MSI on Windows, .dmg on macOS, AppImage/.deb on Linux),
 # and publishes the updater feed (latest.json) to the same release.
 #
+# NUXT_PUBLIC_API_BASE_URL is fixed to https://devngn.ai so every signed release
+# matches the Tauri connect-src policy and uses the Netlify-hosted /v1 backend.
+# Local workstation builds can still override the same env var outside CI. The
+# .NET reference implementation in services/ remains available for local use.
+#
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   TAURI_SIGNING_PRIVATE_KEY          – Ed25519 private key (base64), see DEVOPS.md
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD – passphrase for the private key
@@ -67,7 +72,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
           cache: "pnpm"
 
       # Pre-register the macOS cross-compilation targets so Rust can use them.
@@ -184,10 +189,7 @@ jobs:
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Point released desktop builds at the hosted Wellness API. The
-          # beforeBuildCommand (`pnpm --filter @devngn/app generate`) reads this
-          # env var in nuxt.config.ts; local dev keeps the localhost default.
-          NUXT_PUBLIC_API_BASE_URL: https://api.devngn.ai
+          NUXT_PUBLIC_API_BASE_URL: https://devngn.ai
           # Updater signing — see DEVOPS.md for key generation instructions.
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}

@@ -271,3 +271,177 @@ installable web app), updates are delivered via the Service Worker's cache
 update mechanism — no `latest.json` is involved. The Tauri desktop app uses
 the separate updater plugin described in §4. Both update paths are triggered by
 publishing new release assets or deploying the SPA to its hosting origin.
+
+---
+
+## 7. Wellness API — Netlify Site + Functions
+
+Production now ships the Wellness API from the `apps/site` Netlify project.
+Released desktop builds call `https://devngn.ai`; there is no separate Azure
+production API origin. The ASP.NET Core service at
+`services/Devngn.Wellness.Api` remains the reference/local implementation.
+
+### 7a. Origins and release target
+
+| Context                                | Base URL                       | Notes                                                                                                                                                              |
+| -------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Production site + released desktop app | `https://devngn.ai`            | `/v1/*` is claimed in-source by `apps/site/netlify/functions/v1.ts`                                                                                                |
+| Local Netlify parity                   | `http://localhost:8888`        | Run `netlify dev --filter @devngn/site` from the repo root                                                                                                         |
+| Local desktop/Nuxt app                 | `https://devngn.ai` by default | Override `NUXT_PUBLIC_API_BASE_URL` to target `http://localhost:8888` (Netlify parity) or `https://localhost:7107` (.NET reference API) before local app dev/build |
+| .NET reference API                     | `https://localhost:7107`       | Local/self-hosted reference only, not production                                                                                                                   |
+
+The Tauri `connect-src` policy already allows the production and documented
+local development origins above.
+
+### 7b. Netlify project settings
+
+Set the **Package directory** to `apps/site` in the Netlify UI and leave the
+**Base directory** unset so builds run from the repository root. With that
+monorepo layout, all configured paths must stay repo-root-relative.
+
+| Setting                 | Value                                     | Where set                           |
+| ----------------------- | ----------------------------------------- | ----------------------------------- |
+| Package directory       | `apps/site`                               | Netlify UI → Build settings         |
+| Base directory          | unset (`/`)                               | Netlify UI                          |
+| Build command           | `pnpm --filter @devngn/site... build`     | `apps/site/netlify.toml`            |
+| Publish directory       | `apps/site/dist`                          | `apps/site/netlify.toml`            |
+| Functions directory     | `apps/site/netlify/functions`             | `apps/site/netlify.toml`            |
+| Functions bundler       | `esbuild`                                 | `apps/site/netlify.toml`            |
+| `/v1/*` route ownership | `export const config = { path: "/v1/*" }` | `apps/site/netlify/functions/v1.ts` |
+| Migrations directory    | `apps/site/netlify/database/migrations`   | Netlify Database convention         |
+
+### 7c. Runtime environment variables
+
+Set these for the `apps/site` Netlify project. `apps/site/.env.example` is the
+source-of-truth template for canonical names and placeholder values.
+
+| Variable                            | Required | Purpose                                                                                     |
+| ----------------------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `GITHUB_OAUTH_CLIENT_ID`            | Yes      | GitHub OAuth app client ID for the web flow                                                 |
+| `GITHUB_OAUTH_CLIENT_SECRET`        | Yes      | GitHub OAuth app client secret for the web flow                                             |
+| `GITHUB_DEVICE_OAUTH_CLIENT_ID`     | No       | Separate GitHub OAuth app client ID for device flow; falls back to `GITHUB_OAUTH_CLIENT_ID` |
+| `JWT_SECRET`                        | Yes      | Base64 signing key that decodes to at least 32 bytes                                        |
+| `JWT_ISSUER`                        | Yes      | Production issuer, `https://devngn.ai`                                                      |
+| `JWT_AUDIENCE`                      | Yes      | Audience claim for Wellness JWT validation                                                  |
+| `JWT_ACCESS_TOKEN_LIFETIME_SECONDS` | No       | Access-token TTL override; defaults to `3600`                                               |
+| `JWT_KEY_ID`                        | No       | JWT key id; defaults to `v1`                                                                |
+| `ALLOWED_ORIGINS`                   | No       | Extra exact origins to append to the built-in allow-list                                    |
+| `NETLIFY_DB_URL`                    | Yes      | Auto-injected by Netlify Database in linked environments                                    |
+| `GOOGLE_CALENDAR_CLIENT_ID`         | No       | Google Calendar OAuth client ID                                                             |
+| `GOOGLE_CALENDAR_CLIENT_SECRET`     | No       | Google Calendar OAuth client secret                                                         |
+| `GOOGLE_CALENDAR_REDIRECT_URI`      | No       | Google Calendar callback URL                                                                |
+| `MICROSOFT_CALENDAR_CLIENT_ID`      | No       | Microsoft Calendar OAuth client ID                                                          |
+| `MICROSOFT_CALENDAR_CLIENT_SECRET`  | No       | Microsoft Calendar OAuth client secret                                                      |
+| `MICROSOFT_CALENDAR_REDIRECT_URI`   | No       | Microsoft Calendar callback URL                                                             |
+| `MICROSOFT_CALENDAR_TENANT_ID`      | No       | Microsoft Entra tenant; defaults to `common`                                                |
+
+Legacy `WELLNESS_JWT_*` and `WELLNESS_ALLOWED_ORIGINS` aliases remain accepted
+by the current functions package for compatibility, but new production config
+should prefer the canonical names above.
+
+### 7d. CORS allow-list
+
+The functions package ships with this built-in exact allow-list:
+
+```text
+https://devngn.ai
+http://tauri.localhost
+https://tauri.localhost
+tauri://localhost
+```
+
+Use `ALLOWED_ORIGINS` only to append more exact origins, such as local browser
+frontends or an authenticated deploy preview:
+
+```text
+http://localhost:3000
+http://localhost:4321
+http://localhost:8888
+https://deploy-preview-<n>--...netlify.app
+```
+
+Wildcards are ignored; use explicit origins only.
+
+### 7e. Disposable pre-v1 database baseline
+
+Netlify Database only auto-discovers SQL from:
+
+```text
+apps/site/netlify/database/migrations/
+```
+
+Until the first stable release, keep exactly one editable schema/seed artifact:
+
+```text
+apps/site/netlify/database/migrations/00000000000000_wellness_baseline.sql
+```
+
+When the pre-v1 schema changes, edit that file in place and reset or reprovision
+the affected database before applying the baseline. Do not add timestamped
+migrations or maintain upgrade history while all data remains disposable.
+Functions must never create or alter schema during a request.
+
+Useful CLI commands from the repo root:
+
+```bash
+netlify database status --filter @devngn/site
+netlify database migrations apply --filter @devngn/site
+```
+
+`migrations apply` targets the local development database. Production and deploy
+preview databases apply the baseline automatically during deployment. Before the
+first stable release needs persistent in-place upgrades, replace this reset policy
+with normal forward-only migrations.
+
+### 7f. Local dev and config validation
+
+Run Netlify CLI commands from the repository root so `--filter @devngn/site`
+matches the same package-directory resolution used in production:
+
+```bash
+pnpm install --frozen-lockfile
+netlify link --filter @devngn/site
+netlify build --filter @devngn/site --dry --offline
+netlify env:list --filter @devngn/site
+netlify database status --filter @devngn/site
+netlify dev --filter @devngn/site
+```
+
+- `netlify build --dry --offline` validates the monorepo config without
+  deploying.
+- Use `netlify env:set` / `netlify env:list` or the Netlify UI for linked
+  runtime variables; the current CLI no longer exposes `env:pull`.
+- Copy `apps/site/.env.example` to `apps/site/.env.local` only for direct
+  `pnpm dev:site` / `astro dev` workflows.
+
+### 7g. Free-plan / credit caveats
+
+Current Netlify pricing is credit-based across all plans. Important
+production-shaping caveats from the official pricing and Database billing docs:
+
+- Free plan: **$0** with **300 credits/month**
+- Production deploys cost **15 credits each**
+- Netlify Database is available on credit-based plans, including Free
+- Free-plan database limits per account/database include **3 databases**,
+  **20 branches**, **48 compute units per billing period**, and **5 GB** each
+  for writes, bandwidth, and storage
+
+That is enough for low-volume development and previews, but sustained production
+traffic or always-on database usage will burn through the free allocation
+quickly.
+
+### 7h. Release cutover checklist
+
+1. Link the Netlify project to this repo and set **Package directory**
+   = `apps/site`; leave **Base directory** unset.
+2. Provision Netlify Database for the site and keep migrations under
+   `apps/site/netlify/database/migrations/`.
+3. Set the required GitHub/JWT/database variables and any optional calendar
+   provider variables needed for this environment.
+4. Deploy the site and verify `https://devngn.ai/v1/hello` plus the GitHub web
+   flow and any schedule callback flows you enabled.
+5. Cut the desktop release with `app-release.yml`; tag pushes default to
+   `https://devngn.ai`, while manual `workflow_dispatch` runs can override the
+   API base URL for smoke drills.
+6. Publish the GitHub release draft, then rebuild/redeploy the Netlify site if
+   the marketing download page needs the newly published release assets.

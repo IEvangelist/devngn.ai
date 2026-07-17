@@ -29,6 +29,7 @@ function makePrompt(
     animationProvider: "lottie",
     animationAssetId: "asset-1",
     licenseAttribution: "CC0",
+    steps: [],
     gapStartUtc: "2026-06-02T15:00:00Z",
     gapEndUtc: "2026-06-02T15:30:00Z",
     deliveredAt: "2026-06-02T15:00:00Z",

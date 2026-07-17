@@ -22,7 +22,7 @@ export default defineNuxtConfig({
   css: ["~/assets/css/retro.css"],
   runtimeConfig: {
     public: {
-      apiBaseUrl: "https://localhost:7107",
+      apiBaseUrl: "https://devngn.ai",
       appChannel: "app",
       appVersion: "0.0.1-alpha.420",
     },
@@ -37,7 +37,12 @@ export default defineNuxtConfig({
       { code: "de", language: "de-DE", file: "de.json", name: "Deutsch" },
       { code: "pt", language: "pt-BR", file: "pt.json", name: "Português" },
       { code: "ja", language: "ja-JP", file: "ja.json", name: "日本語" },
-      { code: "zh-Hans", language: "zh-Hans", file: "zh-Hans.json", name: "简体中文" },
+      {
+        code: "zh-Hans",
+        language: "zh-Hans",
+        file: "zh-Hans.json",
+        name: "简体中文",
+      },
     ],
   },
   typescript: {

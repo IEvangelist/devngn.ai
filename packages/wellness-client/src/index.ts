@@ -4,10 +4,11 @@
 
 /**
  * Dependency-free TypeScript client for the devngn.ai Wellness API, shared by the
- * VS Code extension (`apps/vscode`) and the CLI daemon (`packages/cli`). It owns
- * the Server-Sent Events prompt subscription plus the prompt-lifecycle and GitHub
- * device-flow REST calls. All typing flows from the generated `@devngn/wellness-types`
- * package, which is imported as types only so nothing here pulls a runtime dependency.
+ * VS Code extension (`apps/vscode`), the CLI daemon (`packages/cli`), and the Nuxt
+ * app (`apps/app`). It owns the polling-based prompt subscription (`POST
+ * /v1/prompts/next`) plus the prompt-lifecycle and GitHub device-flow REST calls.
+ * All typing flows from the generated `@devngn/wellness-types` package, which is
+ * imported as types only so nothing here pulls a runtime dependency.
  */
 
 export { SseDecoder, type SseEvent } from "./sse.js";

@@ -566,12 +566,12 @@ program
     );
   });
 
-const DEFAULT_WELLNESS_API_URL = "http://localhost:5000";
+const DEFAULT_WELLNESS_API_URL = "https://devngn.ai";
 
 const wellnessCommand = program
   .command("wellness")
   .description(
-    "Stream movement-break prompts and raise OS notifications when your schedule opens up.",
+    "Poll for movement-break prompts and raise OS notifications when your schedule opens up.",
   );
 
 wellnessCommand

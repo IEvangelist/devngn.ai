@@ -75,6 +75,20 @@ Run the site locally:
 pnpm dev:site
 ```
 
+For Netlify-parity local development of the site and Wellness API, run from the
+repo root:
+
+```sh
+netlify link --filter @devngn/site
+netlify build --filter @devngn/site --dry --offline
+netlify dev --filter @devngn/site
+```
+
+Production `/v1/*` traffic is served by the Netlify-hosted `apps/site`
+project at `https://devngn.ai`. Configure runtime variables from
+`apps/site/.env.example`. The ASP.NET Core service under
+`services/Devngn.Wellness.Api` remains the local/reference implementation.
+
 Run the experimental comms AppHost:
 
 ```sh

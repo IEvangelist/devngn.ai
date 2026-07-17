@@ -2,7 +2,7 @@
   "name": "@devngn/wellness-client",
   "version": "0.0.0",
   "private": true,
-  "description": "Dependency-free fetch/SSE client for the devngn.ai Wellness API, shared by the VS Code extension and CLI daemon.",
+  "description": "Dependency-free fetch/polling client for the devngn.ai Wellness API, shared by the VS Code extension and CLI daemon.",
   "type": "module",
   "exports": {
     ".": {
