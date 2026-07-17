@@ -1,10 +1,10 @@
 [build]
   command = "pnpm --filter @devngn/site... build"
-  publish = "apps/site/dist"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "24"
 
 [functions]
-  directory = "apps/site/netlify/functions"
+  directory = "netlify/functions"
   node_bundler = "esbuild"

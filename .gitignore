@@ -30,3 +30,6 @@ obj/
 
 # playwright-cli scratch (snapshots, screenshots, console/network logs)
 .playwright-cli/
+
+# Local Netlify folder
+.netlify

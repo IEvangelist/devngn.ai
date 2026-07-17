@@ -295,17 +295,17 @@ local development origins above.
 
 ### 7b. Netlify project settings
 
-Set the **Package directory** to `apps/site` in the Netlify UI and leave the
-**Base directory** unset so builds run from the repository root. With that
-monorepo layout, all configured paths must stay repo-root-relative.
+Set the **Base directory** to `apps/site` in the Netlify UI and leave the
+**Package directory** unset. Paths in `apps/site/netlify.toml` are relative to
+that base directory.
 
 | Setting                 | Value                                     | Where set                           |
 | ----------------------- | ----------------------------------------- | ----------------------------------- |
-| Package directory       | `apps/site`                               | Netlify UI → Build settings         |
-| Base directory          | unset (`/`)                               | Netlify UI                          |
+| Package directory       | unset                                     | Netlify UI                          |
+| Base directory          | `apps/site`                               | Netlify UI → Build settings         |
 | Build command           | `pnpm --filter @devngn/site... build`     | `apps/site/netlify.toml`            |
-| Publish directory       | `apps/site/dist`                          | `apps/site/netlify.toml`            |
-| Functions directory     | `apps/site/netlify/functions`             | `apps/site/netlify.toml`            |
+| Publish directory       | `dist`                                    | `apps/site/netlify.toml`            |
+| Functions directory     | `netlify/functions`                       | `apps/site/netlify.toml`            |
 | Functions bundler       | `esbuild`                                 | `apps/site/netlify.toml`            |
 | `/v1/*` route ownership | `export const config = { path: "/v1/*" }` | `apps/site/netlify/functions/v1.ts` |
 | Migrations directory    | `apps/site/netlify/database/migrations`   | Netlify Database convention         |
@@ -432,8 +432,8 @@ quickly.
 
 ### 7h. Release cutover checklist
 
-1. Link the Netlify project to this repo and set **Package directory**
-   = `apps/site`; leave **Base directory** unset.
+1. Link the Netlify project to this repo and set **Base directory**
+   = `apps/site`; leave **Package directory** unset.
 2. Provision Netlify Database for the site and keep migrations under
    `apps/site/netlify/database/migrations/`.
 3. Set the required GitHub/JWT/database variables and any optional calendar
