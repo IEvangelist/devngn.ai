@@ -7,23 +7,13 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.Options;
-using Npgsql;
 
 namespace Devngn.Wellness.Api.Crypto;
 
 public static class WellnessDataProtectionExtensions
 {
     /// <summary>
-    /// Marker key the wellness service uses to register its dedicated
-    /// <see cref="NpgsqlDataSource"/> for the DataProtection key ring. Using a keyed
-    /// service avoids colliding with Aspire's own data source registration, which is
-    /// optimized for EF Core and isn't guaranteed to be exposed as the default
-    /// <see cref="NpgsqlDataSource"/> singleton.
-    /// </summary>
-    public const string DataProtectionDataSourceKey = "wellness.dataprotection";
-
-    /// <summary>
-    /// Wires the wellness service's at-rest token encryption: Postgres-backed
+    /// Wires the wellness service's at-rest token encryption: SQL Server-backed
     /// DataProtection key ring + the <see cref="IRefreshTokenProtector"/> service used
     /// by the schedule-source endpoints. Idempotent — safe to call once during
     /// composition.
@@ -37,24 +27,15 @@ public static class WellnessDataProtectionExtensions
             .Bind(configuration.GetSection(WellnessDataProtectionOptions.SectionName))
             .ValidateOnStart();
 
-        // Resolve the wellness DB connection string from the same configuration key
-        // the EF Core context uses. Build a dedicated NpgsqlDataSource (keyed) so the
-        // XmlRepository has a stable singleton-safe data source independent of any
-        // Aspire keyed registration that the DbContext path uses internally.
-        services.AddKeyedSingleton(DataProtectionDataSourceKey, (_, _) =>
+        services.AddSingleton<IXmlRepository>(sp =>
         {
             var connectionString = configuration.GetConnectionString("wellnessdb")
                 ?? throw new InvalidOperationException(
                     "ConnectionStrings:wellnessdb must be configured for the DataProtection key ring.");
-            return NpgsqlDataSource.Create(connectionString);
+            return new SqlServerXmlRepository(
+                connectionString,
+                sp.GetRequiredService<ILogger<SqlServerXmlRepository>>());
         });
-
-        // The IXmlRepository implementation is singleton-safe because it talks to its
-        // dedicated NpgsqlDataSource directly. Resolving from DataProtection's own
-        // singleton scope therefore avoids the scoped-DbContext trap.
-        services.AddSingleton<IXmlRepository>(sp => new PostgresXmlRepository(
-            sp.GetRequiredKeyedService<NpgsqlDataSource>(DataProtectionDataSourceKey),
-            sp.GetRequiredService<ILogger<PostgresXmlRepository>>()));
 
         services.AddSingleton<IRefreshTokenProtector, RefreshTokenProtector>();
 
@@ -68,7 +49,7 @@ public static class WellnessDataProtectionExtensions
 
         // Optional certificate wrapping. Configuring this turns the in-DB key ring into
         // PFX-wrapped XML, which is the recommended posture for production deployments
-        // where stolen Postgres backups must not yield decryptable refresh tokens.
+        // where stolen database backups must not yield decryptable refresh tokens.
         if (!string.IsNullOrWhiteSpace(bootstrapOptions.CertificatePath))
         {
             var cert = X509CertificateLoader.LoadPkcs12FromFile(
@@ -93,4 +74,3 @@ public static class WellnessDataProtectionExtensions
         return services;
     }
 }
-

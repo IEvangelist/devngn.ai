@@ -17,11 +17,11 @@ namespace Devngn.Wellness.Api.Tests.Social;
 /// Integration tests for the social endpoints (<c>/v1/social/*</c>).
 /// Covers auth enforcement (401/403), profanity sanitization via a stubbed
 /// <see cref="IProfanityService"/>, and consent gating.
-/// Requires Docker/Postgres.
+/// Requires Docker/SQL Server.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class SocialEndpointTests(PostgresContainerFixture postgres)
+public sealed class SocialEndpointTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory(Action<IServiceCollection>? configureServices = null) =>
         new(postgres.ConnectionString, configureServices: configureServices);

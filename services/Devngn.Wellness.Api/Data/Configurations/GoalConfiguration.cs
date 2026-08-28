@@ -23,7 +23,7 @@ internal sealed class GoalConfiguration : IEntityTypeConfiguration<Goal>
         b.HasOne(x => x.User)
             .WithMany(x => x.Goals)
             .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         // See ProfileConfiguration for the rationale on this second FK: it enforces
         // "no wellness data without a current consent record" at the database level,

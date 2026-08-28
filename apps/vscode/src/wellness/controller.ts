@@ -16,7 +16,7 @@ import { runDeviceFlowSignIn } from "./signIn.js";
 import { openPromptPreview, presentPrompt } from "./ui.js";
 
 const SECRET_KEY = "devngn.wellness.session";
-const DEFAULT_API_URL = "https://devngn.ai";
+const DEFAULT_API_URL = "https://api.devngn.ai";
 /** How long a prompt id is suppressed from re-display (reconnect dedupe). */
 const DEDUPE_TTL_MS = 10 * 60 * 1000;
 

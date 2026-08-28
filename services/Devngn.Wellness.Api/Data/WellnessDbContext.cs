@@ -9,7 +9,7 @@ namespace Devngn.Wellness.Api.Data;
 
 /// <summary>
 /// EF Core <see cref="DbContext"/> for the wellness service. All tables live under the
-/// <c>wellness</c> Postgres schema and snake_case naming is left to per-entity config.
+/// <c>wellness</c> SQL schema and snake_case naming is left to per-entity config.
 /// </summary>
 public sealed class WellnessDbContext(DbContextOptions<WellnessDbContext> options) : DbContext(options)
 {

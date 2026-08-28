@@ -18,11 +18,11 @@ namespace Devngn.Wellness.Api.Tests.Gamification;
 /// <summary>
 /// Integration tests for badge and milestone unlock behaviour in
 /// <see cref="IGamificationService"/> and the listing endpoints.
-/// Requires Docker/Postgres (badge/milestone definitions are seeded at startup).
+/// Requires Docker/SQL Server (badge/milestone definitions are seeded at startup).
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class GamificationBadgeMilestoneTests(PostgresContainerFixture postgres)
+public sealed class GamificationBadgeMilestoneTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory() => new(postgres.ConnectionString);
 

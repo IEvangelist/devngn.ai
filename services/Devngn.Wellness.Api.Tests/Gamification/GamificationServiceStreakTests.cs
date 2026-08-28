@@ -15,11 +15,11 @@ namespace Devngn.Wellness.Api.Tests.Gamification;
 /// <summary>
 /// Integration tests for streak-tracking logic in <see cref="IGamificationService"/>.
 /// These tests call the service directly via a DI scope rather than via HTTP so the
-/// assertions are precise and fast. Docker/Postgres is required.
+/// assertions are precise and fast. Docker/SQL Server is required.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class GamificationServiceStreakTests(PostgresContainerFixture postgres)
+public sealed class GamificationServiceStreakTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory() => new(postgres.ConnectionString);
 

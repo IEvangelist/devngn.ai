@@ -24,9 +24,9 @@ namespace Devngn.Wellness.Api.Tests.Schedule.Gaps;
 /// remains unaffected. The pure engine is unit-tested separately in
 /// <c>GapDetectorTests</c>.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class GapEndpointTests(PostgresContainerFixture postgres)
+public sealed class GapEndpointTests(SqlServerContainerFixture postgres)
 {
     /// <summary>
     /// Frozen "now" — one day before every test query window — so ClipByNow never

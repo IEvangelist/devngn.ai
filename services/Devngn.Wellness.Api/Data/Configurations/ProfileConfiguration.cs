@@ -29,7 +29,7 @@ internal sealed class ProfileConfiguration : IEntityTypeConfiguration<Profile>
             .WithOne(x => x.Profile)
             .HasForeignKey<Profile>(x => x.UserId)
             .HasPrincipalKey<User>(x => x.Id)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         // Second FK on the same user_id column points at ConsentRecord.UserId.
         // Deleting a ConsentRecord (consent revocation) cascades to wipe the Profile,

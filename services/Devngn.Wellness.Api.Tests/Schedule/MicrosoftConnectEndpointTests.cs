@@ -20,9 +20,9 @@ using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Schedule;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class MicrosoftConnectEndpointTests(PostgresContainerFixture postgres)
+public sealed class MicrosoftConnectEndpointTests(SqlServerContainerFixture postgres)
 {
     private static readonly WebApplicationFactoryClientOptions NoRedirect = new() { AllowAutoRedirect = false };
 

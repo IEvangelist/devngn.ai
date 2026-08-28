@@ -66,9 +66,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // Installed builds use the Netlify API by default. Local API development
+      // Installed builds use the Azure-hosted API by default. Local API development
       // can opt in with NUXT_PUBLIC_API_BASE_URL.
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? "https://devngn.ai",
+      apiBaseUrl:
+        process.env.NUXT_PUBLIC_API_BASE_URL ?? "https://api.devngn.ai",
       appChannel: process.env.NUXT_PUBLIC_APP_CHANNEL ?? "app",
       // Displayed in Settings → About. In the desktop build the installed
       // binary's version (getVersion()) takes precedence at runtime.

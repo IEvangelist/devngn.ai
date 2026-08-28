@@ -26,7 +26,7 @@ internal sealed class ScheduleSourceConfiguration : IEntityTypeConfiguration<Sch
         b.HasOne(x => x.User)
             .WithMany(x => x.ScheduleSources)
             .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         // Same DB-level consent enforcement as Profile/Goal/Equipment (see
         // ProfileConfiguration). Revoking consent therefore cascade-deletes a user's

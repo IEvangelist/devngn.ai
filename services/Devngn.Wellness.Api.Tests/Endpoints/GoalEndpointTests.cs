@@ -10,9 +10,9 @@ using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Endpoints;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class GoalEndpointTests(PostgresContainerFixture postgres)
+public sealed class GoalEndpointTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory() => new(postgres.ConnectionString);
 

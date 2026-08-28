@@ -17,7 +17,8 @@ internal sealed class DesignTimeWellnessDbContextFactory : IDesignTimeDbContextF
     public WellnessDbContext CreateDbContext(string[] args)
     {
         var builder = new DbContextOptionsBuilder<WellnessDbContext>()
-            .UseNpgsql("Host=localhost;Port=5432;Database=wellnessdb;Username=designtime;Password=designtime");
+            .UseSqlServer(
+                "Server=localhost,1433;Database=wellnessdb;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True");
 
         return new WellnessDbContext(builder.Options);
     }

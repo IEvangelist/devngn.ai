@@ -8,10 +8,10 @@ namespace Devngn.Wellness.Api.Crypto;
 /// Configuration for the wellness service's at-rest token encryption.
 /// </summary>
 /// <remarks>
-/// By default the DataProtection key ring lives in the same Postgres database as the
+/// By default the DataProtection key ring lives in the same SQL database as the
 /// protected refresh tokens. That is sufficient to keep tokens off a filesystem dump
 /// and out of replicas that don't have the key table, but it is <b>not</b> a defense
-/// against an attacker who has full <c>postgres</c> read access — they would steal
+/// against an attacker who has full database read access — they would steal
 /// both the keys and the ciphertexts. For production deployments, configure
 /// <see cref="CertificatePath"/> (or <see cref="CertificateThumbprint"/>) so the key
 /// ring is wrapped by an X.509 certificate that lives outside the database.

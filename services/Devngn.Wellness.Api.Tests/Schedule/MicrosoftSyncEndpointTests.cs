@@ -17,9 +17,9 @@ using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Schedule;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class MicrosoftSyncEndpointTests(PostgresContainerFixture postgres)
+public sealed class MicrosoftSyncEndpointTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory(FakeMicrosoftCalendarClient fake) =>
         new(postgres.ConnectionString, configureServices: services =>

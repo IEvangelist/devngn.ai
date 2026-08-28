@@ -45,7 +45,7 @@ public sealed class Activity
     /// <summary>
     /// Optional ordered instruction sequence. Empty for simple activities that a single
     /// <see cref="Description"/> sentence covers; populated for guided moves so the client
-    /// can render holds, reps, and sets. Persisted as a jsonb column.
+    /// can render holds, reps, and sets. Persisted as JSON.
     /// </summary>
     public ActivityStep[] Steps { get; set; } = [];
 

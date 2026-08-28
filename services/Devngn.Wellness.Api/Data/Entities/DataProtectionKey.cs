@@ -5,7 +5,7 @@
 namespace Devngn.Wellness.Api.Data.Entities;
 
 /// <summary>
-/// ASP.NET Core DataProtection key-ring element persisted to Postgres. The wellness
+/// ASP.NET Core DataProtection key-ring element persisted to SQL Server. The wellness
 /// service writes one row per generated key so refresh-token encryption survives
 /// restarts and rolling deploys without resorting to filesystem persistence.
 /// </summary>
@@ -16,7 +16,7 @@ namespace Devngn.Wellness.Api.Data.Entities;
 /// with a certificate or external KMS by setting
 /// <c>Auth:DataProtection:CertificateThumbprint</c> (or its KMS equivalent) so
 /// stolen database backups alone are not sufficient to decrypt tokens. For local
-/// development and OSS self-hosters, cleartext-in-Postgres is the default.
+/// development and OSS self-hosters, cleartext-in-database is the default.
 /// </remarks>
 public sealed class DataProtectionKey
 {

@@ -20,14 +20,14 @@ internal sealed class ScheduleEventConfiguration : IEntityTypeConfiguration<Sche
         b.HasOne(x => x.User)
             .WithMany(x => x.ScheduleEvents)
             .HasForeignKey(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         // Same DB-level consent enforcement as the other wellness tables.
         b.HasOne<ConsentRecord>()
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .HasPrincipalKey(nameof(ConsentRecord.UserId))
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         // Composite FK to ScheduleSource(Id, UserId): the DB refuses any event whose
         // SourceId belongs to a different user than UserId. Subsumes the legacy
@@ -47,6 +47,6 @@ internal sealed class ScheduleEventConfiguration : IEntityTypeConfiguration<Sche
         // but direct-push events from CLI/extension/user use this for safe retries.
         b.HasIndex(x => new { x.SourceId, x.ExternalId })
             .IsUnique()
-            .HasFilter("\"ExternalId\" IS NOT NULL");
+            .HasFilter("[ExternalId] IS NOT NULL");
     }
 }

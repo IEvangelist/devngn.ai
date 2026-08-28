@@ -15,11 +15,11 @@ namespace Devngn.Wellness.Api.Tests.Gamification;
 /// Endpoint auth tests for the gamification group (<c>/v1/gamification/*</c>).
 /// Verifies 401 when anonymous, 403 when authenticated but without consent, and that
 /// the leaderboard respects the <c>SocialProfile.IsPublic</c> flag.
-/// Requires Docker/Postgres.
+/// Requires Docker/SQL Server.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class GamificationAuthTests(PostgresContainerFixture postgres)
+public sealed class GamificationAuthTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory() => new(postgres.ConnectionString);
 

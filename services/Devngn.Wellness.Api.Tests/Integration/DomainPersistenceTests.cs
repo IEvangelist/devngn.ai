@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: MIT
 
 using Devngn.Wellness.Api.Data.Entities;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Integration;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class DomainPersistenceTests(PostgresContainerFixture fixture)
+public sealed class DomainPersistenceTests(SqlServerContainerFixture fixture)
 {
     [Fact]
     public async Task User_with_consent_profile_goal_equipment_and_schedule_roundtrips()
@@ -225,7 +225,7 @@ public sealed class DomainPersistenceTests(PostgresContainerFixture fixture)
     [Fact]
     public async Task ScheduleEvent_schema_does_not_contain_title_or_body_columns()
     {
-        await using var conn = new NpgsqlConnection(fixture.ConnectionString);
+        await using var conn = new SqlConnection(fixture.ConnectionString);
         await conn.OpenAsync();
         await using var cmd = conn.CreateCommand();
         cmd.CommandText =

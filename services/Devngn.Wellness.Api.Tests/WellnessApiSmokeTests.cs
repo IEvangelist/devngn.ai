@@ -19,7 +19,7 @@ namespace Devngn.Wellness.Api.Tests;
 
 /// <summary>
 /// WebApplicationFactory smoke tests. The DbContext is registered but never queried by these
-/// endpoints, so a placeholder connection string is sufficient and no Postgres is required.
+/// endpoints, so a placeholder connection string is sufficient and no SQL Server is required.
 /// Real database integration tests using Testcontainers land in the domain milestone.
 /// </summary>
 public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.Factory>
@@ -76,10 +76,10 @@ public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    // Aspire's AddNpgsqlDbContext requires the connection string at registration
+                    // Aspire's AddSqlServerDbContext requires the connection string at registration
                     // time but does not connect until first query, so a placeholder is sufficient
                     // for endpoints that don't hit the database.
-                    ["ConnectionStrings:wellnessdb"] = "Host=localhost;Port=5432;Database=test;Username=test;Password=test",
+                    ["ConnectionStrings:wellnessdb"] = "Server=localhost,1433;Database=test;User Id=sa;Password=Your_password123;Encrypt=False;TrustServerCertificate=True",
                     // AddWellnessAuth validates options at startup; provide test values so the
                     // app boots even though these smoke tests never exercise the auth endpoints.
                     ["Auth:GitHub:ClientId"] = "test-client-id",
@@ -99,11 +99,11 @@ public sealed class WellnessApiSmokeTests : IClassFixture<WellnessApiSmokeTests.
                 });
             });
 
-            // Phase 9 added an ActivityCatalogSeeder hosted service that touches Postgres
+            // Phase 9 added an ActivityCatalogSeeder hosted service that touches SQL Server
             // on startup. These smoke tests intentionally have no real database, so remove
             // just that one hosted service registration (leave any other IHostedService
             // entries alone — Aspire/OTel may register their own) so the host boots and
-            // we can hit the /alive, /hello, and /openapi endpoints without Postgres.
+            // we can hit the /alive, /hello, and /openapi endpoints without SQL Server.
             builder.ConfigureTestServices(services =>
             {
                 foreach (var descriptor in services.Where(d =>

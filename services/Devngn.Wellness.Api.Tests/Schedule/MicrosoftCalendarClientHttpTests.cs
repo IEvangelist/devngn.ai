@@ -14,7 +14,7 @@ namespace Devngn.Wellness.Api.Tests.Schedule;
 
 /// <summary>
 /// Unit tests for the wire-level behavior of <see cref="MicrosoftCalendarClient"/> —
-/// no Postgres, no TestServer. Each test wires the client to a programmable HTTP
+/// no SQL Server, no TestServer. Each test wires the client to a programmable HTTP
 /// message handler and asserts on the parsed outcome / pagination / error mapping.
 /// These tests directly exercise the rubber-duck blocking findings (#1, #2, #3, #7).
 /// </summary>

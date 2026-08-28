@@ -59,7 +59,7 @@
       "properties": {
         "devngn.wellness.apiUrl": {
           "type": "string",
-          "default": "https://devngn.ai",
+          "default": "https://api.devngn.ai",
           "description": "Base URL of the devngn.ai Wellness API."
         },
         "devngn.wellness.autoStart": {

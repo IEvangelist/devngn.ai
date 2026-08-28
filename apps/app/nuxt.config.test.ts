@@ -22,7 +22,7 @@ export default defineNuxtConfig({
   css: ["~/assets/css/retro.css"],
   runtimeConfig: {
     public: {
-      apiBaseUrl: "https://devngn.ai",
+      apiBaseUrl: "https://api.devngn.ai",
       appChannel: "app",
       appVersion: "0.0.1-alpha.420",
     },

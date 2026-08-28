@@ -75,8 +75,7 @@ Run the site locally:
 pnpm dev:site
 ```
 
-For Netlify-parity local development of the site and Wellness API, run from the
-repo root:
+For Netlify-parity local development of the site, run from the repo root:
 
 ```sh
 netlify link --filter @devngn/site
@@ -84,10 +83,17 @@ netlify build --filter @devngn/site --dry --offline
 netlify dev --filter @devngn/site
 ```
 
-Production `/v1/*` traffic is served by the Netlify-hosted `apps/site`
-project at `https://devngn.ai`. Configure runtime variables from
-`apps/site/.env.example`. The ASP.NET Core service under
-`services/Devngn.Wellness.Api` remains the local/reference implementation.
+Run the Wellness API, SQL Server, migration worker, and site together through
+Aspire:
+
+```sh
+pnpm --filter @devngn/wellness-apphost restore
+pnpm --filter @devngn/wellness-apphost start
+```
+
+Production `/v1/*` traffic is served by the ASP.NET Core API on Azure Container
+Apps at `https://api.devngn.ai`. Azure SQL uses the free serverless offer, the
+API scales to zero, and schema updates run through a Container App Job.
 
 Run the experimental comms AppHost:
 

@@ -13,9 +13,9 @@ using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Endpoints;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class ConsentEndpointTests(PostgresContainerFixture postgres)
+public sealed class ConsentEndpointTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory() => new(postgres.ConnectionString);
 

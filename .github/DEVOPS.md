@@ -274,74 +274,78 @@ publishing new release assets or deploying the SPA to its hosting origin.
 
 ---
 
-## 7. Wellness API — Netlify Site + Functions
+## 7. Wellness API — Azure Container Apps + Azure SQL
 
-Production now ships the Wellness API from the `apps/site` Netlify project.
-Released desktop builds call `https://devngn.ai`; there is no separate Azure
-production API origin. The ASP.NET Core service at
-`services/Devngn.Wellness.Api` remains the reference/local implementation.
+The marketing/docs site remains on Netlify at `https://devngn.ai`. Production
+Wellness API traffic is separate and targets `https://api.devngn.ai`.
 
-### 7a. Origins and release target
+| Context         | Base URL                 | Hosting                   |
+| --------------- | ------------------------ | ------------------------- |
+| Production API  | `https://api.devngn.ai`  | Azure Container Apps      |
+| Production site | `https://devngn.ai`      | Netlify                   |
+| Local API       | `https://localhost:7107` | Aspire + ASP.NET Core     |
+| Local site      | Aspire-assigned URL      | Aspire + Astro dev server |
 
-| Context                                | Base URL                       | Notes                                                                                                                                                              |
-| -------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Production site + released desktop app | `https://devngn.ai`            | `/v1/*` is claimed in-source by `apps/site/netlify/functions/v1.ts`                                                                                                |
-| Local Netlify parity                   | `http://localhost:8888`        | Run `netlify dev --filter @devngn/site` from the repo root                                                                                                         |
-| Local desktop/Nuxt app                 | `https://devngn.ai` by default | Override `NUXT_PUBLIC_API_BASE_URL` to target `http://localhost:8888` (Netlify parity) or `https://localhost:7107` (.NET reference API) before local app dev/build |
-| .NET reference API                     | `https://localhost:7107`       | Local/self-hosted reference only, not production                                                                                                                   |
+Released desktop builds, the VS Code extension, and the CLI default to the
+production API origin. The Tauri CSP permits both the site and API origins.
 
-The Tauri `connect-src` policy already allows the production and documented
-local development origins above.
+### 7a. Aspire deployment model
 
-### 7b. Netlify project settings
+`services/wellness-apphost/apphost.mts` is the deployment source of truth:
 
-Set the **Base directory** to `apps/site` in the Netlify UI and leave the
-**Package directory** unset. Paths in `apps/site/netlify.toml` are relative to
-that base directory.
+- Azure Container Apps consumption environment, without a deployed Aspire
+  dashboard.
+- Azure SQL Database using the lifetime free serverless offer by default:
+  `useFreeLimit: true`, `freeLimitExhaustionBehavior: AutoPause`, and
+  `GP_S_Gen5_2`.
+- `wellness-api` as a public Container App with `minReplicas: 0`.
+- `wellness-migrator` as a manual Container App Job.
+- Managed identities and database role assignments for both compute resources.
+- Azure Container Registry for deployment images.
 
-| Setting                 | Value                                     | Where set                           |
-| ----------------------- | ----------------------------------------- | ----------------------------------- |
-| Package directory       | unset                                     | Netlify UI                          |
-| Base directory          | `apps/site`                               | Netlify UI → Build settings         |
-| Build command           | `pnpm --filter @devngn/site... build`     | `apps/site/netlify.toml`            |
-| Publish directory       | `dist`                                    | `apps/site/netlify.toml`            |
-| Functions directory     | `netlify/functions`                       | `apps/site/netlify.toml`            |
-| Functions bundler       | `esbuild`                                 | `apps/site/netlify.toml`            |
-| `/v1/*` route ownership | `export const config = { path: "/v1/*" }` | `apps/site/netlify/functions/v1.ts` |
-| Migrations directory    | `apps/site/netlify/database/migrations`   | Netlify Database convention         |
+The SQL Server EF migration baseline lives under:
 
-### 7c. Runtime environment variables
+```text
+services/Devngn.Wellness.Api/Data/Migrations/
+```
 
-Set these for the `apps/site` Netlify project. `apps/site/.env.example` is the
-source-of-truth template for canonical names and placeholder values.
+Because there is no production data, the provider switch uses one fresh SQL
+Server baseline rather than attempting a PostgreSQL data migration.
 
-| Variable                            | Required | Purpose                                                                                     |
-| ----------------------------------- | -------- | ------------------------------------------------------------------------------------------- |
-| `GITHUB_OAUTH_CLIENT_ID`            | Yes      | GitHub OAuth app client ID for the web flow                                                 |
-| `GITHUB_OAUTH_CLIENT_SECRET`        | Yes      | GitHub OAuth app client secret for the web flow                                             |
-| `GITHUB_DEVICE_OAUTH_CLIENT_ID`     | No       | Separate GitHub OAuth app client ID for device flow; falls back to `GITHUB_OAUTH_CLIENT_ID` |
-| `JWT_SECRET`                        | Yes      | Base64 signing key that decodes to at least 32 bytes                                        |
-| `JWT_ISSUER`                        | Yes      | Production issuer, `https://devngn.ai`                                                      |
-| `JWT_AUDIENCE`                      | Yes      | Audience claim for Wellness JWT validation                                                  |
-| `JWT_ACCESS_TOKEN_LIFETIME_SECONDS` | No       | Access-token TTL override; defaults to `3600`                                               |
-| `JWT_KEY_ID`                        | No       | JWT key id; defaults to `v1`                                                                |
-| `ALLOWED_ORIGINS`                   | No       | Extra exact origins to append to the built-in allow-list                                    |
-| `NETLIFY_DB_URL`                    | Yes      | Auto-injected by Netlify Database in linked environments                                    |
-| `GOOGLE_CALENDAR_CLIENT_ID`         | No       | Google Calendar OAuth client ID                                                             |
-| `GOOGLE_CALENDAR_CLIENT_SECRET`     | No       | Google Calendar OAuth client secret                                                         |
-| `GOOGLE_CALENDAR_REDIRECT_URI`      | No       | Google Calendar callback URL                                                                |
-| `MICROSOFT_CALENDAR_CLIENT_ID`      | No       | Microsoft Calendar OAuth client ID                                                          |
-| `MICROSOFT_CALENDAR_CLIENT_SECRET`  | No       | Microsoft Calendar OAuth client secret                                                      |
-| `MICROSOFT_CALENDAR_REDIRECT_URI`   | No       | Microsoft Calendar callback URL                                                             |
-| `MICROSOFT_CALENDAR_TENANT_ID`      | No       | Microsoft Entra tenant; defaults to `common`                                                |
+### 7b. Personal Azure account guardrail
 
-Legacy `WELLNESS_JWT_*` and `WELLNESS_ALLOWED_ORIGINS` aliases remain accepted
-by the current functions package for compatibility, but new production config
-should prefer the canonical names above.
+Do not deploy this workload to a Microsoft development subscription. Before any
+future deployment, authenticate Azure CLI as `david.pine.7@gmail.com` and
+explicitly select the personal subscription:
 
-### 7d. CORS allow-list
+```powershell
+az login
+az account set --subscription <personal-subscription-id>
+az account show --query "{user:user.name,subscription:name,id:id,tenant:tenantId}"
+```
 
-The functions package ships with this built-in exact allow-list:
+Stop if the reported user or subscription is not the intended personal account.
+Do not commit a subscription ID, tenant ID, or credential.
+
+### 7c. Deployment inputs
+
+Supply these only to the `aspire deploy` process or a CI secret store:
+
+| Environment variable               | Secret | Purpose                        |
+| ---------------------------------- | ------ | ------------------------------ |
+| `Azure__SubscriptionId`            | No     | Personal Azure subscription    |
+| `Azure__Location`                  | No     | Azure region                   |
+| `Azure__ResourceGroup`             | No     | Dedicated resource group       |
+| `Parameters__github_client_id`     | Yes    | GitHub OAuth app client ID     |
+| `Parameters__github_client_secret` | Yes    | GitHub OAuth app client secret |
+| `Parameters__jwt_signing_key`      | Yes    | Base64 JWT signing key         |
+
+Calendar integrations remain disabled placeholders until real provider
+credentials are intentionally added.
+
+### 7d. Production CORS policy
+
+The API permits only these browser/webview origins in production:
 
 ```text
 https://devngn.ai
@@ -350,98 +354,58 @@ https://tauri.localhost
 tauri://localhost
 ```
 
-Use `ALLOWED_ORIGINS` only to append more exact origins, such as local browser
-frontends or an authenticated deploy preview:
+Development retains an allow-any-origin policy for local tooling. Authentication
+uses bearer tokens, not cross-origin cookies.
 
-```text
-http://localhost:3000
-http://localhost:4321
-http://localhost:8888
-https://deploy-preview-<n>--...netlify.app
-```
+### 7e. Local validation
 
-Wildcards are ignored; use explicit origins only.
+From the repository root:
 
-### 7e. Disposable pre-v1 database baseline
-
-Netlify Database only auto-discovers SQL from:
-
-```text
-apps/site/netlify/database/migrations/
-```
-
-Until the first stable release, keep exactly one editable schema/seed artifact:
-
-```text
-apps/site/netlify/database/migrations/00000000000000_wellness_baseline.sql
-```
-
-When the pre-v1 schema changes, edit that file in place and reset or reprovision
-the affected database before applying the baseline. Do not add timestamped
-migrations or maintain upgrade history while all data remains disposable.
-Functions must never create or alter schema during a request.
-
-Useful CLI commands from the repo root:
-
-```bash
-netlify database status --filter @devngn/site
-netlify database migrations apply --filter @devngn/site
-```
-
-`migrations apply` targets the local development database. Production and deploy
-preview databases apply the baseline automatically during deployment. Before the
-first stable release needs persistent in-place upgrades, replace this reset policy
-with normal forward-only migrations.
-
-### 7f. Local dev and config validation
-
-Run Netlify CLI commands from the repository root so `--filter @devngn/site`
-matches the same package-directory resolution used in production:
-
-```bash
+```powershell
 pnpm install --frozen-lockfile
-netlify link --filter @devngn/site
-netlify build --filter @devngn/site --dry --offline
-netlify env:list --filter @devngn/site
-netlify database status --filter @devngn/site
-netlify dev --filter @devngn/site
+pnpm --filter @devngn/wellness-apphost restore
+pnpm --filter @devngn/wellness-apphost start
 ```
 
-- `netlify build --dry --offline` validates the monorepo config without
-  deploying.
-- Use `netlify env:set` / `netlify env:list` or the Netlify UI for linked
-  runtime variables; the current CLI no longer exposes `env:pull`.
-- Copy `apps/site/.env.example` to `apps/site/.env.local` only for direct
-  `pnpm dev:site` / `astro dev` workflows.
+For a code-only Azure preview that does not provision resources:
 
-### 7g. Free-plan / credit caveats
+```powershell
+aspire deploy --apphost services/wellness-apphost/apphost.mts --list-steps
+aspire publish --apphost services/wellness-apphost/apphost.mts -o <scratch-path>
+```
 
-Current Netlify pricing is credit-based across all plans. Important
-production-shaping caveats from the official pricing and Database billing docs:
+The publish output must contain an Azure SQL free-offer database, a
+`Microsoft.App/jobs` migrator with a manual trigger, and `minReplicas: 0` on the
+API.
 
-- Free plan: **$0** with **300 credits/month**
-- Production deploys cost **15 credits each**
-- Netlify Database is available on credit-based plans, including Free
-- Free-plan database limits per account/database include **3 databases**,
-  **20 branches**, **48 compute units per billing period**, and **5 GB** each
-  for writes, bandwidth, and storage
+### 7f. Future deployment sequence
 
-That is enough for low-volume development and previews, but sustained production
-traffic or always-on database usage will burn through the free allocation
-quickly.
+Cloud provisioning requires explicit approval. When approved:
 
-### 7h. Release cutover checklist
+1. Confirm the personal Azure identity and subscription.
+2. Register `Microsoft.App`, `Microsoft.ContainerRegistry`, `Microsoft.Sql`,
+   `Microsoft.KeyVault`, and `Microsoft.ManagedIdentity` if needed.
+3. Run `aspire deploy` with the Azure settings and secret parameters above.
+4. Start the migration job once and require a successful completion before
+   sending API traffic:
 
-1. Link the Netlify project to this repo and set **Base directory**
-   = `apps/site`; leave **Package directory** unset.
-2. Provision Netlify Database for the site and keep migrations under
-   `apps/site/netlify/database/migrations/`.
-3. Set the required GitHub/JWT/database variables and any optional calendar
-   provider variables needed for this environment.
-4. Deploy the site and verify `https://devngn.ai/v1/hello` plus the GitHub web
-   flow and any schedule callback flows you enabled.
-5. Cut the desktop release with `app-release.yml`; tag pushes default to
-   `https://devngn.ai`, while manual `workflow_dispatch` runs can override the
-   API base URL for smoke drills.
-6. Publish the GitHub release draft, then rebuild/redeploy the Netlify site if
-   the marketing download page needs the newly published release assets.
+   ```powershell
+   az containerapp job start --name wellness-migrator --resource-group <resource-group>
+   ```
+
+5. Bind `api.devngn.ai` and its managed certificate to the new Container App,
+   then update DNS from the old deployment.
+6. Verify `/alive`, `/health`, `/v1/hello`, production CORS, and GitHub device
+   flow before releasing clients.
+
+### 7g. Netlify site settings
+
+Netlify now hosts only the Astro site and its site-specific API routes. It no
+longer provisions a Wellness database or owns `/v1/*`.
+
+| Setting                   | Value                                 |
+| ------------------------- | ------------------------------------- |
+| Base directory            | `apps/site`                           |
+| Build command             | `pnpm --filter @devngn/site... build` |
+| Publish directory         | `dist`                                |
+| Site environment template | `apps/site/.env.example`              |

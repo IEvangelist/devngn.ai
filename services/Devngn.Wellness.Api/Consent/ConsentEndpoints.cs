@@ -135,12 +135,24 @@ internal static class ConsentEndpoints
             return Results.Unauthorized();
         }
 
-        // FK cascade from ConsentRecord.UserId removes Profile, Goals, and Equipment in
-        // one round trip. ExecuteDelete sidesteps EF change tracking entirely.
-        await db.ConsentRecords
-            .Where(c => c.UserId == userId.Value)
-            .ExecuteDeleteAsync(ct);
+        // SQL Server cannot represent two cascade paths from ConsentRecord to follows.
+        // Remove both sides explicitly, then let the remaining consent cascades wipe
+        // all other wellness data.
+        var strategy = db.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+            await db.Follows
+                .Where(f => f.FollowerId == userId.Value || f.FolloweeId == userId.Value)
+                .ExecuteDeleteAsync(ct);
+
+            await db.ConsentRecords
+                .Where(c => c.UserId == userId.Value)
+                .ExecuteDeleteAsync(ct);
+
+            await transaction.CommitAsync(ct);
+        });
         return Results.NoContent();
     }
 }

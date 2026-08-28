@@ -19,6 +19,11 @@ internal sealed class ActivityConfiguration : IEntityTypeConfiguration<Activity>
         v => v.Aggregate(0, static (hash, step) => HashCode.Combine(hash, step)),
         v => v.ToArray());
 
+    private static readonly ValueComparer<string[]> EquipmentTagsComparer = new(
+        (a, b) => (a == null && b == null) || (a != null && b != null && a.SequenceEqual(b)),
+        v => v.Aggregate(0, static (hash, tag) => HashCode.Combine(hash, tag)),
+        v => v.ToArray());
+
     public void Configure(EntityTypeBuilder<Activity> b)
     {
         b.ToTable("activities");
@@ -33,13 +38,17 @@ internal sealed class ActivityConfiguration : IEntityTypeConfiguration<Activity>
         b.Property(x => x.AnimationAssetId).IsRequired().HasMaxLength(200);
         b.Property(x => x.LicenseAttribution).HasMaxLength(500);
 
-        // Npgsql maps string[] natively to PostgreSQL text[].
-        b.Property(x => x.EquipmentTags).HasColumnType("text[]");
+        var equipmentTags = b.Property(x => x.EquipmentTags)
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, StepsJson),
+                v => JsonSerializer.Deserialize<string[]>(v, StepsJson) ?? Array.Empty<string>());
+        equipmentTags.Metadata.SetValueComparer(EquipmentTagsComparer);
 
-        // Ordered guided steps ride along as a jsonb document; the value comparer keeps
+        // Ordered guided steps ride along as JSON; the value comparer keeps
         // EF change-tracking honest so the seeder only writes when content actually differs.
         var steps = b.Property(x => x.Steps)
-            .HasColumnType("jsonb")
+            .HasColumnType("nvarchar(max)")
             .HasConversion(
                 v => JsonSerializer.Serialize(v, StepsJson),
                 v => JsonSerializer.Deserialize<ActivityStep[]>(v, StepsJson) ?? Array.Empty<ActivityStep>());

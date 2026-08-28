@@ -10,15 +10,15 @@ using Xunit;
 namespace Devngn.Wellness.Api.Tests.Integration;
 
 /// <summary>
-/// End-to-end smoke tests for the Postgres-backed DataProtection key ring. The fixture
+/// End-to-end smoke tests for the SQL Server-backed DataProtection key ring. The fixture
 /// exercises the two failure modes that matter operationally: <i>(1)</i> a freshly-minted
 /// key must survive a full host restart and still decrypt prior ciphertexts, and
-/// <i>(2)</i> two host instances sharing the same Postgres must converge on the same
+/// <i>(2)</i> two host instances sharing the same SQL database must converge on the same
 /// key ring rather than each minting a private one.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class DataProtectionPersistenceTests(PostgresContainerFixture postgres)
+public sealed class DataProtectionPersistenceTests(SqlServerContainerFixture postgres)
 {
     [Fact]
     public async Task Protected_payload_round_trips_across_host_restart()

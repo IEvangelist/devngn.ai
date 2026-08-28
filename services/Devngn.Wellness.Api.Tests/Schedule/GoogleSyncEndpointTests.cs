@@ -17,9 +17,9 @@ using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Schedule;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class GoogleSyncEndpointTests(PostgresContainerFixture postgres)
+public sealed class GoogleSyncEndpointTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory(FakeGoogleCalendarClient fake) =>
         new(postgres.ConnectionString, configureServices: services =>
@@ -53,7 +53,7 @@ public sealed class GoogleSyncEndpointTests(PostgresContainerFixture postgres)
         var db = scope.ServiceProvider.GetRequiredService<WellnessDbContext>();
         var events = await db.ScheduleEvents.Where(e => e.SourceId == sourceId).ToListAsync();
         Assert.Single(events);
-        // Postgres truncates DateTimeOffset to microseconds (vs .NET's 100ns Ticks),
+        // Allow for database DateTimeOffset precision differences,
         // so use a 1µs tolerance rather than equality.
         Assert.True((events[0].StartUtc - window.StartUtc).Duration() < TimeSpan.FromMicroseconds(1));
         Assert.True((events[0].EndUtc - window.EndUtc).Duration() < TimeSpan.FromMicroseconds(1));

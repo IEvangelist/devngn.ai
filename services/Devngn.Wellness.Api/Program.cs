@@ -12,6 +12,7 @@ using Devngn.Wellness.Api.EquipmentApi;
 using Devngn.Wellness.Api.Gamification;
 using Devngn.Wellness.Api.Goals;
 using Devngn.Wellness.Api.Identity;
+using Devngn.Wellness.Api.Infrastructure;
 using Devngn.Wellness.Api.Moderation;
 using Devngn.Wellness.Api.Profiles;
 using Devngn.Wellness.Api.Prompts;
@@ -29,16 +30,16 @@ var builder = WebApplication.CreateBuilder(args);
 // and resilient HttpClient defaults applied to every named HttpClient.
 builder.AddServiceDefaults();
 
-// Postgres + EF Core wired through Aspire's integration: registers DbContext,
+// SQL Server + EF Core wired through Aspire's integration: registers DbContext,
 // health check, retries, OpenTelemetry instrumentation, and connection pooling.
-builder.AddNpgsqlDbContext<WellnessDbContext>("wellnessdb");
+builder.AddSqlServerDbContext<WellnessDbContext>("wellnessdb");
 
 // GitHub OAuth (Device + Web flow), JWT issuance/validation, and named HttpClients
 // for github.com + api.github.com. Options are validated at startup so a missing
 // signing key fails the process rather than producing insecure tokens.
 builder.AddWellnessAuth();
 
-// ASP.NET Core DataProtection with a Postgres-backed key ring + IRefreshTokenProtector
+// ASP.NET Core DataProtection with a SQL Server-backed key ring + IRefreshTokenProtector
 // for encrypting OAuth refresh tokens at rest. Must register BEFORE WellnessIdentity
 // so the IHttpContextAccessor pipeline is independent of the key ring.
 builder.Services.AddWellnessDataProtection(builder.Configuration);
@@ -101,31 +102,15 @@ builder.Services.AddOpenApi("v1", options =>
     });
 });
 
-// CORS (Development only): the desktop app (Tauri webview at http://localhost:3000)
-// and the installable PWA call this API cross-origin for GitHub sign-in and data.
-// Auth uses bearer tokens (no cookies), so a permissive any-origin policy is safe
-// here and is scoped to Development — production CORS origins must be configured
-// deliberately when the PWA is deployed.
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddCors(options =>
-        options.AddDefaultPolicy(policy =>
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()));
-}
+builder.Services.AddWellnessCors(builder.Environment);
 
 var app = builder.Build();
 
 // /health (all checks) and /alive (liveness only) from Devngn.ServiceDefaults.
 app.MapDefaultEndpoints();
 
-// CORS must run before auth so preflight (OPTIONS) requests are answered and the
-// browser/webview is allowed to send the actual cross-origin auth request.
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors();
-}
+// CORS must run before auth so preflight (OPTIONS) requests are answered.
+app.UseCors(WellnessCorsExtensions.PolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();

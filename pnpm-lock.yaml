@@ -187,15 +187,9 @@ importers:
       '@devngn/wellness-types':
         specifier: workspace:*
         version: link:../../packages/wellness-types
-      '@netlify/database':
-        specifier: ^1.1.0
-        version: 1.1.0(@electric-sql/pglite@0.3.16)
       astro:
         specifier: ^5.16.4
         version: 5.18.1(@netlify/blobs@10.7.9)(@types/node@24.12.2)(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1)(jiti@2.7.0)(rollup@4.60.2)(terser@5.48.0)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.9.0)
-      bad-words:
-        specifier: ^4.0.0
-        version: 4.0.0
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.4

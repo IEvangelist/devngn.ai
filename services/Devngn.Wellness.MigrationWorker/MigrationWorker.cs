@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Devngn.Wellness.MigrationWorker;
 
 /// <summary>
-/// Applies pending EF Core migrations to the wellness Postgres database, then
+/// Applies pending EF Core migrations to the wellness SQL database, then
 /// signals the host to stop. The Aspire AppHost wires the API resource to
 /// <c>waitForCompletion</c> on this worker so the API only starts after the
 /// schema is up-to-date.
@@ -51,7 +51,7 @@ public sealed class MigrationWorker(
         CancellationToken cancellationToken)
     {
         // Execution strategy wraps the migration in the configured retry policy
-        // so transient Postgres errors during cold-start don't fail the worker.
+        // so transient SQL errors during cold-start don't fail the worker.
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {

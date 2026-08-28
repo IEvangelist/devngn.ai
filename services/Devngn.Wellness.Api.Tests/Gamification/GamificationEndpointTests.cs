@@ -15,9 +15,9 @@ namespace Devngn.Wellness.Api.Tests.Gamification;
 /// Integration tests for gamification endpoints. Verifies that
 /// <c>GET /v1/gamification/me</c>, badges, and milestones return well-formed responses.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class GamificationEndpointTests(PostgresContainerFixture postgres)
+public sealed class GamificationEndpointTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory() => new(postgres.ConnectionString);
 

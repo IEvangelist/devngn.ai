@@ -67,7 +67,7 @@ export class WellnessAuthError extends Error {
 }
 
 export interface WellnessClientConfig {
-  /** API origin, e.g. `https://devngn.ai`. */
+  /** API origin, e.g. `https://api.devngn.ai`. */
   readonly baseUrl: string;
   /** Returns the current bearer token, or `undefined` when signed out / expired. */
   readonly getToken: () => string | undefined;

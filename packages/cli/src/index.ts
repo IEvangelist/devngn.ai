@@ -566,7 +566,7 @@ program
     );
   });
 
-const DEFAULT_WELLNESS_API_URL = "https://devngn.ai";
+const DEFAULT_WELLNESS_API_URL = "https://api.devngn.ai";
 
 const wellnessCommand = program
   .command("wellness")

@@ -16,13 +16,13 @@ namespace Devngn.Wellness.Api.Tests.Catalog;
 
 /// <summary>
 /// Integration tests for <see cref="ActivityCatalogSeeder"/> against a real
-/// Postgres testcontainer. The hosted service is exercised directly via
+/// SQL Server testcontainer. The hosted service is exercised directly via
 /// <c>StartAsync</c> against the same DI scope the API would use, so we
 /// observe the actual EF Core behaviour (including the unique-slug index).
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class ActivityCatalogSeederTests(PostgresContainerFixture postgres)
+public sealed class ActivityCatalogSeederTests(SqlServerContainerFixture postgres)
 {
     [Fact]
     public async Task Seeder_inserts_full_production_catalog_into_empty_database()
@@ -96,7 +96,7 @@ public sealed class ActivityCatalogSeederTests(PostgresContainerFixture postgres
             var row = await db.Activities.SingleAsync(a => a.Slug == "shoulder-rolls");
             Assert.Equal(staleId, row.Id);
             // CreatedAt is preserved (the seeder does not touch it). Use microsecond
-            // tolerance to absorb Postgres timestamptz precision.
+            // tolerance to absorb database timestamp precision.
             Assert.True((row.CreatedAt - staleCreatedAt).Duration() < TimeSpan.FromMicroseconds(2),
                 $"CreatedAt drifted: expected {staleCreatedAt:O}, got {row.CreatedAt:O}");
             Assert.NotEqual("OLD TITLE", row.Title);

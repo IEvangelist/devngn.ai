@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Auth;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class UserUpserterTests(PostgresContainerFixture fixture)
+public sealed class UserUpserterTests(SqlServerContainerFixture fixture)
 {
     [Fact]
     public async Task First_login_creates_new_user_row()

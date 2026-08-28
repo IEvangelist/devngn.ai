@@ -53,7 +53,7 @@ internal static class ActivityEndpoints
         }
 
         // Coarse filters that EF can translate; equipment-subset filtering happens in
-        // memory below to avoid Npgsql array-translation surprises and because the
+        // memory below to avoid provider-specific JSON-array translation and because the
         // catalog is tiny (≈12 rows).
         var query = db.Activities.AsNoTracking();
         if (bodyArea is { } area)

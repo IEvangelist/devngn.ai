@@ -25,9 +25,9 @@ namespace Devngn.Wellness.Api.Tests.Catalog;
 /// specific row count call <c>ClearActivitiesAsync</c> + reseed deterministically
 /// to avoid cross-test bleed-through.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class ActivityEndpointTests(PostgresContainerFixture postgres)
+public sealed class ActivityEndpointTests(SqlServerContainerFixture postgres)
 {
     /// <summary>
     /// The API serialises enums as string names (see <c>ConfigureHttpJsonOptions</c>

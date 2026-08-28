@@ -9,7 +9,6 @@ using Devngn.Wellness.Api.Moderation;
 using Devngn.Wellness.Api.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace Devngn.Wellness.Api.Social;
 
@@ -216,14 +215,7 @@ internal static class SocialEndpoints
 
     private static bool IsDuplicateFollow(DbUpdateException ex)
     {
-        for (Exception? current = ex; current is not null; current = current.InnerException)
-        {
-            if (current is PostgresException pg && pg.SqlState == "23505")
-            {
-                return true;
-            }
-        }
-        return false;
+        return SqlServerExceptionClassifier.IsUniqueViolation(ex);
     }
 
     private static SocialProfileResponse Map(SocialProfile sp) =>

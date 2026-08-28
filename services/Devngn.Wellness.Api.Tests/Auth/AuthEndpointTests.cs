@@ -18,9 +18,9 @@ using Xunit;
 
 namespace Devngn.Wellness.Api.Tests.Auth;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class AuthEndpointTests(PostgresContainerFixture fixture)
+public sealed class AuthEndpointTests(SqlServerContainerFixture fixture)
 {
     private static readonly WebApplicationFactoryClientOptions NoRedirect = new() { AllowAutoRedirect = false };
 

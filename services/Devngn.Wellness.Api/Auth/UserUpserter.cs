@@ -50,7 +50,8 @@ internal sealed class UserUpserter(WellnessDbContext db, TimeProvider timeProvid
             await db.SaveChangesAsync(ct);
             return fresh;
         }
-        catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+        catch (DbUpdateException ex) when (
+            SqlServerExceptionClassifier.IsUniqueViolation(ex, "IX_users_GitHubId"))
         {
             // Lost the race against a concurrent first-time login for the same GitHub id.
             // Detach the unsaved insert, reload the winner's row, and apply our mutable
@@ -75,18 +76,4 @@ internal sealed class UserUpserter(WellnessDbContext db, TimeProvider timeProvid
         user.UpdatedAt = now;
     }
 
-    private static bool IsUniqueViolation(DbUpdateException ex)
-    {
-        // Npgsql surfaces unique constraint violations with SqlState "23505".
-        // EF Core wraps the provider exception so we walk the chain.
-        for (Exception? cur = ex; cur is not null; cur = cur.InnerException)
-        {
-            var sqlStateProp = cur.GetType().GetProperty("SqlState");
-            if (sqlStateProp?.GetValue(cur) is string sqlState && sqlState == "23505")
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 }

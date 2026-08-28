@@ -11,9 +11,9 @@ using SourceDto = Devngn.Wellness.Api.Tests.Endpoints.ScheduleSourceEndpointTest
 
 namespace Devngn.Wellness.Api.Tests.Endpoints;
 
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class ScheduleEventEndpointTests(PostgresContainerFixture postgres)
+public sealed class ScheduleEventEndpointTests(SqlServerContainerFixture postgres)
 {
     private AuthWebAppFactory Factory() => new(postgres.ConnectionString);
 

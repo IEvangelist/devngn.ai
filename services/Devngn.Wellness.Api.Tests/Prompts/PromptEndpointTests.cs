@@ -26,11 +26,11 @@ namespace Devngn.Wellness.Api.Tests.Prompts;
 /// "now" always lands in an active gap regardless of wall-clock time — that lets a
 /// prompt be delivered deterministically without overriding <see cref="TimeProvider"/>
 /// (which would also desync the real-clock JWT validation). Per-user scoping keeps each
-/// test isolated on the shared Postgres container.
+/// test isolated on the shared SQL Server container.
 /// </summary>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class PromptEndpointTests(PostgresContainerFixture postgres)
+public sealed class PromptEndpointTests(SqlServerContainerFixture postgres)
 {
     private static readonly JsonSerializerOptions ClientJson = new(JsonSerializerDefaults.Web)
     {
@@ -161,9 +161,8 @@ public sealed class PromptEndpointTests(PostgresContainerFixture postgres)
         var second = await client.PostAsync($"/v1/prompts/{promptId}/dismiss", null);
         Assert.Equal(HttpStatusCode.OK, second.StatusCode);
         var secondBody = await second.Content.ReadFromJsonAsync<PromptResponse>(ClientJson);
-        // Idempotent: the second call must not overwrite the timestamp. Compare at
-        // microsecond resolution since Postgres timestamptz truncates the .NET tick
-        // precision that the first (in-memory) response still carries.
+        // Idempotent: the second call must not overwrite the timestamp. Compare after
+        // truncating to microseconds so provider precision does not affect the assertion.
         Assert.Equal(
             ToMicroseconds(firstBody.DismissedAt!.Value),
             ToMicroseconds(secondBody!.DismissedAt!.Value));

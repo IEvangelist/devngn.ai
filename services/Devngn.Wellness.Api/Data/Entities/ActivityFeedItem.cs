@@ -22,6 +22,6 @@ public sealed class ActivityFeedItem
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    /// <summary>Optional JSON metadata stored as PostgreSQL <c>jsonb</c>.</summary>
+    /// <summary>Optional JSON metadata.</summary>
     public JsonDocument? Metadata { get; set; }
 }

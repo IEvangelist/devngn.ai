@@ -9,7 +9,6 @@ using Devngn.Wellness.Api.Identity;
 using Devngn.Wellness.Api.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace Devngn.Wellness.Api.Schedule;
 
@@ -108,7 +107,7 @@ internal static class ScheduleEventEndpoints
         var userId = currentUser.UserId!.Value;
 
         // Validate windows up front so a single bad item rejects the batch deterministically
-        // rather than hitting Postgres and seeing a CHECK violation buried in a 23514 error.
+        // rather than hitting SQL Server and surfacing a low-level constraint error.
         var problems = new Dictionary<string, string[]>();
         for (var i = 0; i < request.Items.Count; i++)
         {
@@ -236,15 +235,6 @@ internal static class ScheduleEventEndpoints
 
     private static bool IsExternalIdConflict(DbUpdateException ex)
     {
-        for (Exception? current = ex; current is not null; current = current.InnerException)
-        {
-            if (current is PostgresException pg &&
-                pg.SqlState == "23505" &&
-                string.Equals(pg.ConstraintName, UniqueExternalIdIndexName, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-        return false;
+        return SqlServerExceptionClassifier.IsUniqueViolation(ex, UniqueExternalIdIndexName);
     }
 }

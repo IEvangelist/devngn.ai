@@ -13,7 +13,7 @@ namespace Devngn.Wellness.Api.Schedule.Microsoft;
 
 /// <summary>
 /// Orchestrates one sync pass for a Microsoft-backed <see cref="ScheduleSource"/>. Same
-/// pattern as <see cref="Google.GoogleScheduleSyncService"/>: take an advisory lock,
+/// pattern as <see cref="Google.GoogleScheduleSyncService"/>: take an application lock,
 /// refresh the access token, fetch busy windows, window-replace events, rotate the
 /// stored refresh token only when Microsoft issues a new one. Idempotent.
 /// </summary>
@@ -134,8 +134,10 @@ internal sealed class MicrosoftScheduleSyncService(
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
-        var advisoryKey = ToAdvisoryKey(ctx.sourceId);
-        if (!await TryAcquireAdvisoryLockAsync(advisoryKey, ct))
+        if (!await SqlServerApplicationLock.TryAcquireAsync(
+                db,
+                $"wellness:schedule-sync:{ctx.sourceId:N}",
+                ct))
         {
             await tx.RollbackAsync(ct);
             return new ScheduleSyncResult(ScheduleSyncOutcome.LockHeld, 0, "sync_in_progress");
@@ -240,25 +242,4 @@ internal sealed class MicrosoftScheduleSyncService(
         return new ScheduleSyncResult(outcome, 0, code);
     }
 
-    private async Task<bool> TryAcquireAdvisoryLockAsync(long key, CancellationToken ct)
-    {
-        var result = await db.Database
-            .SqlQueryRaw<bool>("SELECT pg_try_advisory_xact_lock({0}) AS \"Value\"", key)
-            .ToListAsync(ct);
-        return result.Count == 1 && result[0];
-    }
-
-    /// <summary>
-    /// XOR-folds the 16 bytes of a Guid into a 64-bit advisory lock key. Same approach
-    /// as the Google sync service so the key spaces stay independent (different sourceIds
-    /// for different providers can't collide because they live in disjoint Guid space).
-    /// </summary>
-    internal static long ToAdvisoryKey(Guid id)
-    {
-        Span<byte> bytes = stackalloc byte[16];
-        _ = id.TryWriteBytes(bytes);
-        var high = BitConverter.ToInt64(bytes[..8]);
-        var low = BitConverter.ToInt64(bytes[8..]);
-        return high ^ low;
-    }
 }

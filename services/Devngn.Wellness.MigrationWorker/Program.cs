@@ -15,7 +15,7 @@ builder.AddServiceDefaults();
 // Same EF Core registration as the API: Aspire wires the connection string,
 // connection pooling, retries, health check, and OpenTelemetry instrumentation
 // from the "wellnessdb" resource declared in the AppHost.
-builder.AddNpgsqlDbContext<WellnessDbContext>("wellnessdb");
+builder.AddSqlServerDbContext<WellnessDbContext>("wellnessdb");
 
 builder.Services.AddHostedService<MigrationWorker>();
 

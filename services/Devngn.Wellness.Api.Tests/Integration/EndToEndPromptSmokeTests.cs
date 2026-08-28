@@ -35,9 +35,9 @@ namespace Devngn.Wellness.Api.Tests.Integration;
 /// matching the existing prompt-delivery tests and avoiding a <see cref="TimeProvider"/>
 /// override that would desync real-clock JWT validation.
 /// </remarks>
-[Collection(nameof(PostgresCollection))]
+[Collection(nameof(SqlServerCollection))]
 [Trait("Category", "Integration")]
-public sealed class EndToEndPromptSmokeTests(PostgresContainerFixture postgres)
+public sealed class EndToEndPromptSmokeTests(SqlServerContainerFixture postgres)
 {
     private static readonly JsonSerializerOptions ClientJson = new(JsonSerializerDefaults.Web)
     {

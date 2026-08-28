@@ -2,7 +2,7 @@
   "name": "@devngn/wellness-apphost",
   "version": "0.0.0",
   "private": true,
-  "description": "Aspire AppHost that orchestrates Postgres and the Devngn.Wellness.Api .NET service for local development.",
+  "description": "Aspire AppHost that orchestrates SQL Server and the Devngn.Wellness.Api .NET service for local development.",
   "license": "MIT",
   "author": "David Pine",
   "type": "module",

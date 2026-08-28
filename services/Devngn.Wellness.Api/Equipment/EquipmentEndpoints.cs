@@ -10,7 +10,6 @@ using Devngn.Wellness.Api.Validation;
 using EquipmentEntity = Devngn.Wellness.Api.Data.Entities.Equipment;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace Devngn.Wellness.Api.EquipmentApi;
 
@@ -179,16 +178,7 @@ internal static class EquipmentEndpoints
 
     private static bool IsDuplicateTagViolation(DbUpdateException ex)
     {
-        for (Exception? current = ex; current is not null; current = current.InnerException)
-        {
-            if (current is PostgresException pg &&
-                pg.SqlState == "23505" &&
-                string.Equals(pg.ConstraintName, UniqueTagIndexName, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-        return false;
+        return SqlServerExceptionClassifier.IsUniqueViolation(ex, UniqueTagIndexName);
     }
 
     private static string? NormalizeOptional(string? value)

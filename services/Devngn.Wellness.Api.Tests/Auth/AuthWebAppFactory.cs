@@ -7,6 +7,7 @@ using Devngn.Wellness.Api.Auth;
 using Devngn.Wellness.Api.Crypto;
 using Devngn.Wellness.Api.Data;
 using Devngn.Wellness.Api.Moderation;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -15,12 +16,12 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Npgsql;
+using Microsoft.Extensions.Logging;
 
 namespace Devngn.Wellness.Api.Tests.Auth;
 
 /// <summary>
-/// Shared WebApplicationFactory for auth integration tests. Wires in a real Postgres
+/// Shared WebApplicationFactory for auth integration tests. Wires in a real SQL Server
 /// connection string from the test fixture plus the minimum JWT/GitHub config needed
 /// for <c>AddWellnessAuth</c> to pass <c>ValidateOnStart</c>. Callers can pass extra
 /// service / config customizations per test.
@@ -69,12 +70,12 @@ internal sealed class AuthWebAppFactory(
 
         builder.ConfigureTestServices(services =>
         {
-            // appsettings.Development.json hard-codes ConnectionStrings:wellnessdb to
-            // localhost:5432 for the local dev loop. Aspire's AddNpgsqlDbContext reads
+            // appsettings.Development.json contains a direct-run connection string.
+            // Aspire's AddSqlServerDbContext reads
             // that value at AppHost-build time (before WAF's InMemory config callback
             // runs), so we cannot redirect via configuration. Strip every EF registration
             // Aspire added and re-register a pool against the test container so the app
-            // actually talks to our Postgres. Using internal EF types here is intentional
+            // actually talks to our SQL Server. Using internal EF types here is intentional
             // — Aspire registers the pooled-lease pipeline via these exact descriptors.
 #pragma warning disable EF1001
             services.RemoveAll<DbContextOptions<WellnessDbContext>>();
@@ -82,22 +83,14 @@ internal sealed class AuthWebAppFactory(
             services.RemoveAll<IDbContextPool<WellnessDbContext>>();
             services.RemoveAll<IScopedDbContextLease<WellnessDbContext>>();
             services.RemoveAll<WellnessDbContext>();
-            services.AddDbContextPool<WellnessDbContext>(o => o.UseNpgsql(connectionString));
+            services.AddDbContextPool<WellnessDbContext>(o => o.UseSqlServer(connectionString));
 #pragma warning restore EF1001
 
-            // PostgresXmlRepository (DataProtection key ring) uses its own keyed
-            // NpgsqlDataSource registered by AddWellnessDataProtection. That factory
-            // reads ConnectionStrings:wellnessdb from configuration — but
-            // appsettings.Development.json wins over our InMemory config (see the EF
-            // surgery above). Override the keyed singleton so DataProtection writes
-            // land in the test container, not the dev DB. This also exercises the same
-            // code path the DataProtection roundtrip tests assert against.
-            services.RemoveAll<NpgsqlDataSource>();
-            services.RemoveAll<NpgsqlConnection>();
-            services.RemoveAllKeyed<NpgsqlDataSource>(WellnessDataProtectionExtensions.DataProtectionDataSourceKey);
-            services.AddKeyedSingleton(
-                WellnessDataProtectionExtensions.DataProtectionDataSourceKey,
-                (_, _) => NpgsqlDataSource.Create(connectionString));
+            services.RemoveAll<IXmlRepository>();
+            services.AddSingleton<IXmlRepository>(sp =>
+                new SqlServerXmlRepository(
+                    connectionString,
+                    sp.GetRequiredService<ILogger<SqlServerXmlRepository>>()));
 
             // Default to a pass-through profanity service so integration tests don't
             // require the profanity-filter sidecar. ProfanityService now fails CLOSED

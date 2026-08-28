@@ -4,7 +4,7 @@
 // Run `pnpm --filter @devngn/wellness-apphost restore` after a fresh checkout
 // so Aspire regenerates `.aspire/modules/` for your machine, then
 // `pnpm --filter @devngn/wellness-apphost start` to launch the dashboard,
-// Postgres container, the Devngn.Wellness.Api project, and the apps/site
+// SQL Server container, the Devngn.Wellness.Api project, and the apps/site
 // frontend together. The apps/site frontend is wired with Aspire's native
 // JavaScript hosting integration (`addViteApp`), which auto-installs its
 // dependencies and runs the Astro dev server — no manual build prestep needed.
@@ -17,27 +17,21 @@ const builder = await createBuilder();
 // Used below to keep local dev unchanged while shaping the Azure deployment.
 const isRunMode = await builder.executionContext().isRunMode();
 
-// Azure Container Apps is the deployment target for `aspire deploy`. Adding the
-// environment resource is inert during local run mode.
-builder.addAzureContainerAppEnvironment("aca");
+// Azure Container Apps is the deployment target for `aspire deploy`. The cloud
+// dashboard is disabled to avoid an always-on pre-launch resource; the local
+// Aspire dashboard remains available during `aspire start`.
+builder.addAzureContainerAppEnvironment("aca").withDashboard({ enable: false });
 
-// PostgreSQL: Azure Database for PostgreSQL Flexible Server in production, and a
-// local container (with a persistent data volume) during `aspire start`. A plain
-// container with a data volume CANNOT run on Azure Container Apps: ACA's only
-// persistent volume type is Azure Files (SMB), and Postgres `initdb` fails to
-// chmod its data directory there ("Operation not permitted"). Flexible Server is
-// a managed, durable database with no such limitation. Password authentication
-// keeps the connection string standard (user/password), so the API and migrator
-// need no code changes vs. the local container.
-const postgres = builder
-  .addAzurePostgresFlexibleServer("postgres")
-  .runAsContainer({
-    configureContainer: async (container) => {
-      await container.withDataVolume();
-    },
-  })
-  .withPasswordAuthentication();
-const wellnessDb = postgres.addDatabase("wellnessdb");
+// Azure SQL uses the lifetime free serverless offer by default when deployed:
+// 100,000 vCore-seconds plus 32 GB data and backup storage each month. Local
+// development uses a persistent SQL Server container with the same connection
+// resource name, so consuming projects are provider-identical in every mode.
+const sql = builder.addAzureSqlServer("sql").runAsContainer({
+  configureContainer: async (container) => {
+    await container.withDataVolume();
+  },
+});
+const wellnessDb = sql.addDatabase("wellnessdb");
 
 // Profanity filter: all user-generated text (social display names, bios, and
 // activity-feed posts) is sanitized through this service. ProfanityFilter.Hosting
@@ -85,6 +79,13 @@ const wellnessMigrator = builder
   .withReference(wellnessDb)
   .waitFor(wellnessDb);
 
+// Local run mode executes the worker once and waits for it to finish. Azure
+// publishes the same finite process as a manual Container App Job instead of an
+// always-running app replica.
+if (!isRunMode) {
+  await wellnessMigrator.publishAsAzureContainerAppJob();
+}
+
 const wellnessApi = builder
   .addProject(
     "wellness-api",
@@ -108,6 +109,12 @@ if (profanity) {
 // sign-in (device + web OAuth flows), so it needs an external HTTP endpoint
 // when deployed to Azure Container Apps.
 await wellnessApi.withExternalHttpEndpoints();
+
+if (!isRunMode) {
+  await wellnessApi.publishAsAzureContainerApp(async (_infrastructure, app) => {
+    await app.configureScale({ minReplicas: 0 });
+  });
+}
 
 // Surface Scalar (and the raw OpenAPI document) as one-click links on the
 // wellness-api resource panel in the Aspire dashboard (local dev only). `withUrl`

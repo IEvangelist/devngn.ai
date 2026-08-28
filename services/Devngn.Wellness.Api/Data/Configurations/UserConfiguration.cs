@@ -30,6 +30,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         b.HasOne(x => x.Profile)
             .WithOne(x => x.User!)
             .HasForeignKey<Profile>(x => x.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientCascade);
     }
 }

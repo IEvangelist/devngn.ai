@@ -14,10 +14,9 @@ internal sealed class DataProtectionKeyConfiguration : IEntityTypeConfiguration<
     {
         b.ToTable("data_protection_keys");
         b.HasKey(x => x.Id);
-        b.Property(x => x.Id).UseIdentityByDefaultColumn();
         b.Property(x => x.FriendlyName).IsRequired().HasMaxLength(200);
         b.Property(x => x.Xml).IsRequired();
-        b.Property(x => x.CreatedAt).HasDefaultValueSql("now() at time zone 'utc'");
+        b.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
 
         // DataProtection generates one element per key with a stable GUID-based friendly
         // name; never expect duplicates. Catching one would mean two processes raced to

@@ -13,7 +13,7 @@ namespace Devngn.Wellness.Api.Schedule.Google;
 
 /// <summary>
 /// Orchestrates one sync pass for a Google-backed <see cref="ScheduleSource"/>: takes a
-/// PG advisory lock to serialize concurrent syncs for the same source, decrypts the
+/// transaction-owned application lock to serialize concurrent syncs for the same source, decrypts the
 /// refresh token, refreshes the access token, fetches free/busy, and window-replaces
 /// the source's events. Idempotent.
 /// </summary>
@@ -106,7 +106,7 @@ internal sealed class GoogleScheduleSyncService(
         }
 
         // Step 4: persist everything inside an execution strategy + transaction so
-        // Aspire's NpgsqlRetryingExecutionStrategy can retry on transient DB faults
+        // Aspire's SQL Server execution strategy can retry on transient DB faults
         // without re-issuing Google calls.
         var rotatedRefreshToken = !string.IsNullOrEmpty(token.RefreshToken) &&
             !string.Equals(token.RefreshToken, plaintextRefreshToken, StringComparison.Ordinal)
@@ -129,17 +129,18 @@ internal sealed class GoogleScheduleSyncService(
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
-        // PG advisory locks are session-level; scoping with _xact_lock auto-releases at
-        // commit/rollback so we don't have to babysit cleanup on a process crash.
-        var advisoryKey = ToAdvisoryKey(ctx.sourceId);
-        if (!await TryAcquireAdvisoryLockAsync(advisoryKey, ct))
+        // Transaction-owned application locks auto-release at commit or rollback.
+        if (!await SqlServerApplicationLock.TryAcquireAsync(
+                db,
+                $"wellness:schedule-sync:{ctx.sourceId:N}",
+                ct))
         {
             await tx.RollbackAsync(ct);
             return new ScheduleSyncResult(ScheduleSyncOutcome.LockHeld, 0, "sync_in_progress");
         }
 
         // Reload the source with tracking inside the same transaction so state read +
-        // state write are consistent under the advisory lock.
+        // state write are consistent under the application lock.
         var source = await db.ScheduleSources
             .SingleOrDefaultAsync(s => s.Id == ctx.sourceId && s.UserId == ctx.userId, ct);
         if (source is null)
@@ -196,7 +197,7 @@ internal sealed class GoogleScheduleSyncService(
     /// <summary>
     /// Persists a terminal-error state on the source: status flip, error code, optional
     /// deletion of future events (for invalid_grant). Wrapped in an execution strategy
-    /// so it composes safely with Aspire's NpgsqlRetryingExecutionStrategy.
+    /// so it composes safely with Aspire's SQL Server execution strategy.
     /// </summary>
     private async Task<ScheduleSyncResult> PersistTerminalAsync(
         Guid sourceId,
@@ -247,26 +248,4 @@ internal sealed class GoogleScheduleSyncService(
         return new ScheduleSyncResult(outcome, 0, code);
     }
 
-    private async Task<bool> TryAcquireAdvisoryLockAsync(long key, CancellationToken ct)
-    {
-        // pg_try_advisory_xact_lock returns boolean. EF Core's SqlQueryRaw<T> for a
-        // scalar primitive requires the projected column be named "Value".
-        var result = await db.Database
-            .SqlQueryRaw<bool>("SELECT pg_try_advisory_xact_lock({0}) AS \"Value\"", key)
-            .ToListAsync(ct);
-        return result.Count == 1 && result[0];
-    }
-
-    /// <summary>
-    /// Derives a 64-bit lock key from a Guid by XOR-folding its 16 bytes. Smaller hashes
-    /// (e.g. <c>hashtext()</c>) can collide and would serialize unrelated sources.
-    /// </summary>
-    internal static long ToAdvisoryKey(Guid id)
-    {
-        Span<byte> bytes = stackalloc byte[16];
-        _ = id.TryWriteBytes(bytes);
-        var high = BitConverter.ToInt64(bytes[..8]);
-        var low = BitConverter.ToInt64(bytes[8..]);
-        return high ^ low;
-    }
 }
