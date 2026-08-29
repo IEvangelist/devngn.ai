@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" />
   </ItemGroup>
 
 </Project>
