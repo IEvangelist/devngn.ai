@@ -336,7 +336,9 @@ Supply these only to the `aspire deploy` process or a CI secret store:
 | `Azure__SubscriptionId`            | No     | Personal Azure subscription    |
 | `Azure__Location`                  | No     | Azure region                   |
 | `Azure__ResourceGroup`             | No     | Dedicated resource group       |
-| `Parameters__github_client_id`     | Yes    | GitHub OAuth app client ID     |
+| `Parameters__custom_domain` | No | API hostname, `api.devngn.ai` |
+| `Parameters__certificate_name` | No | Existing managed certificate name |
+| `Parameters__github_client_id` | Yes | GitHub OAuth app client ID |
 | `Parameters__github_client_secret` | Yes    | GitHub OAuth app client secret |
 | `Parameters__jwt_signing_key`      | Yes    | Base64 JWT signing key         |
 

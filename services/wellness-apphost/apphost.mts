@@ -111,8 +111,12 @@ if (profanity) {
 await wellnessApi.withExternalHttpEndpoints();
 
 if (!isRunMode) {
+  const customDomain = builder.addParameter("custom-domain");
+  const certificateName = builder.addParameter("certificate-name");
+
   await wellnessApi.publishAsAzureContainerApp(async (_infrastructure, app) => {
     await app.configureScale({ minReplicas: 0 });
+    await app.configureCustomDomain(customDomain, certificateName);
   });
 }
 
