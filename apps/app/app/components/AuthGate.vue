@@ -80,17 +80,36 @@
     </main>
 
     <footer class="authgate__footer">
+      <span class="authgate__copyright">Copyright {{ copyrightYear }}</span>
+      <span class="authgate__footer-divider" aria-hidden="true" />
       <a
-        v-for="link in footerLinks"
-        :key="link.href"
-        class="authgate__footer-link"
-        :href="link.href"
-        :aria-label="link.ariaLabel"
+        class="authgate__footer-link authgate__footer-link--person"
+        href="https://davidpine.dev"
+        aria-label="Visit davidpine.dev"
         target="_blank"
         rel="noopener noreferrer"
-        @click="openExternal($event, link.href)"
+        @click="openExternal($event, 'https://davidpine.dev')"
       >
-        {{ link.label }}
+        <span class="authgate__footer-icon" aria-hidden="true">🤓</span>
+        <span>David Pine</span>
+      </a>
+      <span class="authgate__footer-divider" aria-hidden="true" />
+      <a
+        class="authgate__footer-link authgate__footer-link--brand"
+        href="https://devngn.ai"
+        aria-label="Visit devngn.ai"
+        target="_blank"
+        rel="noopener noreferrer"
+        @click="openExternal($event, 'https://devngn.ai')"
+      >
+        <img
+          class="authgate__footer-logo"
+          src="/favicon.svg"
+          alt=""
+          aria-hidden="true"
+          draggable="false"
+        />
+        <span>devngn.ai</span>
       </a>
     </footer>
 
@@ -119,19 +138,7 @@ const isTauri = useTauri();
 // `import.meta.dev` is statically replaced at build time, so the dev bypass is
 // tree-shaken out of production builds.
 const isDev = import.meta.dev;
-
-const footerLinks = [
-  {
-    href: "https://devngn.ai",
-    label: "devngn.ai",
-    ariaLabel: "Visit devngn.ai",
-  },
-  {
-    href: "https://davidpine.dev",
-    label: "A David Pine site",
-    ariaLabel: "Visit davidpine.dev",
-  },
-] as const;
+const copyrightYear = new Date().getFullYear();
 
 async function openExternal(event: MouseEvent, url: string): Promise<void> {
   if (!isTauri) {
@@ -262,37 +269,86 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
   width: 100%;
   padding-top: 1.25rem;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+}
+
+.authgate__copyright {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.authgate__footer-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 0.9rem;
+  margin-inline: 0.15rem;
+  background: var(--line-strong);
 }
 
 .authgate__footer-link {
+  --footer-link-color: var(--accent-strong);
+  --footer-link-bg: var(--accent-tint);
+  --footer-link-line: var(--accent-line);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.48rem;
+  border-radius: 0.45rem;
   color: var(--muted);
-  text-decoration-line: underline;
-  text-decoration-color: transparent;
-  text-underline-offset: 0.25rem;
+  font-weight: 700;
+  text-decoration: none;
   transition:
     color 150ms ease,
-    text-decoration-color 150ms ease,
-    transform 100ms ease;
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.authgate__footer-link + .authgate__footer-link {
-  margin-left: 0.9rem;
-  padding-left: 0.9rem;
-  border-left: 1px solid var(--line-strong);
+.authgate__footer-icon,
+.authgate__footer-logo {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
 }
 
-.authgate__footer-link:hover {
-  color: var(--accent-strong);
-  text-decoration-color: currentColor;
+.authgate__footer-icon {
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.95rem;
+  line-height: 1;
+  transform: translateY(-0.12rem);
+}
+
+.authgate__footer-logo {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.authgate__footer-link--person {
+  --footer-link-color: color-mix(in srgb, var(--accent-2) 80%, var(--ink));
+  --footer-link-bg: color-mix(in srgb, var(--accent-2) 12%, var(--surface));
+  --footer-link-line: color-mix(in srgb, var(--accent-2) 32%, transparent);
+}
+
+.authgate__footer-link:hover,
+.authgate__footer-link:focus-visible {
+  color: var(--footer-link-color);
+  background: var(--footer-link-bg);
+  box-shadow: inset 0 0 0 1px var(--footer-link-line);
+  transform: translateY(-2px);
+}
+
+.authgate__footer-link:hover .authgate__footer-logo,
+.authgate__footer-link:focus-visible .authgate__footer-logo {
+  transform: rotate(-7deg) scale(1.12);
 }
 
 .authgate__footer-link:active {
-  transform: translateY(1px);
+  transform: translateY(0) scale(0.97);
 }
 
 .authgate__code {
@@ -321,6 +377,13 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
       opacity: 1;
       transform: translateY(0);
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .authgate__footer-link,
+  .authgate__footer-logo {
+    transition: none;
   }
 }
 </style>
