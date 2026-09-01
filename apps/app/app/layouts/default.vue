@@ -19,7 +19,7 @@
     <rect x="1.5" y="1.5" width="29" height="29" fill="none" stroke="#16130d" stroke-width="3" />
       <path d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z" fill="#16130d" stroke="#16130d" stroke-width="1.5" stroke-linejoin="miter" />
     </svg>
-    <span class="auth-splash__label">{{ $t("app.name") }}</span>
+    <BrandWordmark class="auth-splash__label" />
   </div>
 
   <!-- Signed out: one focused sign-in screen for every route. -->
@@ -38,7 +38,7 @@
           <rect x="1.5" y="1.5" width="29" height="29" fill="none" stroke="#16130d" stroke-width="3" />
           <path d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z" fill="#16130d" stroke="#16130d" stroke-width="1.5" stroke-linejoin="miter" />
         </svg>
-        <span v-if="!sidebarCollapsed" class="shell__brandname">{{ $t("app.name") }}</span>
+        <BrandWordmark v-if="!sidebarCollapsed" class="shell__brandname" />
       </div>
 
       <nav class="shell__nav" aria-label="Main">

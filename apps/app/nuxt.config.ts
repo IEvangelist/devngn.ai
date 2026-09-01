@@ -45,7 +45,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: "devngn",
+      title: "devngn.ai",
       htmlAttrs: { lang: "en" },
       meta: [
         { charset: "utf-8" },
@@ -56,7 +56,7 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "devngn — gamified, social wellness interruptions for developers.",
+            "devngn.ai - gamified, social wellness interruptions for developers.",
         },
         { name: "theme-color", content: "#ec1c8b" },
       ],
@@ -106,8 +106,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: "autoUpdate",
     manifest: {
-      name: "devngn",
-      short_name: "devngn",
+      name: "devngn.ai",
+      short_name: "devngn.ai",
       description: "Gamified, social wellness interruptions for developers.",
       theme_color: "#ec1c8b",
       background_color: "#fdf3df",

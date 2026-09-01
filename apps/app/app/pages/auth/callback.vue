@@ -5,7 +5,7 @@
 <template>
   <section class="auth-callback" aria-labelledby="auth-callback-title">
     <BrutPanel class="auth-callback__panel">
-      <p class="brut-eyebrow">{{ $t("app.name") }}</p>
+      <BrandWordmark class="brut-eyebrow" />
       <h1 id="auth-callback-title">
         {{ status === "error" ? $t("auth.callback.errorTitle") : $t("auth.callback.title") }}
       </h1>

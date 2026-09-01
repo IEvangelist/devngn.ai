@@ -42,7 +42,7 @@
             stroke-linejoin="miter"
           />
         </svg>
-        <span class="authgate__wordmark">{{ $t("app.name") }}</span>
+        <BrandWordmark class="authgate__wordmark" />
       </div>
 
       <h1 class="authgate__title">{{ $t("auth.title") }}</h1>
@@ -124,7 +124,7 @@
           aria-hidden="true"
           draggable="false"
         />
-        <span>devngn.ai</span>
+        <BrandWordmark class="authgate__footer-wordmark" />
       </a>
     </footer>
 
@@ -329,6 +329,7 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
 .authgate__footer-symbol {
   display: inline-grid;
   place-items: center;
+  width: auto;
   font-size: 0.95rem;
   font-weight: 400;
   line-height: 1;

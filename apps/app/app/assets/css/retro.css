@@ -37,6 +37,8 @@
   --accent-4: #6366f1; /* indigo */
   --accent-5: #e11d48; /* rose   */
   --accent-6: #2563eb; /* blue   */
+  --brand-ngn: #ec1c8b;
+  --brand-ai: #0c7d72;
 
   --danger: #dc2626;
   --success: #16a34a;
@@ -101,6 +103,7 @@
   --accent-tint: #241019;
   --accent-tint-strong: #331523;
   --accent-line: #4a1f31;
+  --brand-ai: #11b3a3;
 
   --paper: #0f1013;
   --paper-2: #17181c;
@@ -133,6 +136,7 @@
     --accent-tint: #241019;
     --accent-tint-strong: #331523;
     --accent-line: #4a1f31;
+    --brand-ai: #11b3a3;
 
     --paper: #0f1013;
     --paper-2: #17181c;
