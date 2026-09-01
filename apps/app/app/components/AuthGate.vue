@@ -17,11 +17,30 @@
 
     <main class="authgate__inner">
       <div class="authgate__brand">
-        <svg class="authgate__logo" viewBox="0 0 32 32" role="img" :aria-label="$t('app.name')">
+        <svg
+          class="authgate__logo"
+          viewBox="0 0 32 32"
+          role="img"
+          :aria-label="$t('app.name')"
+        >
           <path d="M1.5 1.5H17.5V4L12.5 28V30.5H1.5Z" fill="#ec1c8b" />
           <path d="M17.5 1.5H30.5V30.5H12.5V28L17.5 4Z" fill="#11b3a3" />
-          <rect x="1.5" y="1.5" width="29" height="29" fill="none" stroke="#16130d" stroke-width="3" />
-          <path d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z" fill="#16130d" stroke="#16130d" stroke-width="1.5" stroke-linejoin="miter" />
+          <rect
+            x="1.5"
+            y="1.5"
+            width="29"
+            height="29"
+            fill="none"
+            stroke="#16130d"
+            stroke-width="3"
+          />
+          <path
+            d="M17.5 4 8 18.5h6L12.5 28 24 12.5h-7z"
+            fill="#16130d"
+            stroke="#16130d"
+            stroke-width="1.5"
+            stroke-linejoin="miter"
+          />
         </svg>
         <span class="authgate__wordmark">{{ $t("app.name") }}</span>
       </div>
@@ -60,13 +79,34 @@
       </BrutPanel>
     </main>
 
+    <footer class="authgate__footer">
+      <a
+        v-for="link in footerLinks"
+        :key="link.href"
+        class="authgate__footer-link"
+        :href="link.href"
+        :aria-label="link.ariaLabel"
+        target="_blank"
+        rel="noopener noreferrer"
+        @click="openExternal($event, link.href)"
+      >
+        {{ link.label }}
+      </a>
+    </footer>
+
     <BrutModal
       :open="!!auth.deviceFlow"
       :title="$t('auth.title')"
       :close-on-backdrop="false"
       @close="() => {}"
     >
-      <p class="brut-eyebrow">{{ $t("auth.deviceInstruction", { url: auth.deviceFlow?.verificationUri }) }}</p>
+      <p class="brut-eyebrow">
+        {{
+          $t("auth.deviceInstruction", {
+            url: auth.deviceFlow?.verificationUri,
+          })
+        }}
+      </p>
       <p class="authgate__code">{{ auth.deviceFlow?.userCode }}</p>
       <p>{{ $t("auth.waiting") }}</p>
     </BrutModal>
@@ -75,9 +115,38 @@
 
 <script setup lang="ts">
 const auth = useAuthStore();
+const isTauri = useTauri();
 // `import.meta.dev` is statically replaced at build time, so the dev bypass is
 // tree-shaken out of production builds.
 const isDev = import.meta.dev;
+
+const footerLinks = [
+  {
+    href: "https://devngn.ai",
+    label: "devngn.ai",
+    ariaLabel: "Visit devngn.ai",
+  },
+  {
+    href: "https://davidpine.dev",
+    label: "A David Pine site",
+    ariaLabel: "Visit davidpine.dev",
+  },
+] as const;
+
+async function openExternal(event: MouseEvent, url: string): Promise<void> {
+  if (!isTauri) {
+    return;
+  }
+
+  event.preventDefault();
+  try {
+    const { openUrl } = await import("@tauri-apps/plugin-opener");
+    await openUrl(url);
+  } catch (error) {
+    console.error("[auth] openUrl failed:", error);
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
 </script>
 
 <style scoped>
@@ -85,8 +154,8 @@ const isDev = import.meta.dev;
   position: relative;
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 2rem 1.25rem;
   background: var(--paper);
   color: var(--ink);
@@ -105,6 +174,7 @@ const isDev = import.meta.dev;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
+  margin-block: auto;
 }
 
 .authgate__brand {
@@ -185,6 +255,44 @@ const isDev = import.meta.dev;
 .authgate__dev-hint {
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.authgate__footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  padding-top: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.authgate__footer-link {
+  color: var(--muted);
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.25rem;
+  transition:
+    color 150ms ease,
+    text-decoration-color 150ms ease,
+    transform 100ms ease;
+}
+
+.authgate__footer-link + .authgate__footer-link {
+  margin-left: 0.9rem;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--line-strong);
+}
+
+.authgate__footer-link:hover {
+  color: var(--accent-strong);
+  text-decoration-color: currentColor;
+}
+
+.authgate__footer-link:active {
+  transform: translateY(1px);
 }
 
 .authgate__code {
