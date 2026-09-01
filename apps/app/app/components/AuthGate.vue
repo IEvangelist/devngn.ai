@@ -80,7 +80,22 @@
     </main>
 
     <footer class="authgate__footer">
-      <span class="authgate__copyright">Copyright {{ copyrightYear }}</span>
+      <a
+        class="authgate__footer-link authgate__footer-link--license"
+        href="https://github.com/IEvangelist/devngn.ai/blob/main/LICENSE"
+        aria-label="View the devngn.ai MIT license on GitHub"
+        target="_blank"
+        rel="noopener noreferrer"
+        @click="
+          openExternal(
+            $event,
+            'https://github.com/IEvangelist/devngn.ai/blob/main/LICENSE',
+          )
+        "
+      >
+        <span class="authgate__footer-symbol" aria-hidden="true">©</span>
+        <span>{{ copyrightYear }}</span>
+      </a>
       <span class="authgate__footer-divider" aria-hidden="true" />
       <a
         class="authgate__footer-link authgate__footer-link--person"
@@ -269,24 +284,17 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   flex-wrap: wrap;
   width: 100%;
   padding-top: 1.25rem;
   font-size: 0.8rem;
 }
 
-.authgate__copyright {
-  padding: 0.32rem 0.48rem;
-  color: var(--muted);
-  font-weight: 400;
-}
-
 .authgate__footer-divider {
   flex: 0 0 auto;
   width: 1px;
   height: 0.9rem;
-  margin-inline: 0.15rem;
   background: var(--line-strong);
 }
 
@@ -297,7 +305,7 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
 
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.5rem;
   padding: 0.32rem 0.48rem;
   border-radius: 0.45rem;
   color: var(--muted);
@@ -311,10 +319,19 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
 }
 
 .authgate__footer-icon,
+.authgate__footer-symbol,
 .authgate__footer-logo {
   flex: 0 0 auto;
   width: 1rem;
   height: 1rem;
+}
+
+.authgate__footer-symbol {
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1;
 }
 
 .authgate__footer-icon {
@@ -327,6 +344,14 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
 
 .authgate__footer-logo {
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.authgate__footer-link--license {
+  --footer-link-color: var(--ink);
+  --footer-link-bg: var(--surface-2);
+  --footer-link-line: var(--line-strong);
+
+  font-weight: 400;
 }
 
 .authgate__footer-link--person {
@@ -378,6 +403,12 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
       opacity: 1;
       transform: translateY(0);
     }
+  }
+}
+
+@media (max-width: 22.5rem) {
+  .authgate__footer-link {
+    padding-inline: 0.125rem;
   }
 }
 
