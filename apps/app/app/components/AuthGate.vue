@@ -277,6 +277,7 @@ async function openExternal(event: MouseEvent, url: string): Promise<void> {
 }
 
 .authgate__copyright {
+  padding: 0.32rem 0.48rem;
   color: var(--muted);
   font-weight: 400;
 }
