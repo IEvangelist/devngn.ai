@@ -15,7 +15,12 @@
         <slot />
       </TooltipTrigger>
       <TooltipPortal>
-        <TooltipContent class="tooltip" :side="side" :side-offset="6">
+        <TooltipContent
+          class="tooltip"
+          :side="side"
+          :side-offset="6"
+          :collision-padding="8"
+        >
           {{ text }}
           <TooltipArrow class="tooltip__arrow" :width="10" :height="5" />
         </TooltipContent>
@@ -66,7 +71,13 @@ withDefaults(
   animation: tooltip-in 0.12s ease;
 }
 @keyframes tooltip-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
