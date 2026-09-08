@@ -51,7 +51,7 @@ const statusLabel = computed(() => {
     case "open": return t("common.ready");
     case "connecting": return t("common.connecting");
     case "reconnecting": return t("common.reconnecting");
-    default: return t("common.offline");
+    default: return t("common.paused");
   }
 });
 </script>

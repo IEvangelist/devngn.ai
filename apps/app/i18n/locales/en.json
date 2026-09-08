@@ -24,6 +24,7 @@
     "connecting": "Connecting…",
     "reconnecting": "Reconnecting…",
     "offline": "Offline",
+    "paused": "Paused",
     "save": "Save",
     "saved": "Saved!",
     "cancel": "Cancel",
@@ -62,6 +63,16 @@
       "providerError": "GitHub returned an error: {description}",
       "retry": "Back to sign-in"
     }
+  },
+  "consent": {
+    "title": "One quick step before you begin",
+    "subtitle": "Review how devngn.ai stores your wellness data, then choose whether to continue.",
+    "version": "Wellness consent v{version}",
+    "loading": "Loading consent…",
+    "accept": "I agree and continue",
+    "loadError": "We couldn't load the consent details. Please try again.",
+    "acceptError": "We couldn't save your consent. Please try again.",
+    "reviewRequired": "Review the wellness consent to continue."
   },
   "today": {
     "title": "Today",

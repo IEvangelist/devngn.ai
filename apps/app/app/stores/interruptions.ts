@@ -53,6 +53,9 @@ export const useInterruptionsStore = defineStore("interruptions", () => {
         if (reason === "unauthorized") {
           toast.warning($i18n.t("common.sessionExpired"));
           void auth.signOut();
+        } else {
+          toast.warning($i18n.t("consent.reviewRequired"));
+          void useConsentStore().load();
         }
       },
       onTransientError(err) {

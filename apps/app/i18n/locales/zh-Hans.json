@@ -24,6 +24,7 @@
 		"connecting": "连接中......",
 		"reconnecting": "重新连接......",
 		"offline": "离线",
+		"paused": "已暂停",
 		"save": "保存",
 		"saved": "得救了！",
 		"cancel": "取消",
@@ -62,6 +63,16 @@
 			"providerError": "GitHub 返回了一个错误：{description}",
 			"retry": "返回登录"
 		}
+	},
+	"consent": {
+		"title": "开始前还需一步",
+		"subtitle": "请查看 devngn.ai 如何存储你的健康数据，然后选择是否继续。",
+		"version": "健康数据同意 v{version}",
+		"loading": "正在加载同意内容......",
+		"accept": "我同意并继续",
+		"loadError": "无法加载同意详情。请重试。",
+		"acceptError": "无法保存你的同意。请重试。",
+		"reviewRequired": "请查看健康数据同意内容后继续。"
 	},
 	"today": {
 		"title": "现今",

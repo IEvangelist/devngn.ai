@@ -467,6 +467,50 @@ describe("WellnessClient prompt lifecycle", () => {
   });
 });
 
+describe("WellnessClient consent", () => {
+  it("gets the authenticated user's consent state", async () => {
+    const consent = {
+      accepted: null,
+      current: { version: "1.0", text: "Canonical consent text" },
+    };
+    const fetchImpl = vi
+      .fn<FetchStub>()
+      .mockResolvedValue(jsonResponse(200, consent));
+
+    await expect(makeClient(fetchImpl, "token").getConsent()).resolves.toEqual(
+      consent,
+    );
+
+    const [url, init] = fetchImpl.mock.calls[0] ?? [];
+    expect(String(url)).toContain("/v1/consent");
+    expect(init?.method).toBe("GET");
+    expect(new Headers(init?.headers).has("Authorization")).toBe(true);
+  });
+
+  it("accepts the current consent version", async () => {
+    const accepted = {
+      version: "1.0",
+      text: "Canonical consent text",
+      acceptedAt: "2026-09-08T15:00:00Z",
+    };
+    const fetchImpl = vi
+      .fn<FetchStub>()
+      .mockResolvedValue(jsonResponse(200, accepted));
+
+    await expect(
+      makeClient(fetchImpl, "tok").acceptConsent("1.0"),
+    ).resolves.toEqual(accepted);
+
+    const [url, init] = fetchImpl.mock.calls[0] ?? [];
+    expect(String(url)).toContain("/v1/consent");
+    expect(init?.method).toBe("POST");
+    expect(init?.body).toBe(JSON.stringify({ version: "1.0" }));
+    expect(new Headers(init?.headers).get("Content-Type")).toBe(
+      "application/json",
+    );
+  });
+});
+
 describe("WellnessClient.pollDeviceFlow", () => {
   it("maps 200 to success", async () => {
     const token = { accessToken: "jwt", tokenType: "Bearer" };

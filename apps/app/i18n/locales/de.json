@@ -24,6 +24,7 @@
 		"connecting": "Verbinden...",
 		"reconnecting": "Wieder verbinden...",
 		"offline": "Offline",
+		"paused": "Pausiert",
 		"save": "Speichern",
 		"saved": "Gerettet!",
 		"cancel": "Stornieren",
@@ -62,6 +63,16 @@
 			"providerError": "GitHub gab einen Fehler zurück: {description}",
 			"retry": "Zurück zum Anmelden"
 		}
+	},
+	"consent": {
+		"title": "Ein kurzer Schritt vor dem Start",
+		"subtitle": "Prüfe, wie devngn.ai deine Wellness-Daten speichert, und entscheide dann, ob du fortfahren möchtest.",
+		"version": "Wellness-Einwilligung v{version}",
+		"loading": "Einwilligung wird geladen...",
+		"accept": "Ich stimme zu und fahre fort",
+		"loadError": "Die Einwilligungsdetails konnten nicht geladen werden. Bitte versuche es erneut.",
+		"acceptError": "Deine Einwilligung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+		"reviewRequired": "Prüfe die Wellness-Einwilligung, um fortzufahren."
 	},
 	"today": {
 		"title": "Heute",

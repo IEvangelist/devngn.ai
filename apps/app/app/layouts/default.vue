@@ -12,7 +12,12 @@
 
   <!-- Restoring a persisted session: a neutral splash instead of a sign-in
        flash before init() resolves. -->
-  <div v-else-if="!authReady" class="auth-splash" role="status" aria-busy="true">
+  <div
+    v-else-if="!authReady || (isAuthenticated && !consentReady)"
+    class="auth-splash"
+    role="status"
+    aria-busy="true"
+  >
     <svg class="auth-splash__logo" viewBox="0 0 32 32" role="img" :aria-label="$t('app.name')">
     <path d="M1.5 1.5H17.5V4L12.5 28V30.5H1.5Z" fill="#ec1c8b" />
     <path d="M17.5 1.5H30.5V30.5H12.5V28L17.5 4Z" fill="#11b3a3" />
@@ -24,6 +29,10 @@
 
   <!-- Signed out: one focused sign-in screen for every route. -->
   <AuthGate v-else-if="!isAuthenticated" />
+
+  <!-- Signed in but not yet consented: protected API routes deliberately
+       return 403 until the current canonical consent is accepted. -->
+  <ConsentGate v-else-if="!hasCurrentConsent" />
 
   <!-- Signed in: the full application shell. -->
   <div v-else class="shell" :class="{ 'shell--collapsed': sidebarCollapsed }">
@@ -209,6 +218,8 @@ import type { MenuItem } from "~/components/ui/BrutMenu.vue";
 
 const auth = useAuthStore();
 const { isAuthenticated, user } = storeToRefs(auth);
+const consent = useConsentStore();
+const { hasCurrentConsent } = storeToRefs(consent);
 const interruptions = useInterruptionsStore();
 const { streamStatus } = storeToRefs(interruptions);
 const gamification = useGamificationStore();
@@ -225,6 +236,7 @@ const isAuthRoute = computed(() => route.path.startsWith("/auth"));
 // Gates the sign-in screen until the persisted session has been restored, so a
 // returning user never sees a flash of the sign-in gate before init() resolves.
 const authReady = ref(false);
+const consentReady = ref(false);
 
 const accountMenuItems = computed<MenuItem[]>(() => [
   {
@@ -267,31 +279,55 @@ const statusLabel = computed(() => {
     case "open": return t("common.ready");
     case "connecting": return t("common.connecting");
     case "reconnecting": return t("common.reconnecting");
-    default: return t("common.offline");
+    default: return t("common.paused");
   }
 });
 
-// Init stores on mount
+function syncProtectedServices(): void {
+  if (auth.isAuthenticated && consent.hasCurrentConsent) {
+    interruptions.startStream();
+    void gamification.fetchPlayerState();
+  } else {
+    interruptions.stopStream();
+  }
+}
+
+// Restore the session and resolve consent before mounting protected pages.
 onMounted(async () => {
   try {
     await auth.init();
     await useNotificationsStore().init();
     if (auth.isAuthenticated) {
-      interruptions.startStream();
-      gamification.fetchPlayerState();
+      await consent.load();
+    } else {
+      consent.reset();
     }
   } finally {
+    consentReady.value = true;
     authReady.value = true;
+    syncProtectedServices();
   }
 });
 
-// Re-connect stream when user signs in
-watch(isAuthenticated, (val) => {
-  if (val) {
-    interruptions.startStream();
-    gamification.fetchPlayerState();
-  } else {
-    interruptions.stopStream();
+watch(
+  isAuthenticated,
+  async (authenticated) => {
+    if (!authReady.value) return;
+
+    consentReady.value = false;
+    if (authenticated) {
+      await consent.load();
+    } else {
+      consent.reset();
+    }
+    consentReady.value = true;
+  },
+  { flush: "sync" },
+);
+
+watch([isAuthenticated, hasCurrentConsent], () => {
+  if (authReady.value) {
+    syncProtectedServices();
   }
 });
 </script>

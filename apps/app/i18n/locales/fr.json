@@ -24,6 +24,7 @@
 		"connecting": "En connexion...",
 		"reconnecting": "Se reconnecter...",
 		"offline": "Hors ligne",
+		"paused": "En pause",
 		"save": "Sauvegarder",
 		"saved": "Sauvé !",
 		"cancel": "Annuler",
@@ -62,6 +63,16 @@
 			"providerError": "GitHub a renvoyé une erreur : {description}",
 			"retry": "Retour à la connexion"
 		}
+	},
+	"consent": {
+		"title": "Une étape rapide avant de commencer",
+		"subtitle": "Consultez la façon dont devngn.ai stocke vos données de bien-être, puis choisissez si vous souhaitez continuer.",
+		"version": "Consentement bien-être v{version}",
+		"loading": "Chargement du consentement...",
+		"accept": "J’accepte et je continue",
+		"loadError": "Impossible de charger les détails du consentement. Veuillez réessayer.",
+		"acceptError": "Impossible d’enregistrer votre consentement. Veuillez réessayer.",
+		"reviewRequired": "Consultez le consentement bien-être pour continuer."
 	},
 	"today": {
 		"title": "Aujourd’hui",

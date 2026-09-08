@@ -5,6 +5,8 @@
 import type {
   AccessTokenResponse,
   AuthenticatedUserResponse,
+  ConsentSnapshot,
+  ConsentStateResponse,
   DeviceFlowStartResponse,
   PromptResponse,
 } from "@devngn/wellness-types";
@@ -350,6 +352,36 @@ export class WellnessClient {
       throw new Error(`Identity check failed: HTTP ${response.status}`);
     }
     return (await response.json()) as AuthenticatedUserResponse;
+  }
+
+  /** `GET /v1/consent` — returns accepted and current consent versions. */
+  async getConsent(): Promise<ConsentStateResponse> {
+    const response = await this.authedFetch(this.url("/v1/consent"), {
+      method: "GET",
+    });
+    if (response.status === 401) {
+      throw new WellnessAuthError("The wellness session has expired.");
+    }
+    if (!response.ok) {
+      throw new Error(`Consent check failed: HTTP ${response.status}`);
+    }
+    return (await response.json()) as ConsentStateResponse;
+  }
+
+  /** `POST /v1/consent` — accepts the server's canonical text for `version`. */
+  async acceptConsent(version: string): Promise<ConsentSnapshot> {
+    const response = await this.authedFetch(this.url("/v1/consent"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ version }),
+    });
+    if (response.status === 401) {
+      throw new WellnessAuthError("The wellness session has expired.");
+    }
+    if (!response.ok) {
+      throw new Error(`Consent acceptance failed: HTTP ${response.status}`);
+    }
+    return (await response.json()) as ConsentSnapshot;
   }
 
   private async mutatePrompt(
