@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 // inside `tauri dev`, TAURI_DEV_HOST may be set so the webview can reach the
 // Vite dev server from the platform's WebView process.
 const host = process.env.TAURI_DEV_HOST;
+const isTauriBuild = Boolean(process.env.TAURI_ENV_PLATFORM);
 
 // Single source of truth for the app version is the Tauri config; the desktop
 // binary reports the same value via `getVersion()`. Bake it into the SPA so the
@@ -104,6 +105,9 @@ export default defineNuxtConfig({
   },
 
   pwa: {
+    // Desktop bundles ship their frontend with the binary. Registering a service
+    // worker in the Tauri WebView can make an upgraded executable load old assets.
+    disable: isTauriBuild,
     registerType: "autoUpdate",
     manifest: {
       name: "devngn.ai",
@@ -128,7 +132,10 @@ export default defineNuxtConfig({
       navigateFallback: "/",
       globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
     },
-    client: { installPrompt: true },
+    client: {
+      registerPlugin: !isTauriBuild,
+      installPrompt: !isTauriBuild,
+    },
     devOptions: { enabled: false, suppressWarnings: true },
   },
 

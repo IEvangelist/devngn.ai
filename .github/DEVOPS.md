@@ -266,11 +266,13 @@ merging. Merge to `main` to ship the updated translations.
 ## 6. PWA Auto-Update
 
 The Nuxt/Vite PWA (`@vite-pwa/nuxt`) is built as part of the same `generate`
-step that produces the Tauri frontend. For the **PWA path** (browser /
-installable web app), updates are delivered via the Service Worker's cache
-update mechanism — no `latest.json` is involved. The Tauri desktop app uses
-the separate updater plugin described in §4. Both update paths are triggered by
-publishing new release assets or deploying the SPA to its hosting origin.
+step used by the Tauri frontend. For normal web builds, updates are delivered
+through the Service Worker's cache update mechanism — no `latest.json` is
+involved. Tauri sets `TAURI_ENV_PLATFORM` for its build hook, which disables PWA
+generation and registration for desktop bundles; embedded assets must always
+match the installed executable. A Tauri-only startup cleanup unregisters any
+service worker left by older builds. The desktop app uses the separate updater
+plugin described in §4.
 
 ---
 
